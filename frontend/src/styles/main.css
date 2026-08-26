@@ -1,0 +1,50 @@
+/**
+ * MAIN — point d'entrée CSS, organisé selon la méthodologie ITCSS
+ * (Inverted Triangle CSS) : chaque couche a une portée de plus en plus
+ * restreinte et une spécificité de plus en plus forte.
+ *
+ *   1. Settings   — variables (couleurs, espacements, typo), pas de sélecteurs
+ *   2. Tools      — tokens composites réutilisables (ombres, transitions)
+ *   3. Generic     — reset / normalisation, sélecteurs très larges
+ *   4. Elements    — balises HTML nues, sans classe
+ *   5. Objects     — structures réutilisables (préfixe o-), pas de style visuel
+ *   6. Components  — UI concrète de l'app (préfixe c-)
+ *   7. Utilities   — classes d'override à responsabilité unique (préfixe u-)
+ */
+
+/* 1. Settings */
+@import "./settings/_colors.css";
+@import "./settings/_spacing.css";
+@import "./settings/_typography.css";
+@import "./settings/_z-index.css";
+@import "./settings/_breakpoints.css";
+
+/* 2. Tools */
+@import "./tools/_tokens.css";
+
+/* 3. Generic */
+@import "./generic/_reset.css";
+
+/* 4. Elements */
+@import "./elements/_elements.css";
+
+/* 5. Objects */
+@import "./objects/_layout.css";
+
+/* 6. Components */
+@import "./components/_button.css";
+@import "./components/_app-header.css";
+@import "./components/_search.css";
+@import "./components/_view-switcher.css";
+@import "./components/_sidebar.css";
+@import "./components/_mini-calendar.css";
+@import "./components/_category.css";
+@import "./components/_calendar-month.css";
+@import "./components/_calendar-time-grid.css";
+@import "./components/_event-pill.css";
+@import "./components/_agenda-list.css";
+@import "./components/_modal.css";
+@import "./components/_form.css";
+
+/* 7. Utilities */
+@import "./utilities/_utilities.css";

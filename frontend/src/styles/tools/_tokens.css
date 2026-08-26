@@ -1,0 +1,17 @@
+/**
+ * TOOLS / Tokens transverses
+ * En ITCSS classique (Sass) cette couche contient mixins/fonctions. En CSS
+ * natif, on y place les custom properties "calculées" ou composites
+ * (ombres, transitions) réutilisées par plusieurs composants, distinctes
+ * des tokens bruts de SETTINGS.
+ */
+:root {
+  --shadow-sm: 0 1px 2px 0 var(--shadow-color);
+  --shadow-md: 0 1px 3px 1px var(--shadow-color);
+  --shadow-lg: 0 4px 8px 3px var(--shadow-color), 0 1px 3px var(--shadow-color);
+
+  --transition-fast: 100ms ease-in-out;
+  --transition-base: 200ms ease-in-out;
+
+  --focus-ring: 0 0 0 2px var(--color-bg), 0 0 0 4px var(--color-focus-ring);
+}

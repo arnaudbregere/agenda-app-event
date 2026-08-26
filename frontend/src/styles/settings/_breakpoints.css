@@ -1,0 +1,10 @@
+/**
+ * SETTINGS / Breakpoints (référence)
+ * Le CSS natif ne permet pas d'utiliser une custom property dans une
+ * media query : ces valeurs sont donc documentées ici et recopiées en dur
+ * dans les media queries des composants. Garder cette liste à jour.
+ *
+ * --breakpoint-sm: 600px   (mobile -> tablette)
+ * --breakpoint-md: 900px   (tablette -> desktop, bascule sidebar)
+ * --breakpoint-lg: 1200px  (desktop confortable)
+ */

@@ -1,0 +1,26 @@
+/**
+ * SETTINGS / Spacing & sizing
+ * Échelle d'espacement basée sur 4px, utilisée partout (padding, margin, gap).
+ */
+:root {
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-7: 32px;
+  --space-8: 40px;
+  --space-9: 48px;
+
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 16px;
+  --radius-full: 999px;
+
+  /* Dimensions structurelles réutilisées par plusieurs composants */
+  --header-height: 64px;
+  --sidebar-width: 260px;
+  --time-gutter-width: 56px;
+  --hour-row-height: 48px;
+}

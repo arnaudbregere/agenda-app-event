@@ -1,0 +1,12 @@
+/**
+ * SETTINGS / Z-index scale
+ * Évite les valeurs magiques éparpillées dans les composants.
+ */
+:root {
+  --z-app-header: 10;
+  --z-now-line: 5;
+  --z-dropdown: 20;
+  --z-modal-overlay: 100;
+  --z-modal: 101;
+  --z-toast: 200;
+}

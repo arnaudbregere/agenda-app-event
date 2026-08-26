@@ -1,0 +1,118 @@
+/**
+ * COMPONENTS / Month grid view
+ */
+.c-month-grid {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.c-month-grid__weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  border-bottom: 1px solid var(--color-border);
+  flex-shrink: 0;
+}
+
+.c-month-grid__weekday {
+  padding: var(--space-2);
+  text-align: center;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+}
+
+.c-month-grid__weeks {
+  flex: 1;
+  display: grid;
+  grid-auto-rows: 1fr;
+  min-height: 0;
+}
+
+.c-month-grid__week {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.c-month-grid__week:last-child {
+  border-bottom: none;
+}
+
+.c-month-grid__cell {
+  border-right: 1px solid var(--color-border);
+  padding: var(--space-1);
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.c-month-grid__cell:last-child {
+  border-right: none;
+}
+
+.c-month-grid__cell:hover {
+  background-color: var(--color-bg-subtle);
+}
+
+.c-month-grid__cell.is-weekend {
+  background-color: var(--color-weekend-bg);
+}
+
+.c-month-grid__cell.is-outside .c-month-grid__day-number {
+  color: var(--color-outside-month-text);
+}
+
+.c-month-grid__day-number {
+  align-self: flex-start;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--font-size-sm);
+  border-radius: 50%;
+  margin-bottom: 2px;
+  flex-shrink: 0;
+}
+
+.c-month-grid__cell.is-today .c-month-grid__day-number {
+  background-color: var(--color-primary);
+  color: var(--color-text-inverse);
+  font-weight: var(--font-weight-bold);
+}
+
+.c-month-grid__events {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.c-month-grid__more {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  padding: 1px var(--space-1);
+}
+
+.c-month-grid__more:hover {
+  background-color: var(--color-bg-muted);
+  border-radius: var(--radius-sm);
+}
+
+@media (max-width: 600px) {
+  .c-month-grid__weekday {
+    font-size: 10px;
+  }
+
+  .c-month-grid__day-number {
+    width: 20px;
+    height: 20px;
+    font-size: var(--font-size-xs);
+  }
+}
