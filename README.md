@@ -2,7 +2,7 @@
 
 Application de calendrier (façon Google Agenda) — **Vue 3** (frontend) + **Node/Express** (API REST) avec stockage des événements dans un fichier JSON.
 
-🔗 **App déployée : [à compléter après déploiement](#déploiement)**
+🔗 **App déployée : [agenda-app-event.onrender.com](https://agenda-app-event.onrender.com/)**
 
 ## Structure
 
@@ -56,6 +56,8 @@ L'app est prête pour un déploiement en **un seul service Render** (voir `rende
 
 1. Sur [render.com](https://dashboard.render.com), **New +** → **Blueprint**, connecter le repo GitHub `agenda-app-event`. Render détecte `render.yaml` et configure tout automatiquement (build + start command).
 2. Une fois déployé, remplacer le lien tout en haut de ce README par l'URL fournie par Render (`https://agenda-app-event.onrender.com` ou équivalent).
+
+✅ Déployé : **https://agenda-app-event.onrender.com/**
 
 ⚠️ **Limite du plan gratuit Render** : le disque n'est pas persistant sur les instances free — `backend/data/events.json` peut être réinitialisé à chaque redéploiement ou redémarrage après une période d'inactivité. Pour une persistance fiable, ajouter un [Disk Render](https://render.com/docs/disks) (nécessite un plan payant) monté sur `backend/data`.
 
