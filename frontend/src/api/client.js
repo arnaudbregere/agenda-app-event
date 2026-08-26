@@ -1,4 +1,7 @@
-const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:4000/api";
+// En dev, .env.development pointe vers l'API locale (port 4000).
+// En production (build), pas de variable définie : on utilise un chemin
+// relatif "/api" car le build est servi par le même serveur Express que l'API.
+const BASE_URL = import.meta.env.VITE_API_URL || "/api";
 
 async function request(path, options = {}) {
   const res = await fetch(`${BASE_URL}${path}`, {
