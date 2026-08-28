@@ -1,0 +1,13 @@
+/**
+ * SETTINGS / Breakpoints
+ * Le CSS natif ne permet pas d'utiliser une custom property dans une media
+ * query : ce sont donc de vraies variables Sass, résolues à la compilation,
+ * consommées par le mixin `respond-down()` (voir tools/_mixins.scss).
+ */
+$breakpoints: (
+  sm: 600px,
+  // mobile -> tablette
+  md: 900px,
+  // tablette -> desktop, bascule sidebar
+  lg: 1200px // desktop confortable
+);

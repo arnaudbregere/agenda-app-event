@@ -1,0 +1,68 @@
+/**
+ * COMPONENTS / App header
+ */
+@use "../tools/mixins" as *;
+
+.c-app-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  height: 100%;
+  padding: 0 var(--space-4);
+  background-color: var(--color-bg);
+  border-bottom: 1px solid var(--color-border);
+  position: relative;
+  z-index: var(--z-app-header);
+
+  &__brand {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    font-size: var(--font-size-lg);
+    color: var(--color-text-muted);
+    flex-shrink: 0;
+  }
+
+  &__logo {
+    width: 32px;
+    height: 32px;
+    color: var(--color-primary);
+  }
+
+  &__title {
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-medium);
+    min-width: 180px;
+  }
+
+  &__nav {
+    display: flex;
+    align-items: center;
+    gap: var(--space-1);
+    flex-shrink: 0;
+  }
+
+  &__search {
+    flex: 1;
+    max-width: 480px;
+    margin: 0 auto;
+  }
+
+  &__actions {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    flex-shrink: 0;
+  }
+
+  @include respond-down(md) {
+    &__title {
+      min-width: 0;
+      font-size: var(--font-size-md);
+    }
+
+    &__search {
+      display: none;
+    }
+  }
+}

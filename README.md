@@ -40,7 +40,7 @@ Ouvrir http://localhost:5173.
 ## Frontend
 
 - Vue 3 (`<script setup>`), Pinia pour l'état (événements + navigation calendrier), `date-fns` pour les calculs de dates.
-- CSS organisé selon la méthodologie **ITCSS** (`frontend/src/styles`) : Settings → Tools → Generic → Elements → Objects → Components → Utilities. Pas de framework CSS externe.
+- **SCSS** organisé selon la méthodologie **ITCSS** (`frontend/src/styles`) : Settings → Tools → Generic → Elements → Objects → Components → Utilities, composé via `@use` (modules Sass). Design tokens en custom properties CSS (thémabilité à l'exécution) ; breakpoints en variables Sass consommées par un mixin (`respond-down()`), seul cas où le CSS natif ne suffit pas. Pas de framework CSS externe.
 - URL de l'API configurable via `frontend/.env.development` (`VITE_API_URL`).
 
 ## Fonctionnalités

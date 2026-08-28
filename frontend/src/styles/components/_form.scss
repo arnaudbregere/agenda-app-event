@@ -1,0 +1,95 @@
+/**
+ * COMPONENTS / Form (utilisé dans la modale d'événement)
+ */
+.c-form {
+  &__field {
+    margin-bottom: var(--space-4);
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+
+  &__label {
+    display: block;
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    color: var(--color-text-muted);
+    margin-bottom: var(--space-1);
+  }
+
+  &__input,
+  &__textarea,
+  &__select {
+    width: 100%;
+  }
+
+  &__textarea {
+    resize: vertical;
+    min-height: 72px;
+  }
+
+  &__row {
+    display: flex;
+    gap: var(--space-3);
+
+    > * {
+      flex: 1;
+      min-width: 0;
+    }
+  }
+
+  &__error {
+    color: var(--color-danger);
+    font-size: var(--font-size-sm);
+    margin-top: var(--space-1);
+  }
+
+  &__checkbox-row {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    font-size: var(--font-size-sm);
+
+    input {
+      width: 16px;
+      height: 16px;
+    }
+  }
+
+  &__swatches {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
+
+  &__swatch {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background-color: var(--swatch-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid transparent;
+
+    &.is-selected {
+      border-color: var(--color-text);
+    }
+
+    svg {
+      width: 14px;
+      height: 14px;
+      color: var(--color-text-inverse);
+    }
+  }
+
+  &__banner {
+    background-color: var(--color-danger-bg);
+    color: var(--color-danger);
+    padding: var(--space-2) var(--space-3);
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-sm);
+    margin-bottom: var(--space-4);
+  }
+}

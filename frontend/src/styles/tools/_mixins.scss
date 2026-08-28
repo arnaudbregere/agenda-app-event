@@ -1,0 +1,16 @@
+/**
+ * TOOLS / Mixins
+ * Couche Sass des outils réutilisables (mixins/fonctions), au sens strict
+ * ITCSS. Distincte de _tokens.scss, qui reste des custom properties CSS
+ * (donc disponibles à l'exécution, pour un futur theming par ex.).
+ */
+@use "sass:map";
+@use "../settings/breakpoints" as bp;
+
+/// Enrobe le contenu dans une media query `max-width` à partir d'un nom de
+/// breakpoint défini dans settings/_breakpoints.scss (sm | md | lg).
+@mixin respond-down($name) {
+  @media (max-width: map.get(bp.$breakpoints, $name)) {
+    @content;
+  }
+}

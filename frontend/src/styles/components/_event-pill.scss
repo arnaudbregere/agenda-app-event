@@ -14,23 +14,23 @@
   border-left: 3px solid var(--event-color, var(--color-primary));
   overflow: hidden;
   white-space: nowrap;
+
+  &:hover {
+    filter: brightness(0.97);
+  }
+
+  &__time {
+    color: var(--color-text-muted);
+    flex-shrink: 0;
+  }
+
+  &__title {
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
 }
 
-.c-event-pill:hover {
-  filter: brightness(0.97);
-}
-
-.c-event-pill__time {
-  color: var(--color-text-muted);
-  flex-shrink: 0;
-}
-
-.c-event-pill__title {
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-/* Vue Semaine / Jour : bloc positionné dans la grille horaire */
+// Vue Semaine / Jour : bloc positionné dans la grille horaire
 .c-event-block {
   position: absolute;
   border-radius: var(--radius-sm);
@@ -42,26 +42,26 @@
   box-shadow: var(--shadow-sm);
   cursor: pointer;
   z-index: 1;
+
+  &:hover {
+    box-shadow: var(--shadow-md);
+    filter: brightness(1.05);
+  }
+
+  &__title {
+    font-weight: var(--font-weight-medium);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__time {
+    opacity: 0.9;
+    font-size: 10px;
+  }
 }
 
-.c-event-block:hover {
-  box-shadow: var(--shadow-md);
-  filter: brightness(1.05);
-}
-
-.c-event-block__title {
-  font-weight: var(--font-weight-medium);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.c-event-block__time {
-  opacity: 0.9;
-  font-size: 10px;
-}
-
-/* Événements "journée entière" affichés en bandeau au-dessus de la grille horaire */
+// Événements "journée entière" affichés en bandeau au-dessus de la grille horaire
 .c-event-allday {
   display: flex;
   align-items: center;

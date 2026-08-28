@@ -1,0 +1,120 @@
+/**
+ * COMPONENTS / Month grid view
+ */
+@use "../tools/mixins" as *;
+
+.c-month-grid {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+
+  &__weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    border-bottom: 1px solid var(--color-border);
+    flex-shrink: 0;
+  }
+
+  &__weekday {
+    padding: var(--space-2);
+    text-align: center;
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-medium);
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+  }
+
+  &__weeks {
+    flex: 1;
+    display: grid;
+    grid-auto-rows: 1fr;
+    min-height: 0;
+  }
+
+  &__week {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    border-bottom: 1px solid var(--color-border);
+
+    &:last-child {
+      border-bottom: none;
+    }
+  }
+
+  &__cell {
+    border-right: 1px solid var(--color-border);
+    padding: var(--space-1);
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 0;
+    overflow: hidden;
+    cursor: pointer;
+
+    &:last-child {
+      border-right: none;
+    }
+
+    &:hover {
+      background-color: var(--color-bg-subtle);
+    }
+
+    &.is-weekend {
+      background-color: var(--color-weekend-bg);
+    }
+
+    &.is-outside .c-month-grid__day-number {
+      color: var(--color-outside-month-text);
+    }
+
+    &.is-today .c-month-grid__day-number {
+      background-color: var(--color-primary);
+      color: var(--color-text-inverse);
+      font-weight: var(--font-weight-bold);
+    }
+  }
+
+  &__day-number {
+    align-self: flex-start;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: var(--font-size-sm);
+    border-radius: 50%;
+    margin-bottom: 2px;
+    flex-shrink: 0;
+  }
+
+  &__events {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  &__more {
+    font-size: var(--font-size-xs);
+    color: var(--color-text-muted);
+    padding: 1px var(--space-1);
+
+    &:hover {
+      background-color: var(--color-bg-muted);
+      border-radius: var(--radius-sm);
+    }
+  }
+
+  @include respond-down(sm) {
+    &__weekday {
+      font-size: 10px;
+    }
+
+    &__day-number {
+      width: 20px;
+      height: 20px;
+      font-size: var(--font-size-xs);
+    }
+  }
+}

@@ -1,0 +1,57 @@
+/**
+ * MAIN — point d'entrée SCSS, organisé selon la méthodologie ITCSS
+ * (Inverted Triangle CSS) : chaque couche a une portée de plus en plus
+ * restreinte et une spécificité de plus en plus forte.
+ *
+ *   1. Settings   — variables (couleurs, espacements, typo, breakpoints),
+ *                   pas de sélecteurs
+ *   2. Tools      — mixins/fonctions Sass + tokens composites réutilisables
+ *   3. Generic     — reset / normalisation, sélecteurs très larges
+ *   4. Elements    — balises HTML nues, sans classe
+ *   5. Objects     — structures réutilisables (préfixe o-), pas de style visuel
+ *   6. Components  — UI concrète de l'app (préfixe c-)
+ *   7. Utilities   — classes d'override à responsabilité unique (préfixe u-)
+ *
+ * Chaque partial est chargé via `@use` (module Sass) : le module n'est
+ * évalué qu'une seule fois même s'il est `@use` depuis plusieurs fichiers
+ * (ex. tools/mixins, utilisé par plusieurs composants), donc pas de risque
+ * de dupliquer du CSS.
+ */
+
+// 1. Settings
+@use "./settings/colors";
+@use "./settings/spacing";
+@use "./settings/typography";
+@use "./settings/z-index";
+@use "./settings/breakpoints";
+
+// 2. Tools
+@use "./tools/tokens";
+@use "./tools/mixins";
+
+// 3. Generic
+@use "./generic/reset";
+
+// 4. Elements
+@use "./elements/elements";
+
+// 5. Objects
+@use "./objects/layout";
+
+// 6. Components
+@use "./components/button";
+@use "./components/app-header";
+@use "./components/search";
+@use "./components/view-switcher";
+@use "./components/sidebar";
+@use "./components/mini-calendar";
+@use "./components/category";
+@use "./components/calendar-month";
+@use "./components/calendar-time-grid";
+@use "./components/event-pill";
+@use "./components/agenda-list";
+@use "./components/modal";
+@use "./components/form";
+
+// 7. Utilities
+@use "./utilities/utilities";

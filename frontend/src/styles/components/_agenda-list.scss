@@ -1,0 +1,79 @@
+/**
+ * COMPONENTS / Agenda list view
+ */
+.c-agenda-list {
+  padding: var(--space-4) var(--space-6);
+  max-width: 720px;
+  margin: 0 auto;
+  width: 100%;
+
+  &__group {
+    display: flex;
+    border-bottom: 1px solid var(--color-border);
+    padding: var(--space-4) 0;
+    gap: var(--space-5);
+  }
+
+  &__date {
+    width: 80px;
+    flex-shrink: 0;
+    text-align: center;
+
+    &.is-today .c-agenda-list__date-day {
+      color: var(--color-primary);
+      font-weight: var(--font-weight-bold);
+    }
+  }
+
+  &__date-day {
+    font-size: var(--font-size-xl);
+    color: var(--color-text-muted);
+  }
+
+  &__date-weekday {
+    font-size: var(--font-size-xs);
+    color: var(--color-text-subtle);
+    text-transform: uppercase;
+  }
+
+  &__items {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+
+  &__empty {
+    text-align: center;
+    color: var(--color-text-muted);
+    padding: var(--space-9) var(--space-4);
+  }
+}
+
+.c-agenda-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-1) 0;
+  cursor: pointer;
+
+  &__time {
+    width: 90px;
+    flex-shrink: 0;
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+  }
+
+  &__title {
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &:hover &__title {
+    color: var(--color-primary);
+  }
+}

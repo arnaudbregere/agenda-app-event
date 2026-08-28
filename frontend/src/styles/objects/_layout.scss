@@ -1,0 +1,70 @@
+/**
+ * OBJECTS / Layout
+ * Structures purement structurelles (grilles, positionnement), sans style
+ * cosmétique (couleurs, typo). Préfixe `o-`.
+ */
+@use "../tools/mixins" as *;
+
+.o-app-shell {
+  display: grid;
+  grid-template-columns: var(--sidebar-width) 1fr;
+  grid-template-rows: var(--header-height) 1fr;
+  grid-template-areas:
+    "header header"
+    "sidebar main";
+  height: 100%;
+
+  @include respond-down(md) {
+    grid-template-columns: 0 1fr;
+
+    &.is-sidebar-open {
+      grid-template-columns: var(--sidebar-width) 1fr;
+    }
+  }
+
+  &__header {
+    grid-area: header;
+  }
+
+  &__sidebar {
+    grid-area: sidebar;
+    overflow: hidden;
+  }
+
+  &__main {
+    grid-area: main;
+    min-width: 0;
+    min-height: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+}
+
+.o-scroll-y {
+  overflow-y: auto;
+}
+
+.o-flex {
+  display: flex;
+
+  &--between {
+    justify-content: space-between;
+  }
+
+  &--center {
+    align-items: center;
+  }
+
+  &--column {
+    flex-direction: column;
+  }
+
+  &--wrap {
+    flex-wrap: wrap;
+  }
+}
+
+.o-stack > * + * {
+  margin-top: var(--stack-gap, var(--space-3));
+}
