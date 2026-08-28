@@ -1,5 +1,6 @@
 import express from "express";
 import cors from "cors";
+import { execSync } from "node:child_process";
 import { existsSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -10,10 +11,24 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const app = express();
 const PORT = process.env.PORT || 4000;
 
+// RENDER_GIT_COMMIT est définie automatiquement par Render sur chaque
+// déploiement. En local (ou si absente), on retombe sur `git rev-parse HEAD`
+// pour afficher quand même le commit courant. Résolu une seule fois au
+// démarrage plutôt qu'à chaque requête.
+function resolveCommit() {
+  if (process.env.RENDER_GIT_COMMIT) return process.env.RENDER_GIT_COMMIT;
+  try {
+    return execSync("git rev-parse HEAD", { cwd: __dirname }).toString().trim();
+  } catch {
+    return null;
+  }
+}
+const COMMIT = resolveCommit();
+
 app.use(cors());
 app.use(express.json());
 
-app.get("/api/health", (req, res) => res.json({ status: "ok" }));
+app.get("/api/health", (req, res) => res.json({ status: "ok", commit: COMMIT }));
 app.use("/api/events", eventsRouter);
 app.use("/api/categories", categoriesRouter);
 
