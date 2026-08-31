@@ -1,6 +1,28 @@
 /**
  * COMPONENTS / Time grid (vues Semaine & Jour)
  */
+
+// __body défile verticalement (24h de contenu dépasse la hauteur visible) ;
+// sa scrollbar grignote sa largeur. __head et __allday n'ont rien à faire
+// défiler mais doivent réserver exactement la même largeur pour que leurs
+// colonnes de jours restent alignées avec celles de __body. Comme cette
+// largeur dépend de l'OS/navigateur (0 sur scrollbars "overlay", ~15-17px
+// sinon), on ne peut pas la coder en dur : on force plutôt une scrollbar
+// (jamais utilisée, jamais affichée) pour que le navigateur réserve la même
+// place partout, quelle que soit sa valeur réelle.
+@mixin reserved-scrollbar-gutter {
+  overflow-y: scroll;
+  overflow-x: hidden;
+  scrollbar-color: transparent transparent; // Firefox
+
+  &::-webkit-scrollbar {
+    background: transparent;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: transparent;
+  }
+}
+
 .c-time-grid {
   display: flex;
   flex-direction: column;
@@ -11,6 +33,7 @@
     display: flex;
     border-bottom: 1px solid var(--color-border);
     flex-shrink: 0;
+    @include reserved-scrollbar-gutter;
   }
 
   &__head-gutter {
@@ -52,6 +75,7 @@
     border-bottom: 1px solid var(--color-border);
     flex-shrink: 0;
     min-height: 28px;
+    @include reserved-scrollbar-gutter;
   }
 
   &__allday-gutter {
@@ -71,6 +95,11 @@
 
   &__body {
     flex: 1;
+    // auto (pas scroll) : "scroll" force une scrollbar en permanence, ce qui
+    // fait disparaître par endroits les bordures des lignes/colonnes dans
+    // certains navigateurs (bug de rendu constaté). Le contenu (24h) déborde
+    // de toute façon systématiquement de la hauteur visible, donc "auto"
+    // affiche déjà la scrollbar en pratique — sans le bug.
     overflow-y: auto;
     display: flex;
     position: relative;
@@ -88,19 +117,45 @@
     font-size: var(--font-size-xs);
     color: var(--color-text-subtle);
     transform: translateY(-50%);
+
+    // 00:00 n'a pas de trait au-dessus sur lequel se centrer : masqué
+    // volontairement (convention courante, ex. Google Agenda) plutôt que
+    // laissé coupé par erreur en haut de la grille.
+    &:first-child {
+      visibility: hidden;
+    }
   }
 
   &__columns {
     flex: 1;
     display: flex;
     position: relative;
+    // Sans ça, align-items:stretch (défaut) étire __columns à la hauteur
+    // VISIBLE de __body plutôt qu'à celle de son contenu réel (24h). Les
+    // lignes horaires (hauteur fixe indépendante) continuent de s'afficher
+    // au-delà de cette boîte trop courte, mais tout ce qui se dimensionne
+    // par rapport à la boîte de __column (sa bordure gauche, cf. ci-dessous)
+    // s'arrête net à cette hauteur — d'où les bordures manquantes en bas.
+    height: fit-content;
   }
 
   &__column {
     flex: 1;
     min-width: 0;
     position: relative;
-    border-left: 1px solid var(--color-border);
+
+    // Même souci que __hour-line, en pire : un border-left continu sur un
+    // élément aussi haut (1152px) dans une zone qui défile disparaît par
+    // endroits chez Chromium. Pseudo-élément peint en background-color au
+    // lieu de la propriété border : chemin de rendu différent, insensible
+    // au bug.
+    &::before {
+      content: "";
+      position: absolute;
+      inset: 0 auto 0 0;
+      width: 1px;
+      background-color: var(--color-border);
+    }
 
     &.is-weekend {
       background-color: var(--color-weekend-bg);
@@ -109,11 +164,11 @@
 
   &__hour-line {
     height: var(--hour-row-height);
-    border-bottom: 1px solid var(--color-border);
-
-    &:last-child {
-      border-bottom: none;
-    }
+    // box-shadow plutôt que border-bottom : sur une zone qui défile avec
+    // accélération GPU, Chromium fait parfois disparaître par intermittence
+    // des bordures de 1px positionnées sur des coordonnées fractionnaires
+    // (bug de composition connu). box-shadow n'est pas concerné.
+    box-shadow: inset 0 -1px 0 0 var(--color-border);
   }
 }
 
