@@ -130,6 +130,13 @@
     flex: 1;
     display: flex;
     position: relative;
+    // Sans ça, align-items:stretch (défaut) étire __columns à la hauteur
+    // VISIBLE de __body plutôt qu'à celle de son contenu réel (24h). Les
+    // lignes horaires (hauteur fixe indépendante) continuent de s'afficher
+    // au-delà de cette boîte trop courte, mais tout ce qui se dimensionne
+    // par rapport à la boîte de __column (sa bordure gauche, cf. ci-dessous)
+    // s'arrête net à cette hauteur — d'où les bordures manquantes en bas.
+    height: fit-content;
   }
 
   &__column {
