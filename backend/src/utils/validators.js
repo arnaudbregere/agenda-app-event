@@ -18,12 +18,13 @@ export function validateEvent(body, { partial = false } = {}) {
 
   if (body.title !== undefined && typeof body.title !== "string") {
     errors.push('Le champ "title" doit être une chaîne de caractères.');
-  }
-  if (body.title !== undefined && body.title.trim().length === 0) {
-    errors.push('Le champ "title" ne peut pas être vide.');
-  }
-  if (body.title !== undefined && body.title.length > 200) {
-    errors.push('Le champ "title" ne doit pas dépasser 200 caractères.');
+  } else if (body.title !== undefined) {
+    if (body.title.trim().length === 0) {
+      errors.push('Le champ "title" ne peut pas être vide.');
+    }
+    if (body.title.length > 200) {
+      errors.push('Le champ "title" ne doit pas dépasser 200 caractères.');
+    }
   }
 
   if (body.start !== undefined && isNaN(Date.parse(body.start))) {
