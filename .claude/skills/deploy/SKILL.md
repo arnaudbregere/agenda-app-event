@@ -12,13 +12,27 @@ URL de prod : https://agenda-app-event.onrender.com/
 
 ## Comment fonctionne le déploiement
 
-Render est connecté au repo GitHub et **redéploie automatiquement à
-chaque push sur `main`** (build + restart). Il n'y a normalement **aucune
-action manuelle à faire** pour déclencher un déploiement — merger une PR
-sur `main` suffit.
+L'auto-deploy natif de Render est **désactivé** (`autoDeploy: false` dans
+`render.yaml`). Le déploiement est piloté par le job `deploy` du workflow
+`.github/workflows/tests.yml` : il se déclenche sur push `main` (donc à
+chaque merge de PR), mais **seulement si les jobs `backend` et `frontend`
+(tests) sont passés** — c'est le gate qui manquait avec l'auto-deploy
+Render seul.
+
+Ce job :
+1. Appelle l'API Render (`POST /v1/services/{id}/deploys`) avec
+   `RENDER_API_KEY` / `RENDER_SERVICE_ID` (secrets du repo GitHub).
+2. Poll le statut du déploiement jusqu'à `live` (échec du job si
+   `build_failed`/`update_failed`/`canceled`, ou timeout ~10 min).
+3. Vérifie `GET /api/health` en tout dernier.
+
+Donc **aucune action manuelle à faire** pour déclencher ou vérifier un
+déploiement — merger une PR sur `main` suffit, et le statut du job
+`deploy` dans Actions dit si ça a marché.
 
 ```yaml
 # render.yaml
+autoDeploy: false
 buildCommand: cd frontend && npm ci && npm run build && cd ../backend && npm ci
 startCommand: node backend/server.js
 healthCheckPath: /api/health
@@ -33,18 +47,29 @@ healthCheckPath: /api/health
 
 ## Après le merge — vérifier que le déploiement a réussi
 
-Render n'expose pas de statut consultable en CLI depuis ce repo (pas de
-Render CLI/API configurée ici) — la vérification se fait donc côté
-symptômes observables :
+Le job `deploy` du workflow `tests.yml` fait la vérification
+automatiquement (voir ci-dessus). En cas de doute ou pour un suivi en
+direct :
 
-1. Attendre quelques minutes (build + démarrage du service).
-2. Vérifier la route de santé :
-   ```bash
-   curl -s https://agenda-app-event.onrender.com/api/health
-   ```
-3. Si besoin de confirmation visuelle du dashboard, rediriger
-   l'utilisateur vers https://dashboard.render.com — je n'ai pas d'accès
-   direct à ce dashboard.
+```bash
+gh run list --workflow=tests.yml --branch=main --limit 1
+gh run watch <run-id>
+```
+
+Si le job `deploy` échoue malgré des tests verts, ou pour une
+confirmation visuelle, rediriger l'utilisateur vers
+https://dashboard.render.com — je n'ai pas d'accès direct à ce
+dashboard.
+
+### Secrets requis (à configurer une seule fois, manuellement)
+
+- `RENDER_API_KEY` : Render dashboard → Account Settings → API Keys.
+- `RENDER_SERVICE_ID` : visible dans l'URL du service sur le dashboard
+  Render (`srv-...`).
+
+À ajouter dans GitHub : repo → Settings → Secrets and variables →
+Actions. Je n'ai pas accès à ces dashboards, cette étape reste manuelle
+côté utilisateur.
 
 ## ⚠️ Limite connue : stockage non persistant (plan free)
 
