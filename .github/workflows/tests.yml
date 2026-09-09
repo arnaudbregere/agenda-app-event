@@ -43,19 +43,34 @@ jobs:
       - name: Trigger Render deploy
         id: deploy
         run: |
-          RESPONSE=$(curl -fsS -X POST \
+          HTTP_RESPONSE=$(curl -sS -X POST \
             -H "Authorization: Bearer ${{ secrets.RENDER_API_KEY }}" \
             -H "Content-Type: application/json" \
+            -w '\n%{http_code}' \
             "https://api.render.com/v1/services/${{ secrets.RENDER_SERVICE_ID }}/deploys")
-          echo "id=$(echo "$RESPONSE" | jq -r .id)" >> "$GITHUB_OUTPUT"
+          HTTP_STATUS=$(echo "$HTTP_RESPONSE" | tail -n1)
+          BODY=$(echo "$HTTP_RESPONSE" | sed '$d')
+          echo "Réponse Render (HTTP $HTTP_STATUS) :"
+          echo "$BODY"
+          if [ "$HTTP_STATUS" -ge 400 ]; then
+            echo "::error::Échec de la création du déploiement (HTTP $HTTP_STATUS) — vérifier RENDER_API_KEY / RENDER_SERVICE_ID"
+            exit 1
+          fi
+          DEPLOY_ID=$(echo "$BODY" | jq -r '.id // .[0].id // empty')
+          if [ -z "$DEPLOY_ID" ]; then
+            echo "::error::Impossible d'extraire l'id du déploiement depuis la réponse Render (voir le corps ci-dessus)"
+            exit 1
+          fi
+          echo "Deploy id : $DEPLOY_ID"
+          echo "id=$DEPLOY_ID" >> "$GITHUB_OUTPUT"
 
       - name: Wait for deploy to finish
         run: |
           for i in $(seq 1 30); do
-            STATUS=$(curl -fsS \
+            BODY=$(curl -fsS \
               -H "Authorization: Bearer ${{ secrets.RENDER_API_KEY }}" \
-              "https://api.render.com/v1/services/${{ secrets.RENDER_SERVICE_ID }}/deploys/${{ steps.deploy.outputs.id }}" \
-              | jq -r .status)
+              "https://api.render.com/v1/services/${{ secrets.RENDER_SERVICE_ID }}/deploys/${{ steps.deploy.outputs.id }}")
+            STATUS=$(echo "$BODY" | jq -r '.status // .[0].status // empty')
             echo "Statut Render : $STATUS"
             if [ "$STATUS" = "live" ]; then
               exit 0
