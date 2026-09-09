@@ -34,3 +34,40 @@ jobs:
         working-directory: frontend
       - run: npm test
         working-directory: frontend
+
+  deploy:
+    needs: [backend, frontend]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Render deploy
+        id: deploy
+        run: |
+          RESPONSE=$(curl -fsS -X POST \
+            -H "Authorization: Bearer ${{ secrets.RENDER_API_KEY }}" \
+            -H "Content-Type: application/json" \
+            "https://api.render.com/v1/services/${{ secrets.RENDER_SERVICE_ID }}/deploys")
+          echo "id=$(echo "$RESPONSE" | jq -r .id)" >> "$GITHUB_OUTPUT"
+
+      - name: Wait for deploy to finish
+        run: |
+          for i in $(seq 1 30); do
+            STATUS=$(curl -fsS \
+              -H "Authorization: Bearer ${{ secrets.RENDER_API_KEY }}" \
+              "https://api.render.com/v1/services/${{ secrets.RENDER_SERVICE_ID }}/deploys/${{ steps.deploy.outputs.id }}" \
+              | jq -r .status)
+            echo "Statut Render : $STATUS"
+            if [ "$STATUS" = "live" ]; then
+              exit 0
+            fi
+            if [ "$STATUS" = "build_failed" ] || [ "$STATUS" = "update_failed" ] || [ "$STATUS" = "canceled" ]; then
+              echo "::error::Déploiement Render en échec (statut: $STATUS)"
+              exit 1
+            fi
+            sleep 20
+          done
+          echo "::error::Timeout en attendant la fin du déploiement Render"
+          exit 1
+
+      - name: Check health endpoint
+        run: curl -fsS https://agenda-app-event.onrender.com/api/health
