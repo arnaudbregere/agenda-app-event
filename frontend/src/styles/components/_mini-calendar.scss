@@ -33,6 +33,7 @@
   }
 
   &__day {
+    position: relative;
     aspect-ratio: 1;
     display: flex;
     align-items: center;
@@ -43,6 +44,17 @@
 
     &:hover {
       background-color: var(--color-bg-muted);
+    }
+
+    // Écrans tactiles : les cellules (~30px dans une sidebar de 260px) sont
+    // sous la cible tactile de 44px recommandée. On agrandit la zone de tap
+    // sans changer la taille visuelle ni la grille.
+    @media (pointer: coarse) {
+      &::after {
+        content: "";
+        position: absolute;
+        inset: -6px;
+      }
     }
 
     &.is-outside {

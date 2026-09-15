@@ -65,4 +65,19 @@
       display: none;
     }
   }
+
+  // En dessous de 600px, le bloc nav (Aujourd'hui + précédent/suivant +
+  // titre de période) et le sélecteur de vue ne tiennent plus sur une seule
+  // ligne à côté de la marque : on autorise le passage à la ligne plutôt que
+  // de risquer un débordement horizontal (WCAG 1.4.10 Reflow).
+  @include respond-down(sm) {
+    height: auto;
+    flex-wrap: wrap;
+    row-gap: var(--space-2);
+    padding: var(--space-2) var(--space-3);
+
+    &__actions {
+      flex-basis: 100%;
+    }
+  }
 }

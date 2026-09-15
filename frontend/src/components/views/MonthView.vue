@@ -1,6 +1,7 @@
 <script setup>
 import { computed } from "vue";
 import { isSameMonth, isSaturday, isSunday, format } from "date-fns";
+import { fr } from "date-fns/locale";
 import { useCalendarStore } from "../../stores/calendar.js";
 import { useEventsStore } from "../../stores/events.js";
 import { getMonthWeeks, eventOccursOnDay, isToday } from "../../composables/useCalendarGrid.js";
@@ -12,10 +13,26 @@ const eventsStore = useEventsStore();
 
 const weeks = computed(() => getMonthWeeks(store.currentDate));
 
+// Groupé une seule fois par rendu (le template appelle eventsForDay deux
+// fois par cellule : liste visible + condition du lien "+N") plutôt que de
+// refiltrer/retrier store.filteredEvents à chaque appel.
+const eventsByDay = computed(() => {
+  const map = new Map();
+  for (const week of weeks.value) {
+    for (const day of week) {
+      map.set(
+        day.toISOString(),
+        store.filteredEvents
+          .filter((e) => eventOccursOnDay(e, day))
+          .sort((a, b) => Number(b.allDay) - Number(a.allDay) || new Date(a.start) - new Date(b.start)),
+      );
+    }
+  }
+  return map;
+});
+
 function eventsForDay(day) {
-  return store.filteredEvents
-    .filter((e) => eventOccursOnDay(e, day))
-    .sort((a, b) => Number(b.allDay) - Number(a.allDay) || new Date(a.start) - new Date(b.start));
+  return eventsByDay.value.get(day.toISOString()) ?? [];
 }
 
 function eventTime(event) {
@@ -56,18 +73,24 @@ function quickCreate(day) {
           }"
           @click="quickCreate(day)"
         >
-          <span class="c-month-grid__day-number" @click.stop="goToDay(day)">{{ day.getDate() }}</span>
+          <button
+            type="button"
+            class="c-month-grid__day-number"
+            :aria-label="`Aller à la vue jour du ${format(day, 'EEEE d MMMM', { locale: fr })}`"
+            @click.stop="goToDay(day)"
+          >{{ day.getDate() }}</button>
           <div class="c-month-grid__events">
-            <div
+            <button
               v-for="event in eventsForDay(day).slice(0, MAX_VISIBLE)"
               :key="event.id"
+              type="button"
               class="c-event-pill"
               :style="{ '--event-color': eventsStore.categoryColor(event.category) }"
               @click.stop="store.openEditModal(event)"
             >
               <span v-if="eventTime(event)" class="c-event-pill__time">{{ eventTime(event) }}</span>
               <span class="c-event-pill__title">{{ event.title }}</span>
-            </div>
+            </button>
             <button
               v-if="eventsForDay(day).length > MAX_VISIBLE"
               type="button"

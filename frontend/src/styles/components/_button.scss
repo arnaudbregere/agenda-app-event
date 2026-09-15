@@ -44,6 +44,7 @@
   }
 
   &--icon {
+    position: relative;
     width: 40px;
     height: 40px;
     padding: 0;
@@ -59,6 +60,16 @@
       width: 28px;
       height: 28px;
       padding: 0;
+
+      // Écrans tactiles : agrandit la zone de tap sans changer la taille
+      // visuelle du bouton (utile en layout dense, ex. nav du mini-calendrier).
+      @media (pointer: coarse) {
+        &::after {
+          content: "";
+          position: absolute;
+          inset: -8px;
+        }
+      }
     }
   }
 

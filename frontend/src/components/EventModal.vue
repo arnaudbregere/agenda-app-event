@@ -27,6 +27,9 @@ const form = reactive({
   category: "autre",
 });
 
+const panelRef = ref(null);
+let lastFocusedEl = null;
+
 function resetFromStore() {
   serverError.value = "";
   const event = store.editingEvent;
@@ -58,7 +61,43 @@ function addHour(date) {
   return d;
 }
 
-watch(() => store.modalOpen, (open) => { if (open) resetFromStore(); }, { immediate: true });
+watch(
+  () => store.modalOpen,
+  (open) => {
+    if (open) {
+      lastFocusedEl = document.activeElement;
+      resetFromStore();
+    } else {
+      lastFocusedEl?.focus?.();
+      lastFocusedEl = null;
+    }
+  },
+  { immediate: true },
+);
+
+const FOCUSABLE_SELECTOR =
+  'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
+function handleKeydown(event) {
+  if (event.key === "Escape") {
+    store.closeModal();
+    return;
+  }
+  if (event.key !== "Tab" || !panelRef.value) return;
+
+  const focusable = panelRef.value.querySelectorAll(FOCUSABLE_SELECTOR);
+  if (!focusable.length) return;
+  const first = focusable[0];
+  const last = focusable[focusable.length - 1];
+
+  if (event.shiftKey && document.activeElement === first) {
+    event.preventDefault();
+    last.focus();
+  } else if (!event.shiftKey && document.activeElement === last) {
+    event.preventDefault();
+    first.focus();
+  }
+}
 
 const errors = ref([]);
 
@@ -128,9 +167,17 @@ async function handleDelete() {
   <Teleport to="body">
     <Transition name="modal">
       <div v-if="store.modalOpen" class="c-modal__overlay" @mousedown.self="store.closeModal">
-        <form class="c-modal__panel" @submit.prevent="handleSubmit">
+        <form
+          ref="panelRef"
+          class="c-modal__panel"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="event-modal-title"
+          @submit.prevent="handleSubmit"
+          @keydown="handleKeydown"
+        >
           <div class="c-modal__header">
-            <h2 class="c-modal__title">{{ isEditing ? "Modifier l'événement" : "Nouvel événement" }}</h2>
+            <h2 id="event-modal-title" class="c-modal__title">{{ isEditing ? "Modifier l'événement" : "Nouvel événement" }}</h2>
             <button type="button" class="c-btn c-btn--icon" aria-label="Fermer" @click="store.closeModal">
               <Icon name="x" class="c-btn__icon" />
             </button>

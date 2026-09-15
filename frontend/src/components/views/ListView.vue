@@ -45,9 +45,10 @@ function eventTime(event) {
         <div class="c-agenda-list__date-weekday">{{ format(group.date, "EEE", { locale: fr }) }}</div>
       </div>
       <div class="c-agenda-list__items">
-        <div
+        <button
           v-for="event in group.events"
           :key="event.id"
+          type="button"
           class="c-agenda-item"
           @click="store.openEditModal(event)"
         >
@@ -57,7 +58,7 @@ function eventTime(event) {
             :style="{ '--dot-color': eventsStore.categoryColor(event.category) }"
           />
           <span class="c-agenda-item__title">{{ event.title }}</span>
-        </div>
+        </button>
       </div>
     </div>
   </div>

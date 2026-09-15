@@ -78,15 +78,16 @@ function quickCreate(day, hour) {
     <div class="c-time-grid__allday">
       <div class="c-time-grid__allday-gutter" />
       <div v-for="day in days" :key="'a-' + day.toISOString()" class="c-time-grid__allday-day">
-        <div
+        <button
           v-for="event in allDayEvents(day)"
           :key="event.id"
+          type="button"
           class="c-event-allday"
           :style="{ '--event-color': eventsStore.categoryColor(event.category) }"
           @click="store.openEditModal(event)"
         >
           {{ event.title }}
-        </div>
+        </button>
       </div>
     </div>
 
@@ -107,9 +108,10 @@ function quickCreate(day, hour) {
             @click="quickCreate(day, h)"
           />
           <div v-if="isToday(day)" class="c-now-line" :style="{ top: nowLineTop + 'px' }" />
-          <div
+          <button
             v-for="event in timedEventsForDay(day)"
             :key="event.id"
+            type="button"
             class="c-event-block"
             :style="blockStyle(event)"
             @click.stop="store.openEditModal(event)"
@@ -118,7 +120,7 @@ function quickCreate(day, hour) {
             <div class="c-event-block__time">
               {{ format(new Date(event.start), "HH:mm") }} – {{ format(new Date(event.end), "HH:mm") }}
             </div>
-          </div>
+          </button>
         </div>
       </div>
     </div>

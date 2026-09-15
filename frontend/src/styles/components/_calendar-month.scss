@@ -78,6 +78,7 @@
     align-self: flex-start;
     width: 24px;
     height: 24px;
+    padding: 0;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -85,6 +86,10 @@
     border-radius: 50%;
     margin-bottom: 2px;
     flex-shrink: 0;
+
+    &:hover {
+      background-color: var(--color-bg-muted);
+    }
   }
 
   &__events {
@@ -108,7 +113,7 @@
 
   @include respond-down(sm) {
     &__weekday {
-      font-size: 10px;
+      font-size: var(--font-size-xs);
     }
 
     &__day-number {
