@@ -1,0 +1,190 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-09-15T14:45:14Z",
+  "title": "Design System: Agenda",
+  "extensions": {
+    "colorMeta": {
+      "google-blue": { "role": "primary", "displayName": "Google Blue", "canonical": "#1a73e8", "tonalRamp": ["#0b3d91", "#0d47a1", "#1558b3", "#1a73e8", "#4791ec", "#7ab0f2", "#aecdf7", "#d2e3fc"] },
+      "google-blue-dark": { "role": "primary", "displayName": "Google Blue Dark", "canonical": "#1558b3" },
+      "google-blue-light": { "role": "primary", "displayName": "Google Blue Light", "canonical": "#d2e3fc" },
+      "paper-white": { "role": "neutral", "displayName": "Paper White", "canonical": "#ffffff" },
+      "cloud-subtle": { "role": "neutral", "displayName": "Cloud Subtle", "canonical": "#f6f8fc" },
+      "mist-muted": { "role": "neutral", "displayName": "Mist Muted", "canonical": "#eef0f4" },
+      "border-neutral": { "role": "neutral", "displayName": "Border Neutral", "canonical": "#dadce0" },
+      "border-neutral-strong": { "role": "neutral", "displayName": "Border Neutral Strong", "canonical": "#c4c7cc" },
+      "ink": { "role": "neutral", "displayName": "Ink", "canonical": "#1f1f1f", "tonalRamp": ["#000000", "#1f1f1f", "#3c4043", "#5f6368", "#80868b", "#b3b6ba", "#dadce0", "#ffffff"] },
+      "ink-muted": { "role": "neutral", "displayName": "Ink Muted", "canonical": "#5f6368" },
+      "ink-subtle": { "role": "neutral", "displayName": "Ink Subtle", "canonical": "#80868b" },
+      "alert-red": { "role": "error", "displayName": "Alert Red", "canonical": "#d93025" },
+      "alert-red-bg": { "role": "error", "displayName": "Alert Red Bg", "canonical": "#fce8e6" },
+      "confirm-green": { "role": "success", "displayName": "Confirm Green", "canonical": "#188038" },
+      "now-line-red": { "role": "accent", "displayName": "Now Line Red", "canonical": "#ea4335" },
+      "today-blue-bg": { "role": "accent", "displayName": "Today Blue Bg", "canonical": "#e8f0fe" },
+      "weekend-bg": { "role": "neutral", "displayName": "Weekend Bg", "canonical": "#fafafa" },
+      "outside-month-text": { "role": "neutral", "displayName": "Outside Month Text", "canonical": "#b3b6ba" },
+      "overlay-scrim": { "role": "neutral", "displayName": "Overlay Scrim", "canonical": "rgba(32, 33, 36, 0.6)" },
+      "category-personnel": { "role": "category", "displayName": "Personnel Blue", "canonical": "#4285f4", "tonalRamp": ["#0a2f6b", "#0f3f8f", "#1a56b5", "#4285f4", "#6fa2f7", "#9cc0fa", "#c9defc", "#eef4fe"] },
+      "category-travail": { "role": "category", "displayName": "Travail Green", "canonical": "#0b8043", "tonalRamp": ["#042416", "#07401f", "#095f32", "#0b8043", "#3ea36c", "#77c299", "#b1e1c4", "#e5f6ec"] },
+      "category-important": { "role": "category", "displayName": "Important Red", "canonical": "#d50000", "tonalRamp": ["#3d0000", "#690000", "#a30000", "#d50000", "#ec3939", "#f47d7d", "#f9b8b8", "#fde8e8"] },
+      "category-famille": { "role": "category", "displayName": "Famille Orange", "canonical": "#f4511e", "tonalRamp": ["#5c1c08", "#832810", "#b93a17", "#f4511e", "#f7794f", "#faa585", "#fccbb7", "#feeae2"] },
+      "category-loisirs": { "role": "category", "displayName": "Loisirs Purple", "canonical": "#8e24aa", "tonalRamp": ["#2f0b39", "#4a1258", "#6c1a80", "#8e24aa", "#ab5bc2", "#c68eda", "#e0c1ee", "#f4e5f9" ] },
+      "category-autre": { "role": "category", "displayName": "Autre Gray", "canonical": "#616161", "tonalRamp": ["#0d0d0d", "#242424", "#404040", "#616161", "#838383", "#a8a8a8", "#cfcfcf", "#f2f2f2"] }
+    },
+    "typographyMeta": {
+      "headline": { "displayName": "Headline", "purpose": "Titre de marque de l'app (h1)." },
+      "title": { "displayName": "Title", "purpose": "Titres de section et d'en-tête de modale (h2/h3)." },
+      "body": { "displayName": "Body", "purpose": "Texte courant, contenu de formulaire." },
+      "label": { "displayName": "Label", "purpose": "Labels de formulaire, filtres de catégorie, petits boutons." },
+      "caption": { "displayName": "Caption", "purpose": "Heures d'événement, badges de catégorie." }
+    },
+    "shadows": [
+      { "name": "shadow-sm", "value": "0 1px 2px 0 rgba(60, 64, 67, 0.3)", "purpose": "Repos du bouton primaire et des blocs d'événement." },
+      { "name": "shadow-md", "value": "0 1px 3px 1px rgba(60, 64, 67, 0.3)", "purpose": "Hover du bouton primaire / événement, repos du bouton Créer." },
+      { "name": "shadow-lg", "value": "0 4px 8px 3px rgba(60, 64, 67, 0.3), 0 1px 3px rgba(60, 64, 67, 0.3)", "purpose": "Panneau de la modale, hover du bouton Créer." }
+    ],
+    "motion": [
+      { "name": "transition-fast", "value": "100ms ease-in-out", "purpose": "Hover des boutons et pastilles." },
+      { "name": "transition-base", "value": "200ms ease-in-out", "purpose": "Ouverture/fermeture de la modale (fondu + scale)." }
+    ],
+    "breakpoints": [
+      { "name": "sm", "value": "600px" },
+      { "name": "md", "value": "900px" },
+      { "name": "lg", "value": "1200px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Action primaire (créer un événement, enregistrer).",
+      "html": "<button class=\"ds-btn-primary\">Créer</button>",
+      "css": ".ds-btn-primary { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 36px; padding: 0 16px; border: none; border-radius: 999px; background: var(--color-primary, #1a73e8); color: #fff; font-family: \"Google Sans\", \"Segoe UI\", Roboto, Helvetica, Arial, sans-serif; font-size: 14px; font-weight: 500; white-space: nowrap; box-shadow: 0 1px 2px 0 rgba(60,64,67,0.3); transition: background-color 100ms ease-in-out, box-shadow 100ms ease-in-out; } .ds-btn-primary:hover { background: var(--color-primary-dark, #1558b3); box-shadow: 0 1px 3px 1px rgba(60,64,67,0.3); } .ds-btn-primary:focus-visible { outline: none; box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--color-primary, #1a73e8); }"
+    },
+    {
+      "name": "Text Button",
+      "kind": "button",
+      "refersTo": "button-text",
+      "description": "Action secondaire discrète (annuler, fermer).",
+      "html": "<button class=\"ds-btn-text\">Annuler</button>",
+      "css": ".ds-btn-text { height: 36px; padding: 0 16px; border: none; border-radius: 4px; background: transparent; color: #5f6368; font-family: \"Google Sans\", \"Segoe UI\", Roboto, Helvetica, Arial, sans-serif; font-size: 14px; font-weight: 500; transition: background-color 100ms ease-in-out; } .ds-btn-text:hover { background: #eef0f4; }"
+    },
+    {
+      "name": "Input Field",
+      "kind": "input",
+      "refersTo": "input-field",
+      "description": "Champ de formulaire standard (titre, lieu, description).",
+      "html": "<div class=\"ds-field\"><label class=\"ds-field__label\">Titre</label><input class=\"ds-field__input\" type=\"text\" placeholder=\"Ajouter un titre\" /></div>",
+      "css": ".ds-field__label { display: block; font-family: \"Google Sans\", \"Segoe UI\", Roboto, Helvetica, Arial, sans-serif; font-size: 12px; font-weight: 500; color: #5f6368; margin-bottom: 4px; } .ds-field__input { width: 100%; box-sizing: border-box; border: 1px solid #dadce0; border-radius: 4px; padding: 8px 12px; background: #fff; font-family: \"Google Sans\", \"Segoe UI\", Roboto, Helvetica, Arial, sans-serif; font-size: 14px; color: #1f1f1f; } .ds-field__input:focus-visible { outline: none; box-shadow: 0 0 0 2px #fff, 0 0 0 4px #1a73e8; }"
+    },
+    {
+      "name": "Category Chip",
+      "kind": "chip",
+      "refersTo": "category-badge",
+      "description": "Filtre de catégorie dans la sidebar (checkbox coloré + label).",
+      "html": "<label class=\"ds-chip\"><span class=\"ds-chip__box is-checked\"></span><span class=\"ds-chip__label\">Travail</span></label>",
+      "css": ".ds-chip { display: flex; align-items: center; gap: 12px; padding: 8px 0; font-family: \"Google Sans\", \"Segoe UI\", Roboto, Helvetica, Arial, sans-serif; font-size: 12px; cursor: pointer; } .ds-chip__box { width: 16px; height: 16px; border-radius: 3px; border: 2px solid #0b8043; flex-shrink: 0; } .ds-chip__box.is-checked { background: #0b8043; } .ds-chip__label { color: #1f1f1f; }"
+    },
+    {
+      "name": "Event Pill",
+      "kind": "custom",
+      "refersTo": "event-pill",
+      "description": "Événement dans la vue Mois : fond teinté clair, liseré coloré.",
+      "html": "<div class=\"ds-event-pill\"><span class=\"ds-event-pill__time\">10:00</span><span class=\"ds-event-pill__title\">Point équipe</span></div>",
+      "css": ".ds-event-pill { display: flex; align-items: center; gap: 4px; padding: 1px 4px; border-radius: 4px; font-family: \"Google Sans\", \"Segoe UI\", Roboto, Helvetica, Arial, sans-serif; font-size: 11px; line-height: 1.4; color: #1f1f1f; background: color-mix(in srgb, #0b8043 16%, white); border-left: 3px solid #0b8043; overflow: hidden; white-space: nowrap; } .ds-event-pill:hover { filter: brightness(0.97); } .ds-event-pill__time { color: #5f6368; flex-shrink: 0; } .ds-event-pill__title { overflow: hidden; text-overflow: ellipsis; }"
+    },
+    {
+      "name": "View Switcher",
+      "kind": "nav",
+      "refersTo": "view-switcher",
+      "description": "Sélecteur de vue Mois/Semaine/Jour/Liste dans le header.",
+      "html": "<div class=\"ds-view-switcher\"><button class=\"ds-view-switcher__btn is-active\">Mois</button><button class=\"ds-view-switcher__btn\">Semaine</button><button class=\"ds-view-switcher__btn\">Jour</button></div>",
+      "css": ".ds-view-switcher { display: flex; border: 1px solid #dadce0; border-radius: 4px; overflow: hidden; } .ds-view-switcher__btn { height: 36px; padding: 0 12px; border: none; border-right: 1px solid #dadce0; background: transparent; font-family: \"Google Sans\", \"Segoe UI\", Roboto, Helvetica, Arial, sans-serif; font-size: 12px; color: #5f6368; } .ds-view-switcher__btn:last-child { border-right: none; } .ds-view-switcher__btn:hover { background: #eef0f4; } .ds-view-switcher__btn.is-active { background: #d2e3fc; color: #1558b3; font-weight: 500; }"
+    },
+    {
+      "name": "Modal Panel",
+      "kind": "card",
+      "refersTo": "modal-panel",
+      "description": "Panneau de la modale de création/édition d'événement.",
+      "html": "<div class=\"ds-modal\"><div class=\"ds-modal__header\">Nouvel événement</div><div class=\"ds-modal__body\">Contenu du formulaire</div></div>",
+      "css": ".ds-modal { width: 100%; max-width: 480px; background: #fff; border-radius: 16px; box-shadow: 0 4px 8px 3px rgba(60,64,67,0.3), 0 1px 3px rgba(60,64,67,0.3); overflow: hidden; font-family: \"Google Sans\", \"Segoe UI\", Roboto, Helvetica, Arial, sans-serif; } .ds-modal__header { padding: 16px 20px; font-size: 16px; font-weight: 500; color: #1f1f1f; border-bottom: 1px solid #dadce0; } .ds-modal__body { padding: 20px; font-size: 14px; color: #1f1f1f; }"
+    },
+    {
+      "name": "Search Bar",
+      "kind": "input",
+      "refersTo": "search-bar",
+      "description": "Recherche plein texte dans le header (titre, description, lieu).",
+      "html": "<div class=\"ds-search\"><svg class=\"ds-search__icon\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><circle cx=\"11\" cy=\"11\" r=\"7\"/><line x1=\"21\" y1=\"21\" x2=\"16.65\" y2=\"16.65\"/></svg><input class=\"ds-search__input\" type=\"text\" placeholder=\"Rechercher\" /></div>",
+      "css": ".ds-search { position: relative; display: flex; align-items: center; } .ds-search__icon { position: absolute; left: 12px; width: 18px; height: 18px; color: #80868b; pointer-events: none; } .ds-search__input { width: 100%; box-sizing: border-box; height: 40px; padding-left: 40px; padding-right: 40px; border: none; border-radius: 999px; background: #eef0f4; font-family: \"Google Sans\", \"Segoe UI\", Roboto, Helvetica, Arial, sans-serif; font-size: 14px; color: #1f1f1f; } .ds-search__input:focus-visible { outline: none; background: #fff; box-shadow: 0 1px 2px 0 rgba(60,64,67,0.3), 0 0 0 2px #fff, 0 0 0 4px #1a73e8; }"
+    },
+    {
+      "name": "Day Badge",
+      "kind": "custom",
+      "refersTo": "day-badge-today",
+      "description": "Pastille circulaire du numéro de jour, motif réutilisé dans le mini-calendrier, la grille Mois et l'en-tête de la grille horaire.",
+      "html": "<span class=\"ds-day-badge\">14</span> <span class=\"ds-day-badge is-today\">15</span> <span class=\"ds-day-badge is-outside\">1</span>",
+      "css": ".ds-day-badge { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; font-family: \"Google Sans\", \"Segoe UI\", Roboto, Helvetica, Arial, sans-serif; font-size: 12px; color: #1f1f1f; } .ds-day-badge.is-today { background: #1a73e8; color: #fff; font-weight: 700; } .ds-day-badge.is-outside { color: #b3b6ba; }"
+    },
+    {
+      "name": "Mini Calendar",
+      "kind": "custom",
+      "refersTo": "mini-calendar",
+      "description": "Navigation rapide par mois dans la sidebar, grille 7 colonnes avec Day Badge.",
+      "html": "<div class=\"ds-mini-cal\"><div class=\"ds-mini-cal__row\"><span class=\"ds-mini-cal__weekday\">L</span><span class=\"ds-mini-cal__weekday\">M</span><span class=\"ds-mini-cal__weekday\">M</span><span class=\"ds-mini-cal__weekday\">J</span><span class=\"ds-mini-cal__weekday\">V</span><span class=\"ds-mini-cal__weekday\">S</span><span class=\"ds-mini-cal__weekday\">D</span></div><div class=\"ds-mini-cal__row\"><span class=\"ds-mini-cal__day\">13</span><span class=\"ds-mini-cal__day\">14</span><span class=\"ds-mini-cal__day is-today\">15</span><span class=\"ds-mini-cal__day\">16</span><span class=\"ds-mini-cal__day\">17</span><span class=\"ds-mini-cal__day\">18</span><span class=\"ds-mini-cal__day\">19</span></div></div>",
+      "css": ".ds-mini-cal { font-family: \"Google Sans\", \"Segoe UI\", Roboto, Helvetica, Arial, sans-serif; } .ds-mini-cal__row { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; } .ds-mini-cal__weekday { font-size: 11px; color: #80868b; text-align: center; padding: 4px 0; } .ds-mini-cal__day { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; font-size: 11px; border-radius: 50%; color: #1f1f1f; } .ds-mini-cal__day:hover { background: #eef0f4; } .ds-mini-cal__day.is-today { color: #1a73e8; font-weight: 700; }"
+    },
+    {
+      "name": "Month Grid Cell",
+      "kind": "custom",
+      "refersTo": "month-grid",
+      "description": "Cellule de la vue Mois : Day Badge + pile d'Event Pills.",
+      "html": "<div class=\"ds-month-cell\"><span class=\"ds-day-badge is-today\">15</span><div class=\"ds-month-cell__events\"><div class=\"ds-event-pill\"><span class=\"ds-event-pill__time\">10:00</span><span class=\"ds-event-pill__title\">Point équipe</span></div></div><span class=\"ds-month-cell__more\">+2 autres</span></div>",
+      "css": ".ds-month-cell { border-right: 1px solid #dadce0; padding: 4px; display: flex; flex-direction: column; gap: 2px; font-family: \"Google Sans\", \"Segoe UI\", Roboto, Helvetica, Arial, sans-serif; } .ds-month-cell:hover { background: #f6f8fc; } .ds-month-cell__more { font-size: 11px; color: #5f6368; padding: 1px 4px; } .ds-month-cell__more:hover { background: #eef0f4; border-radius: 4px; }"
+    },
+    {
+      "name": "Now Line",
+      "kind": "custom",
+      "refersTo": "now-line",
+      "description": "Ligne \"maintenant\" dans la grille horaire (Semaine/Jour) — rouge Google standard, jamais un état d'erreur.",
+      "html": "<div class=\"ds-now-line\"></div>",
+      "css": ".ds-now-line { position: relative; height: 2px; background: #ea4335; } .ds-now-line::before { content: \"\"; position: absolute; left: -5px; top: -4px; width: 10px; height: 10px; border-radius: 50%; background: #ea4335; }"
+    },
+    {
+      "name": "Agenda List Item",
+      "kind": "custom",
+      "refersTo": "agenda-list-item",
+      "description": "Ligne d'événement dans la vue Liste, groupée par jour.",
+      "html": "<div class=\"ds-agenda-item\"><span class=\"ds-agenda-item__time\">10:00 – 11:00</span><span class=\"ds-agenda-item__title\">Point équipe</span></div>",
+      "css": ".ds-agenda-item { display: flex; align-items: center; gap: 12px; padding: 4px 0; cursor: pointer; font-family: \"Google Sans\", \"Segoe UI\", Roboto, Helvetica, Arial, sans-serif; } .ds-agenda-item__time { width: 90px; flex-shrink: 0; font-size: 12px; color: #5f6368; } .ds-agenda-item__title { font-size: 14px; font-weight: 500; color: #1f1f1f; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } .ds-agenda-item:hover .ds-agenda-item__title { color: #1a73e8; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Material Echo",
+    "overview": "Agenda ne prétend pas inventer un nouveau langage visuel : c'est un hommage assumé à Google Material Design, reconstruit token par token (couleur d'accent, échelle d'élévation, empilement typographique) plutôt que copié en surface. Le projet est autant une démonstration de compétence technique (portfolio) qu'un outil fonctionnel — la fidélité au système qu'il imite fait partie de la preuve de maîtrise.\n\nL'ambiance est propre, neutre et fonctionnelle. L'interface reste calme et prévisible ; l'accent bleu (google-blue) est rare et signifiant, réservé aux actions primaires, à l'état actif et au jour courant. Les couleurs de catégorie sont la seule zone où la palette s'anime librement — elles portent l'identité de chaque événement sans jamais déborder sur le chrome de l'application. Rien de décoratif ou « flashy » ne doit distraire de la tâche : un agenda est un outil, pas une vitrine.",
+    "keyCharacteristics": [
+      "Un seul accent de marque (google-blue), utilisé avec parcimonie",
+      "Surfaces plates au repos, élévation Material stricte comme réponse à l'état",
+      "Boutons pilule (radius full) pour les actions primaires",
+      "Couleurs de catégorie comme unique zone d'expression chromatique libre"
+    ],
+    "rules": [
+      { "name": "The One Accent Rule", "body": "google-blue n'apparaît que sur les actions primaires, l'état actif et le jour courant — jamais comme couleur décorative. Toute couleur vive ailleurs vient de la catégorie de l'événement, pas du chrome de l'app.", "section": "colors" },
+      { "name": "The Single Family Rule", "body": "Toute la hiérarchie typographique repose sur une seule famille (Google Sans) ; jamais de police secondaire pour « faire différent » — la variation vient uniquement de taille/graisse.", "section": "typography" },
+      { "name": "The Flat-By-Default Rule", "body": "Aucune surface ne porte d'ombre à l'état de repos, sauf les panneaux flottants (modale). L'ombre est toujours une réponse à l'interaction, jamais une décoration statique.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do réserver google-blue aux actions primaires, à l'état actif et au jour courant.",
+      "Do garder les surfaces plates au repos ; n'introduire une ombre qu'en réponse à un hover ou pour un panneau flottant.",
+      "Do utiliser exclusivement les couleurs de catégorie pour différencier des événements, jamais pour du chrome d'UI.",
+      "Do garder toute la hiérarchie typographique sur une seule famille.",
+      "Do réutiliser le motif Day Badge (pastille circulaire) pour tout nouvel indicateur de jour courant/sélectionné plutôt que d'inventer un nouveau traitement."
+    ],
+    "donts": [
+      "Don't ajouter une deuxième couleur d'accent de marque à côté de google-blue.",
+      "Don't introduire un framework CSS externe (Tailwind, Bootstrap…) — tout passe par les custom properties ITCSS existantes.",
+      "Don't utiliser une valeur d'espacement, de rayon ou d'ombre hors des échelles définies (--space-*, --radius-*, --shadow-*).",
+      "Don't faire porter une ombre à une surface au repos en dehors des panneaux flottants.",
+      "Don't utiliser now-line-red en dehors de la ligne \"maintenant\" — c'est un rouge Google standard, pas le vocabulaire d'erreur (alert-red)."
+    ]
+  }
+}
