@@ -58,6 +58,19 @@ jobs:
           fi
           DEPLOY_ID=$(echo "$BODY" | jq -r '.id // .[0].id // empty')
           if [ -z "$DEPLOY_ID" ]; then
+            # Render répond parfois 202 avec un corps vide (déploiement bien
+            # créé, juste pas renvoyé dans la réponse du POST) : on retombe
+            # sur la liste des déploiements du service pour récupérer le
+            # plus récent (celui qu'on vient de déclencher) plutôt que
+            # d'échouer immédiatement.
+            echo "Corps vide malgré HTTP $HTTP_STATUS — récupération de l'id via la liste des déploiements"
+            sleep 3
+            LIST_BODY=$(curl -fsS \
+              -H "Authorization: Bearer ${{ secrets.RENDER_API_KEY }}" \
+              "https://api.render.com/v1/services/${{ secrets.RENDER_SERVICE_ID }}/deploys?limit=1")
+            DEPLOY_ID=$(echo "$LIST_BODY" | jq -r '.[0].deploy.id // .[0].id // empty')
+          fi
+          if [ -z "$DEPLOY_ID" ]; then
             echo "::error::Impossible d'extraire l'id du déploiement depuis la réponse Render (voir le corps ci-dessus)"
             exit 1
           fi
