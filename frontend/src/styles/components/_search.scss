@@ -23,6 +23,16 @@
     border: none;
     border-radius: var(--radius-full);
     background-color: var(--color-bg-muted);
+    // input[type="search"] : neutralise le bouton "effacer" natif du
+    // navigateur (Chromium/WebKit), qui sinon s'affiche en double avec
+    // notre propre bouton __clear stylé.
+    appearance: none;
+    -webkit-appearance: none;
+
+    &::-webkit-search-cancel-button {
+      -webkit-appearance: none;
+      display: none;
+    }
 
     &:focus-visible {
       background-color: var(--color-bg);
