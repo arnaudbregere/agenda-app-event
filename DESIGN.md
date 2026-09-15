@@ -192,7 +192,7 @@ catégorie saturées pour différencier les événements.
 
 ## Layout
 
-Structure en grille CSS fixe (`o-app-shell`) : header pleine largeur en haut, sidebar (`--sidebar-width: 260px`) + zone principale scrollable en dessous. Sous 900px (`respond-down(md)`), la sidebar se rétracte à largeur 0 et s'ouvre en overlay via la classe `is-sidebar-open` ; la recherche du header disparaît et le titre passe en taille `title`.
+Structure en grille CSS fixe (`o-app-shell`) : header pleine largeur en haut, sidebar (`--sidebar-width: 260px`) + zone principale scrollable en dessous. Sous 900px (`respond-down(md)`), la sidebar se rétracte à largeur 0 et s'ouvre en overlay via la classe `is-sidebar-open` ; la recherche du header disparaît et le titre passe en taille `title`. Sous 600px (`respond-down(sm)`), le header passe en `flex-wrap` (ligne de grille `auto` plutôt que `--header-height` fixe) : la marque et le nav restent sur la première ligne, le sélecteur de vue passe seul sur une seconde ligne pleine largeur plutôt que de risquer un débordement horizontal.
 
 Rythme d'espacement sur une échelle à 9 crans, base 4px (`--space-1` à `--space-9`), utilisée uniformément pour padding, marge et gap — pas de valeurs magiques hors échelle. Dimensions structurelles dédiées (`--header-height: 64px`, `--time-gutter-width: 56px`, `--hour-row-height: 48px`) pour les grilles de calendrier horaire.
 
@@ -211,6 +211,9 @@ Rythme d'espacement sur une échelle à 9 crans, base 4px (`--space-1` à `--spa
 ## Shapes
 
 Deux familles de rayon selon l'échelle de l'élément : `radius-sm` (4px) pour les éléments denses (event pill, input, sélecteur de vue), `radius-md` (8px) pour la carte "Créer" de la sidebar, `radius-lg` (16px) pour le panneau de la modale. Les éléments strictement circulaires (bouton icône, checkbox de catégorie, pastille de couleur, swatch) utilisent `50%` ou `radius-full` (999px pour les boutons pilule). Pas de bordure décorative : les seules bordures visibles séparent des zones fonctionnelles (header/modale, inputs, sélecteur de vue) en `border-neutral` 1px.
+
+### Named Rules
+**The Invisible Target Rule.** Les petits contrôles circulaires (bouton icône `sm` 28px, jour du mini-calendrier ~30px) gardent leur taille visuelle sur desktop ; sous `@media (pointer: coarse)`, un pseudo-élément `::after` en `inset` négatif agrandit la zone de tap sans changer le rendu. On ne fait jamais grossir visuellement un contrôle juste pour le tactile.
 
 ## Components
 
