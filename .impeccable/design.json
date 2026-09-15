@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-09-15T14:45:14Z",
+  "generatedAt": "2026-09-15T15:37:44Z",
   "title": "Design System: Agenda",
   "extensions": {
     "colorMeta": {
@@ -170,7 +170,8 @@
     "rules": [
       { "name": "The One Accent Rule", "body": "google-blue n'apparaît que sur les actions primaires, l'état actif et le jour courant — jamais comme couleur décorative. Toute couleur vive ailleurs vient de la catégorie de l'événement, pas du chrome de l'app.", "section": "colors" },
       { "name": "The Single Family Rule", "body": "Toute la hiérarchie typographique repose sur une seule famille (Google Sans) ; jamais de police secondaire pour « faire différent » — la variation vient uniquement de taille/graisse.", "section": "typography" },
-      { "name": "The Flat-By-Default Rule", "body": "Aucune surface ne porte d'ombre à l'état de repos, sauf les panneaux flottants (modale). L'ombre est toujours une réponse à l'interaction, jamais une décoration statique.", "section": "elevation" }
+      { "name": "The Flat-By-Default Rule", "body": "Aucune surface ne porte d'ombre à l'état de repos, sauf les panneaux flottants (modale). L'ombre est toujours une réponse à l'interaction, jamais une décoration statique.", "section": "elevation" },
+      { "name": "The Invisible Target Rule", "body": "Les petits contrôles circulaires (bouton icône sm 28px, jour du mini-calendrier ~30px) gardent leur taille visuelle sur desktop ; sous @media (pointer: coarse), un pseudo-élément ::after en inset négatif agrandit la zone de tap sans changer le rendu. On ne fait jamais grossir visuellement un contrôle juste pour le tactile.", "section": "shapes" }
     ],
     "dos": [
       "Do réserver google-blue aux actions primaires, à l'état actif et au jour courant.",
