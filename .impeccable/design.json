@@ -12,9 +12,9 @@
       "mist-muted": { "role": "neutral", "displayName": "Mist Muted", "canonical": "#eef0f4" },
       "border-neutral": { "role": "neutral", "displayName": "Border Neutral", "canonical": "#dadce0" },
       "border-neutral-strong": { "role": "neutral", "displayName": "Border Neutral Strong", "canonical": "#c4c7cc" },
-      "ink": { "role": "neutral", "displayName": "Ink", "canonical": "#1f1f1f", "tonalRamp": ["#000000", "#1f1f1f", "#3c4043", "#5f6368", "#80868b", "#b3b6ba", "#dadce0", "#ffffff"] },
+      "ink": { "role": "neutral", "displayName": "Ink", "canonical": "#1f1f1f", "tonalRamp": ["#000000", "#1f1f1f", "#3c4043", "#5f6368", "#6a6f73", "#b3b6ba", "#dadce0", "#ffffff"] },
       "ink-muted": { "role": "neutral", "displayName": "Ink Muted", "canonical": "#5f6368" },
-      "ink-subtle": { "role": "neutral", "displayName": "Ink Subtle", "canonical": "#80868b" },
+      "ink-subtle": { "role": "neutral", "displayName": "Ink Subtle", "canonical": "#6a6f73" },
       "alert-red": { "role": "error", "displayName": "Alert Red", "canonical": "#d93025" },
       "alert-red-bg": { "role": "error", "displayName": "Alert Red Bg", "canonical": "#fce8e6" },
       "confirm-green": { "role": "success", "displayName": "Confirm Green", "canonical": "#188038" },
@@ -115,7 +115,7 @@
       "refersTo": "search-bar",
       "description": "Recherche plein texte dans le header (titre, description, lieu).",
       "html": "<div class=\"ds-search\"><svg class=\"ds-search__icon\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><circle cx=\"11\" cy=\"11\" r=\"7\"/><line x1=\"21\" y1=\"21\" x2=\"16.65\" y2=\"16.65\"/></svg><input class=\"ds-search__input\" type=\"text\" placeholder=\"Rechercher\" /></div>",
-      "css": ".ds-search { position: relative; display: flex; align-items: center; } .ds-search__icon { position: absolute; left: 12px; width: 18px; height: 18px; color: #80868b; pointer-events: none; } .ds-search__input { width: 100%; box-sizing: border-box; height: 40px; padding-left: 40px; padding-right: 40px; border: none; border-radius: 999px; background: #eef0f4; font-family: \"Google Sans\", \"Segoe UI\", Roboto, Helvetica, Arial, sans-serif; font-size: 14px; color: #1f1f1f; } .ds-search__input:focus-visible { outline: none; background: #fff; box-shadow: 0 1px 2px 0 rgba(60,64,67,0.3), 0 0 0 2px #fff, 0 0 0 4px #1a73e8; }"
+      "css": ".ds-search { position: relative; display: flex; align-items: center; } .ds-search__icon { position: absolute; left: 12px; width: 18px; height: 18px; color: #6a6f73; pointer-events: none; } .ds-search__input { width: 100%; box-sizing: border-box; height: 40px; padding-left: 40px; padding-right: 40px; border: none; border-radius: 999px; background: #eef0f4; font-family: \"Google Sans\", \"Segoe UI\", Roboto, Helvetica, Arial, sans-serif; font-size: 14px; color: #1f1f1f; } .ds-search__input:focus-visible { outline: none; background: #fff; box-shadow: 0 1px 2px 0 rgba(60,64,67,0.3), 0 0 0 2px #fff, 0 0 0 4px #1a73e8; }"
     },
     {
       "name": "Day Badge",
@@ -131,7 +131,7 @@
       "refersTo": "mini-calendar",
       "description": "Navigation rapide par mois dans la sidebar, grille 7 colonnes avec Day Badge.",
       "html": "<div class=\"ds-mini-cal\"><div class=\"ds-mini-cal__row\"><span class=\"ds-mini-cal__weekday\">L</span><span class=\"ds-mini-cal__weekday\">M</span><span class=\"ds-mini-cal__weekday\">M</span><span class=\"ds-mini-cal__weekday\">J</span><span class=\"ds-mini-cal__weekday\">V</span><span class=\"ds-mini-cal__weekday\">S</span><span class=\"ds-mini-cal__weekday\">D</span></div><div class=\"ds-mini-cal__row\"><span class=\"ds-mini-cal__day\">13</span><span class=\"ds-mini-cal__day\">14</span><span class=\"ds-mini-cal__day is-today\">15</span><span class=\"ds-mini-cal__day\">16</span><span class=\"ds-mini-cal__day\">17</span><span class=\"ds-mini-cal__day\">18</span><span class=\"ds-mini-cal__day\">19</span></div></div>",
-      "css": ".ds-mini-cal { font-family: \"Google Sans\", \"Segoe UI\", Roboto, Helvetica, Arial, sans-serif; } .ds-mini-cal__row { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; } .ds-mini-cal__weekday { font-size: 11px; color: #80868b; text-align: center; padding: 4px 0; } .ds-mini-cal__day { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; font-size: 11px; border-radius: 50%; color: #1f1f1f; } .ds-mini-cal__day:hover { background: #eef0f4; } .ds-mini-cal__day.is-today { color: #1a73e8; font-weight: 700; }"
+      "css": ".ds-mini-cal { font-family: \"Google Sans\", \"Segoe UI\", Roboto, Helvetica, Arial, sans-serif; } .ds-mini-cal__row { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; } .ds-mini-cal__weekday { font-size: 11px; color: #6a6f73; text-align: center; padding: 4px 0; } .ds-mini-cal__day { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; font-size: 11px; border-radius: 50%; color: #1f1f1f; } .ds-mini-cal__day:hover { background: #eef0f4; } .ds-mini-cal__day.is-today { color: #1a73e8; font-weight: 700; }"
     },
     {
       "name": "Month Grid Cell",
