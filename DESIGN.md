@@ -12,7 +12,7 @@ colors:
   border-neutral-strong: "#c4c7cc"
   ink: "#1f1f1f"
   ink-muted: "#5f6368"
-  ink-subtle: "#80868b"
+  ink-subtle: "#6a6f73"
   alert-red: "#d93025"
   alert-red-bg: "#fce8e6"
   confirm-green: "#188038"
@@ -157,7 +157,7 @@ catégorie saturées pour différencier les événements.
 - **Border Neutral Strong** (`#c4c7cc`): bordure renforcée, usage ponctuel.
 - **Ink** (`#1f1f1f`): texte principal.
 - **Ink Muted** (`#5f6368`): texte secondaire (labels, heure des événements, titres de section sidebar).
-- **Ink Subtle** (`#80868b`): texte tertiaire (jours hors-mois, pastille de catégorie par défaut).
+- **Ink Subtle** (`#6a6f73`): texte tertiaire (jours hors-mois, pastille de catégorie par défaut). Assombri depuis `#80868b` (contraste 3.68:1, sous le seuil WCAG AA) pour atteindre 5.08:1 sur blanc / 4.78:1 sur `cloud-subtle`.
 
 ### État & sémantique
 - **Alert Red** (`#d93025`) / **Alert Red Bg** (`#fce8e6`): erreurs de formulaire, action de suppression.

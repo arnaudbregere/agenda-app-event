@@ -1,5 +1,5 @@
 <script setup>
-import { computed, reactive, ref, watch } from "vue";
+import { computed, nextTick, reactive, ref, watch } from "vue";
 import { format } from "date-fns";
 import { useCalendarStore } from "../stores/calendar.js";
 import { useEventsStore } from "../stores/events.js";
@@ -67,6 +67,7 @@ watch(
     if (open) {
       lastFocusedEl = document.activeElement;
       resetFromStore();
+      nextTick(() => panelRef.value?.querySelector("#event-title")?.focus());
     } else {
       lastFocusedEl?.focus?.();
       lastFocusedEl = null;
@@ -196,7 +197,6 @@ async function handleDelete() {
                 class="c-form__input"
                 placeholder="Ajouter un titre"
                 required
-                autofocus
               />
             </div>
 
