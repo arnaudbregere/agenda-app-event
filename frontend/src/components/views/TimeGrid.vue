@@ -1,43 +1,46 @@
-<script setup>
+<script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref } from "vue";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { useCalendarStore } from "../../stores/calendar.js";
 import { useEventsStore } from "../../stores/events.js";
 import { HOURS, eventOccursOnDay, isToday } from "../../composables/useCalendarGrid.js";
-import { layoutTimedEvents, toDayMinutes } from "../../composables/useEventLayout.js";
+import { layoutTimedEvents, toDayMinutes, type DayMinutes, type LayoutBox } from "../../composables/useEventLayout.js";
+import type { CalendarEvent } from "../../api/types.js";
+
+type TimedBlock = CalendarEvent & DayMinutes & LayoutBox
 
 // Doit rester synchronisé avec --hour-row-height dans settings/_spacing.css
 const HOUR_ROW_HEIGHT = 48;
 
-defineProps({
-  days: { type: Array, required: true },
-});
+defineProps<{ days: Date[] }>();
 
 const store = useCalendarStore();
 const eventsStore = useEventsStore();
-const bodyRef = ref(null);
+const bodyRef = ref<HTMLDivElement | null>(null);
 const now = ref(new Date());
-let timer = null;
+let timer: ReturnType<typeof setInterval> | null = null;
 
 onMounted(() => {
   timer = setInterval(() => (now.value = new Date()), 60_000);
   if (bodyRef.value) bodyRef.value.scrollTop = 7 * HOUR_ROW_HEIGHT;
 });
-onUnmounted(() => clearInterval(timer));
+onUnmounted(() => {
+  if (timer) clearInterval(timer);
+});
 
-function allDayEvents(day) {
+function allDayEvents(day: Date) {
   return store.filteredEvents.filter((e) => e.allDay && eventOccursOnDay(e, day));
 }
 
-function timedEventsForDay(day) {
+function timedEventsForDay(day: Date): TimedBlock[] {
   const raw = store.filteredEvents
     .filter((e) => !e.allDay && eventOccursOnDay(e, day))
     .map((e) => ({ ...e, ...toDayMinutes(e, day) }));
   return layoutTimedEvents(raw);
 }
 
-function blockStyle(event) {
+function blockStyle(event: TimedBlock) {
   return {
     top: `${(event.startMinutes / 60) * HOUR_ROW_HEIGHT}px`,
     height: `${((event.endMinutes - event.startMinutes) / 60) * HOUR_ROW_HEIGHT}px`,
@@ -52,11 +55,11 @@ const nowLineTop = computed(() => {
   return (minutes / 60) * HOUR_ROW_HEIGHT;
 });
 
-function formatHour(h) {
+function formatHour(h: number) {
   return `${String(h).padStart(2, "0")}:00`;
 }
 
-function quickCreate(day, hour) {
+function quickCreate(day: Date, hour: number) {
   const start = new Date(day);
   start.setHours(hour, 0, 0, 0);
   const end = new Date(day);

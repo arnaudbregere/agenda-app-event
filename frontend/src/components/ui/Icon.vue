@@ -1,6 +1,6 @@
-<script setup>
+<script setup lang="ts">
 // Petit registre d'icônes inline (pas de dépendance externe).
-const PATHS = {
+const PATHS: Record<string, string> = {
   "chevron-left": "M15 18l-6-6 6-6",
   "chevron-right": "M9 18l6-6-6-6",
   menu: "M3 12h18M3 6h18M3 18h18",
@@ -13,9 +13,7 @@ const PATHS = {
   "align-left": "M4 6h16M4 12h10M4 18h13",
 };
 
-defineProps({
-  name: { type: String, required: true },
-});
+defineProps<{ name: string }>()
 </script>
 
 <template>

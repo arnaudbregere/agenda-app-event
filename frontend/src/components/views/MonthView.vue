@@ -1,10 +1,11 @@
-<script setup>
+<script setup lang="ts">
 import { computed } from "vue";
 import { isSameMonth, isSaturday, isSunday, format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { useCalendarStore } from "../../stores/calendar.js";
 import { useEventsStore } from "../../stores/events.js";
 import { getMonthWeeks, eventOccursOnDay, isToday } from "../../composables/useCalendarGrid.js";
+import type { CalendarEvent } from "../../api/types.js";
 
 const MAX_VISIBLE = 3;
 
@@ -24,27 +25,27 @@ const eventsByDay = computed(() => {
         day.toISOString(),
         store.filteredEvents
           .filter((e) => eventOccursOnDay(e, day))
-          .sort((a, b) => Number(b.allDay) - Number(a.allDay) || new Date(a.start) - new Date(b.start)),
+          .sort((a, b) => Number(b.allDay) - Number(a.allDay) || new Date(a.start).getTime() - new Date(b.start).getTime()),
       );
     }
   }
   return map;
 });
 
-function eventsForDay(day) {
+function eventsForDay(day: Date) {
   return eventsByDay.value.get(day.toISOString()) ?? [];
 }
 
-function eventTime(event) {
+function eventTime(event: CalendarEvent) {
   return event.allDay ? "" : format(new Date(event.start), "HH:mm");
 }
 
-function goToDay(day) {
+function goToDay(day: Date) {
   store.setCurrentDate(day);
   store.setView("day");
 }
 
-function quickCreate(day) {
+function quickCreate(day: Date) {
   const start = new Date(day);
   start.setHours(9, 0, 0, 0);
   const end = new Date(day);

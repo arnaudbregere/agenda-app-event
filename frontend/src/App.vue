@@ -1,7 +1,7 @@
-<script setup>
-import { onMounted } from "vue";
+<script setup lang="ts">
+import { onMounted, type Component } from "vue";
 import { useEventsStore } from "./stores/events.js";
-import { useCalendarStore } from "./stores/calendar.js";
+import { useCalendarStore, type CalendarView } from "./stores/calendar.js";
 import AppHeader from "./components/AppHeader.vue";
 import AppSidebar from "./components/AppSidebar.vue";
 import MonthView from "./components/views/MonthView.vue";
@@ -13,7 +13,7 @@ import EventModal from "./components/EventModal.vue";
 const eventsStore = useEventsStore();
 const calendarStore = useCalendarStore();
 
-const VIEW_COMPONENTS = { month: MonthView, week: WeekView, day: DayView, list: ListView };
+const VIEW_COMPONENTS: Record<CalendarView, Component> = { month: MonthView, week: WeekView, day: DayView, list: ListView };
 
 onMounted(() => {
   eventsStore.fetchAll();

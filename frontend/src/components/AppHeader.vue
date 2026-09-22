@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { computed } from "vue";
 import {
   addMonths,
@@ -10,13 +10,13 @@ import {
   format,
 } from "date-fns";
 import { fr } from "date-fns/locale";
-import { useCalendarStore, VIEWS } from "../stores/calendar.js";
+import { useCalendarStore, VIEWS, type CalendarView } from "../stores/calendar.js";
 import { getWeekDays } from "../composables/useCalendarGrid.js";
 import Icon from "./ui/Icon.vue";
 
 const store = useCalendarStore();
 
-const VIEW_LABELS = { month: "Mois", week: "Semaine", day: "Jour", list: "Liste" };
+const VIEW_LABELS: Record<CalendarView, string> = { month: "Mois", week: "Semaine", day: "Jour", list: "Liste" };
 
 const periodLabel = computed(() => {
   const date = store.currentDate;
@@ -35,7 +35,7 @@ const periodLabel = computed(() => {
   return format(date, "MMMM yyyy", { locale: fr });
 });
 
-function step(direction) {
+function step(direction: 1 | -1) {
   const date = store.currentDate;
   switch (store.currentView) {
     case "week":

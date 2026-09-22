@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { useCalendarStore } from "../stores/calendar.js";
 import MiniCalendar from "./MiniCalendar.vue";
 import CategoryFilter from "./CategoryFilter.vue";
