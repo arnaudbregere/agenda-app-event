@@ -1,8 +1,9 @@
-<script setup>
+<script setup lang="ts">
 import { computed, nextTick, reactive, ref, watch } from "vue";
 import { format } from "date-fns";
 import { useCalendarStore } from "../stores/calendar.js";
 import { useEventsStore } from "../stores/events.js";
+import type { CategoryId, EventInput } from "../api/types.js";
 import Icon from "./ui/Icon.vue";
 
 const store = useCalendarStore();
@@ -12,7 +13,6 @@ const isEditing = computed(() => Boolean(store.editingEvent));
 const submitting = ref(false);
 const serverError = ref("");
 
-const DATETIME_FORMAT = "yyyy-MM-dd'T'HH:mm";
 const DATE_FORMAT = "yyyy-MM-dd";
 
 const form = reactive({
@@ -24,11 +24,11 @@ const form = reactive({
   startTime: "",
   endDate: "",
   endTime: "",
-  category: "autre",
+  category: "autre" as CategoryId,
 });
 
-const panelRef = ref(null);
-let lastFocusedEl = null;
+const panelRef = ref<HTMLFormElement | null>(null);
+let lastFocusedEl: HTMLElement | null = null;
 
 function resetFromStore() {
   serverError.value = "";
@@ -49,13 +49,13 @@ function resetFromStore() {
   form.endTime = format(end, "HH:mm");
 }
 
-function roundToNextHour(date) {
+function roundToNextHour(date: Date) {
   const d = new Date(date);
   d.setMinutes(0, 0, 0);
   d.setHours(d.getHours() + 1);
   return d;
 }
-function addHour(date) {
+function addHour(date: Date) {
   const d = new Date(date);
   d.setHours(d.getHours() + 1);
   return d;
@@ -65,9 +65,9 @@ watch(
   () => store.modalOpen,
   (open) => {
     if (open) {
-      lastFocusedEl = document.activeElement;
+      lastFocusedEl = document.activeElement as HTMLElement | null;
       resetFromStore();
-      nextTick(() => panelRef.value?.querySelector("#event-title")?.focus());
+      nextTick(() => panelRef.value?.querySelector<HTMLElement>("#event-title")?.focus());
     } else {
       lastFocusedEl?.focus?.();
       lastFocusedEl = null;
@@ -79,14 +79,14 @@ watch(
 const FOCUSABLE_SELECTOR =
   'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
-function handleKeydown(event) {
+function handleKeydown(event: KeyboardEvent) {
   if (event.key === "Escape") {
     store.closeModal();
     return;
   }
   if (event.key !== "Tab" || !panelRef.value) return;
 
-  const focusable = panelRef.value.querySelectorAll(FOCUSABLE_SELECTOR);
+  const focusable = panelRef.value.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR);
   if (!focusable.length) return;
   const first = focusable[0];
   const last = focusable[focusable.length - 1];
@@ -100,9 +100,9 @@ function handleKeydown(event) {
   }
 }
 
-const errors = ref([]);
+const errors = ref<string[]>([]);
 
-function buildPayload() {
+function buildPayload(): EventInput {
   const start = form.allDay
     ? new Date(`${form.startDate}T00:00:00`)
     : new Date(`${form.startDate}T${form.startTime}`);
@@ -121,8 +121,8 @@ function buildPayload() {
   };
 }
 
-function validate(payload) {
-  const list = [];
+function validate(payload: EventInput) {
+  const list: string[] = [];
   if (!payload.title) list.push("Le titre est requis.");
   if (new Date(payload.end) < new Date(payload.start)) list.push("La date de fin doit être après la date de début.");
   return list;
@@ -136,28 +136,30 @@ async function handleSubmit() {
   submitting.value = true;
   serverError.value = "";
   try {
-    if (isEditing.value) {
-      await eventsStore.updateEvent(store.editingEvent.id, payload);
+    const editing = store.editingEvent;
+    if (editing) {
+      await eventsStore.updateEvent(editing.id, payload);
     } else {
       await eventsStore.createEvent(payload);
     }
     store.closeModal();
   } catch (err) {
-    serverError.value = err.message;
+    serverError.value = err instanceof Error ? err.message : String(err);
   } finally {
     submitting.value = false;
   }
 }
 
 async function handleDelete() {
-  if (!store.editingEvent) return;
-  if (!window.confirm(`Supprimer l'événement « ${store.editingEvent.title} » ?`)) return;
+  const editing = store.editingEvent;
+  if (!editing) return;
+  if (!window.confirm(`Supprimer l'événement « ${editing.title} » ?`)) return;
   submitting.value = true;
   try {
-    await eventsStore.deleteEvent(store.editingEvent.id);
+    await eventsStore.deleteEvent(editing.id);
     store.closeModal();
   } catch (err) {
-    serverError.value = err.message;
+    serverError.value = err instanceof Error ? err.message : String(err);
   } finally {
     submitting.value = false;
   }

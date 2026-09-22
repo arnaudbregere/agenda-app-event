@@ -1,10 +1,16 @@
-<script setup>
+<script setup lang="ts">
 import { computed } from "vue";
 import { startOfMonth, endOfMonth, isWithinInterval, format, isSameDay } from "date-fns";
 import { fr } from "date-fns/locale";
 import { useCalendarStore } from "../../stores/calendar.js";
 import { useEventsStore } from "../../stores/events.js";
 import { isToday } from "../../composables/useCalendarGrid.js";
+import type { CalendarEvent } from "../../api/types.js";
+
+interface DayGroup {
+  date: Date
+  events: CalendarEvent[]
+}
 
 const store = useCalendarStore();
 const eventsStore = useEventsStore();
@@ -15,9 +21,9 @@ const groups = computed(() => {
 
   const inMonth = store.filteredEvents
     .filter((e) => isWithinInterval(new Date(e.start), { start: monthStart, end: monthEnd }))
-    .sort((a, b) => Number(b.allDay) - Number(a.allDay) || new Date(a.start) - new Date(b.start));
+    .sort((a, b) => Number(b.allDay) - Number(a.allDay) || new Date(a.start).getTime() - new Date(b.start).getTime());
 
-  const byDay = [];
+  const byDay: DayGroup[] = [];
   for (const event of inMonth) {
     const eventDate = new Date(event.start);
     let group = byDay.find((g) => isSameDay(g.date, eventDate));
@@ -27,10 +33,10 @@ const groups = computed(() => {
     }
     group.events.push(event);
   }
-  return byDay.sort((a, b) => a.date - b.date);
+  return byDay.sort((a, b) => a.date.getTime() - b.date.getTime());
 });
 
-function eventTime(event) {
+function eventTime(event: CalendarEvent) {
   if (event.allDay) return "Toute la journée";
   return `${format(new Date(event.start), "HH:mm")} – ${format(new Date(event.end), "HH:mm")}`;
 }

@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { useEventsStore } from "../stores/events.js";
 import { useCalendarStore } from "../stores/calendar.js";
 import Icon from "./ui/Icon.vue";

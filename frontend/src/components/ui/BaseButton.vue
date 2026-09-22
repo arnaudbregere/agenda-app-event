@@ -1,10 +1,17 @@
-<script setup>
-defineProps({
-  variant: { type: String, default: "text" }, // primary | text | danger | icon
-  size: { type: String, default: "" }, // "" | sm
-  ariaLabel: { type: String, default: "" },
-});
-defineEmits(["click"]);
+<script setup lang="ts">
+withDefaults(
+  defineProps<{
+    variant?: "primary" | "text" | "danger" | "icon"
+    size?: "" | "sm"
+    ariaLabel?: string
+  }>(),
+  {
+    variant: "text",
+    size: "",
+    ariaLabel: "",
+  },
+)
+defineEmits<{ click: [payload: MouseEvent] }>()
 </script>
 
 <template>

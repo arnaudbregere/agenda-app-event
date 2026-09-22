@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { computed } from "vue";
 import { addMonths, subMonths, format, isSameMonth } from "date-fns";
 import { fr } from "date-fns/locale";
@@ -18,10 +18,10 @@ function prevMonth() {
 function nextMonth() {
   store.setCurrentDate(addMonths(store.currentDate, 1));
 }
-function selectDay(day) {
+function selectDay(day: Date) {
   store.setCurrentDate(day);
 }
-function isSelected(day) {
+function isSelected(day: Date) {
   return day.toDateString() === store.currentDate.toDateString();
 }
 </script>
