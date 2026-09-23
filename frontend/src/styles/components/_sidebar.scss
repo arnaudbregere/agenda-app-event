@@ -23,6 +23,17 @@
     }
   }
 
+  &__quick-access {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+  }
+
+  &__quick-btn {
+    justify-content: flex-start;
+    width: 100%;
+  }
+
   &__section-title {
     font-size: var(--font-size-sm);
     font-weight: var(--font-weight-medium);

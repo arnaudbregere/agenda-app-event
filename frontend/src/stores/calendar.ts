@@ -60,6 +60,13 @@ export const useCalendarStore = defineStore("calendar", {
       this.currentDate = new Date()
     },
 
+    // Accès direct au jour / à la semaine / au mois en cours : change la vue
+    // ET recentre sur aujourd'hui en une seule action.
+    goToCurrent(view: CalendarView) {
+      this.currentView = view
+      this.currentDate = new Date()
+    },
+
     setCurrentDate(date: Date) {
       this.currentDate = date
     },
