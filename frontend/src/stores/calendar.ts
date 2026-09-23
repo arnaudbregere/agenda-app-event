@@ -39,6 +39,15 @@ export const useCalendarStore = defineStore("calendar", {
       })
     },
 
+    // Résultats de recherche toutes dates confondues, triés chronologiquement.
+    // Vide tant qu'aucune recherche n'est saisie.
+    searchResults(state): CalendarEvent[] {
+      if (!state.searchQuery.trim()) return []
+      return [...this.filteredEvents].sort(
+        (a, b) => new Date(a.start).getTime() - new Date(b.start).getTime(),
+      )
+    },
+
     isCategoryActive: (state) => (categoryId: CategoryId) => !state.excludedCategoryIds.includes(categoryId),
   },
 

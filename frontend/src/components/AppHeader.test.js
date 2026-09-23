@@ -3,6 +3,7 @@ import { mount } from "@vue/test-utils";
 import { setActivePinia, createPinia } from "pinia";
 import AppHeader from "./AppHeader.vue";
 import { useCalendarStore } from "../stores/calendar.js";
+import { useEventsStore } from "../stores/events.js";
 
 beforeEach(() => {
   setActivePinia(createPinia());
@@ -58,5 +59,62 @@ describe("AppHeader", () => {
     await wrapper.find(".c-btn--text").trigger("click");
 
     expect(store.currentDate.toDateString()).toBe(new Date().toDateString());
+  });
+
+  describe("résultats de recherche", () => {
+    function seed() {
+      useEventsStore().events = [
+        { id: "1", title: "Réunion projet", start: "2026-10-05T09:00:00", end: "2026-10-05T10:00:00", category: "travail" },
+      ];
+    }
+
+    it("affiche une liste de résultats sous la barre pendant la recherche", async () => {
+      seed();
+      const wrapper = mount(AppHeader, { attachTo: document.body });
+      const input = wrapper.find('input[type="search"]');
+      await input.trigger("focusin");
+      await input.setValue("réunion");
+
+      const items = wrapper.findAll(".c-search-results__item");
+      expect(items).toHaveLength(1);
+      expect(items[0].text()).toContain("Réunion projet");
+      wrapper.unmount();
+    });
+
+    it("affiche un message quand rien ne correspond", async () => {
+      seed();
+      const wrapper = mount(AppHeader);
+      const input = wrapper.find('input[type="search"]');
+      await input.trigger("focusin");
+      await input.setValue("zzz");
+
+      expect(wrapper.find(".c-search-results__empty").exists()).toBe(true);
+    });
+
+    it("cliquer sur un résultat ouvre l'événement et ferme la liste", async () => {
+      seed();
+      const store = useCalendarStore();
+      const wrapper = mount(AppHeader);
+      const input = wrapper.find('input[type="search"]');
+      await input.trigger("focusin");
+      await input.setValue("réunion");
+
+      await wrapper.find(".c-search-results__item").trigger("click");
+
+      expect(store.modalOpen).toBe(true);
+      expect(store.editingEvent.id).toBe("1");
+      expect(wrapper.find(".c-search-results").exists()).toBe(false);
+    });
+
+    it("Échap ferme la liste", async () => {
+      seed();
+      const wrapper = mount(AppHeader);
+      const input = wrapper.find('input[type="search"]');
+      await input.trigger("focusin");
+      await input.setValue("réunion");
+      await input.trigger("keydown", { key: "Escape" });
+
+      expect(wrapper.find(".c-search-results").exists()).toBe(false);
+    });
   });
 });

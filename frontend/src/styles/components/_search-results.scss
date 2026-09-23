@@ -1,0 +1,51 @@
+/**
+ * COMPONENTS / Search results dropdown
+ */
+.c-search-results {
+  position: absolute;
+  top: calc(100% + var(--space-2));
+  left: 0;
+  right: 0;
+  z-index: var(--z-dropdown);
+  max-height: 60vh;
+  overflow-y: auto;
+  padding: var(--space-2) 0;
+  background-color: var(--color-bg);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+
+  &__item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    width: 100%;
+    padding: var(--space-2) var(--space-4);
+    text-align: left;
+    cursor: pointer;
+
+    &:hover,
+    &:focus-visible {
+      background-color: var(--color-bg-muted);
+    }
+  }
+
+  &__title {
+    flex: 1;
+    min-width: 0;
+    font-weight: var(--font-weight-medium);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__when {
+    flex-shrink: 0;
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+  }
+
+  &__empty {
+    padding: var(--space-3) var(--space-4);
+    color: var(--color-text-muted);
+  }
+}
