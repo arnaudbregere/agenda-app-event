@@ -30,6 +30,16 @@ describe("useCalendarStore", () => {
     });
   });
 
+  describe("goToCurrent", () => {
+    it.each(["day", "week", "month"])("bascule en vue %s et recentre sur aujourd'hui", (view) => {
+      const store = useCalendarStore();
+      store.setCurrentDate(new Date(2000, 0, 1));
+      store.goToCurrent(view);
+      expect(store.currentView).toBe(view);
+      expect(store.currentDate.toDateString()).toBe(new Date().toDateString());
+    });
+  });
+
   describe("toggleCategory / isCategoryActive", () => {
     it("une catégorie est active par défaut", () => {
       const store = useCalendarStore();
