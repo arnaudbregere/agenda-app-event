@@ -112,4 +112,26 @@ describe("useCalendarStore", () => {
       expect(store.filteredEvents).toEqual([]);
     });
   });
+
+  describe("searchResults", () => {
+    function seed() {
+      useEventsStore().events = [
+        { id: "1", title: "Réunion B", start: "2026-10-05T09:00:00", category: "travail" },
+        { id: "2", title: "Réunion A", start: "2026-03-01T09:00:00", category: "travail" },
+        { id: "3", title: "Sport", start: "2026-04-01T09:00:00", category: "loisirs" },
+      ];
+    }
+
+    it("est vide sans recherche", () => {
+      seed();
+      expect(useCalendarStore().searchResults).toEqual([]);
+    });
+
+    it("retourne les correspondances toutes dates confondues, triées par date", () => {
+      seed();
+      const store = useCalendarStore();
+      store.searchQuery = "réunion";
+      expect(store.searchResults.map((e) => e.id)).toEqual(["2", "1"]);
+    });
+  });
 });

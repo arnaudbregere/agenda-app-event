@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, ref } from "vue";
 import {
   addMonths,
   subMonths,
@@ -12,7 +12,9 @@ import {
 import { fr } from "date-fns/locale";
 import { useCalendarStore, VIEWS, type CalendarView } from "../stores/calendar.js";
 import { getWeekDays } from "../composables/useCalendarGrid.js";
+import type { CalendarEvent } from "../api/types.js";
 import Icon from "./ui/Icon.vue";
+import SearchResults from "./SearchResults.vue";
 
 const store = useCalendarStore();
 
@@ -34,6 +36,20 @@ const periodLabel = computed(() => {
   // month & list
   return format(date, "MMMM yyyy", { locale: fr });
 });
+
+// Le panneau de résultats reste fermé tant que la recherche n'a pas le focus ;
+// il se referme à la sortie du champ, sur Échap ou après sélection.
+const searchOpen = ref(false);
+
+function onSearchFocusOut(e: FocusEvent) {
+  const container = e.currentTarget as HTMLElement;
+  if (!container.contains(e.relatedTarget as Node | null)) searchOpen.value = false;
+}
+
+function selectResult(event: CalendarEvent) {
+  searchOpen.value = false;
+  store.openEditModal(event);
+}
 
 function step(direction: 1 | -1) {
   const date = store.currentDate;
@@ -72,7 +88,12 @@ function step(direction: 1 | -1) {
     </div>
 
     <div class="c-app-header__search">
-      <div class="c-search">
+      <div
+        class="c-search"
+        @focusin="searchOpen = true"
+        @focusout="onSearchFocusOut"
+        @keydown.esc="searchOpen = false"
+      >
         <Icon name="search" class="c-search__icon" />
         <input
           v-model="store.searchQuery"
@@ -90,6 +111,12 @@ function step(direction: 1 | -1) {
         >
           <Icon name="x" />
         </button>
+        <!-- mousedown.prevent : garde le focus dans le conteneur (Safari ne focus pas les boutons au clic) -->
+        <SearchResults
+          v-if="searchOpen && store.searchQuery.trim()"
+          @mousedown.prevent
+          @select="selectResult"
+        />
       </div>
     </div>
 
