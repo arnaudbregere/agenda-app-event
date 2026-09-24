@@ -33,8 +33,8 @@ déploiement — merger une PR sur `main` suffit, et le statut du job
 ```yaml
 # render.yaml
 autoDeploy: false
-buildCommand: cd frontend && npm ci && npm run build && cd ../backend && npm ci
-startCommand: node backend/server.js
+buildCommand: cd frontend && npm ci && npm run build && cd ../backend && npm ci && npm run build
+startCommand: node backend/dist/server.js
 healthCheckPath: /api/health
 ```
 
