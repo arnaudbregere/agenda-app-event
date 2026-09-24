@@ -2,12 +2,11 @@ import express from "express";
 import cors from "cors";
 import { execSync } from "node:child_process";
 import { existsSync } from "node:fs";
-import { dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
+import { join } from "node:path";
 import eventsRouter from "./src/routes/events.js";
 import categoriesRouter from "./src/routes/categories.js";
+import { BACKEND_ROOT, FRONTEND_DIST } from "./src/utils/paths.js";
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
 const app = express();
 const PORT = process.env.PORT || 4000;
 
@@ -18,7 +17,7 @@ const PORT = process.env.PORT || 4000;
 function resolveCommit() {
   if (process.env.RENDER_GIT_COMMIT) return process.env.RENDER_GIT_COMMIT;
   try {
-    return execSync("git rev-parse HEAD", { cwd: __dirname }).toString().trim();
+    return execSync("git rev-parse HEAD", { cwd: BACKEND_ROOT }).toString().trim();
   } catch {
     return null;
   }
@@ -36,11 +35,10 @@ app.use("/api/categories", categoriesRouter);
 // ce même serveur Express : une seule URL, pas de souci CORS. En dev, le
 // frontend tourne séparément via `vite` (npm run dev sur le port 5173) et ce
 // dossier n'existe pas encore, donc ce bloc est simplement ignoré.
-const distPath = join(__dirname, "../frontend/dist");
-if (existsSync(distPath)) {
-  app.use(express.static(distPath));
+if (existsSync(FRONTEND_DIST)) {
+  app.use(express.static(FRONTEND_DIST));
   app.get(/^(?!\/api\/).*/, (req, res) => {
-    res.sendFile(join(distPath, "index.html"));
+    res.sendFile(join(FRONTEND_DIST, "index.html"));
   });
 }
 
