@@ -1,6 +1,6 @@
 # Agenda
 
-Application de calendrier (façon Google Agenda) — **Vue 3** (frontend) + **Node/Express** (API REST) avec stockage des événements dans un fichier JSON. Frontend en **TypeScript strict** ; backend en cours de migration vers TypeScript (voir [Migration TypeScript](#migration-typescript)).
+Application de calendrier (façon Google Agenda) — **Vue 3** (frontend) + **Node/Express** (API REST) avec stockage des événements dans un fichier JSON. Frontend et backend en **TypeScript strict** (seuls les fichiers de tests restent en JavaScript, voir [Migration TypeScript](#migration-typescript)).
 
 🔗 **App déployée : [agenda-app-event.onrender.com](https://agenda-app-event.onrender.com/)**
 
@@ -93,7 +93,7 @@ Commandes définies dans `render.yaml` :
 | 5 | `strict: true` sur le frontend | Fait |
 | 6 | Backend : socle `tsc`, build vers `dist/` et `render.yaml` | Fait |
 | 6 (suite) | Backend : conversion de tous les fichiers en `.ts` (`utils/`, `services/`, `controllers/`, `routes/`, `server.ts`) | Fait |
-| 6 (fin) | Backend : `strict: true` | À faire |
+| 6 (fin) | Backend : `strict: true` | Fait |
 | 7 | Conversion des tests `*.test.js` en `.ts` (frontend puis backend) | À faire |
 | 8 | Job `typecheck` dans la CI | À faire |
 
