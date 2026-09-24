@@ -1,8 +1,6 @@
 import { readFile, writeFile, mkdir } from "node:fs/promises";
 import { dirname } from "node:path";
-import { fileURLToPath } from "node:url";
-
-const DATA_FILE = new URL("../../data/events.json", import.meta.url);
+import { DATA_FILE } from "../utils/paths.js";
 
 // Toutes les lectures/écritures passent par cette file de promesses pour
 // éviter que deux requêtes concurrentes n'écrasent le fichier JSON l'une
@@ -21,7 +19,7 @@ async function readAll() {
     return raw.trim() ? JSON.parse(raw) : [];
   } catch (err) {
     if (err.code === "ENOENT") {
-      await mkdir(dirname(fileURLToPath(DATA_FILE)), { recursive: true });
+      await mkdir(dirname(DATA_FILE), { recursive: true });
       await writeFile(DATA_FILE, "[]\n", "utf-8");
       return [];
     }
