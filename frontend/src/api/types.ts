@@ -1,4 +1,4 @@
-// Reflète le schéma backend (backend/src/utils/categories.js et validators.js).
+// Reflète le schéma backend (backend/src/utils/categories.ts et validators.ts).
 export type CategoryId = "personnel" | "travail" | "important" | "famille" | "loisirs" | "autre"
 
 export interface Category {

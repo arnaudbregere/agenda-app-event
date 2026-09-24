@@ -8,10 +8,13 @@ export const CATEGORIES = [
   { id: "famille", label: "Famille", color: "#f4511e" },
   { id: "loisirs", label: "Loisirs", color: "#8e24aa" },
   { id: "autre", label: "Autre", color: "#616161" },
-];
+] as const;
 
-export const CATEGORY_IDS = CATEGORIES.map((c) => c.id);
+export type Category = (typeof CATEGORIES)[number];
+export type CategoryId = Category["id"];
 
-export function getCategoryColor(id) {
+export const CATEGORY_IDS: readonly CategoryId[] = CATEGORIES.map((c) => c.id);
+
+export function getCategoryColor(id?: string): string {
   return CATEGORIES.find((c) => c.id === id)?.color ?? "#616161";
 }
