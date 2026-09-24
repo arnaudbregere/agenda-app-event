@@ -1,9 +1,9 @@
-import { Router } from "express";
+import { Router, type Request, type Response } from "express";
 import { CATEGORIES } from "../utils/categories.js";
 
 const router = Router();
 
-router.get("/", (req, res) => {
+router.get("/", (req: Request, res: Response): void => {
   res.json(CATEGORIES);
 });
 
