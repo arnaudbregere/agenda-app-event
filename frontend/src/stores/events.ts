@@ -11,7 +11,7 @@ export const useEventsStore = defineStore("events", {
   }),
 
   getters: {
-    categoryColor: (state) => (categoryId: CategoryId) =>
+    categoryColor: (state) => (categoryId?: CategoryId) =>
       state.categories.find((c) => c.id === categoryId)?.color ?? "#616161",
   },
 
