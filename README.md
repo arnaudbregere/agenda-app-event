@@ -48,8 +48,8 @@ cd backend && npm run build    # -> backend/dist (tsc), lancé par npm start
 - `GET /api/categories`
 - Les événements sont persistés dans `backend/data/events.json` (aucune base de données).
 - Port configurable via la variable d'env `PORT` (défaut `4000`).
-- **Build** : `npm run build` compile `server.js` et `src/` (hors tests) vers `backend/dist/` avec `tsc` (`tsconfig.build.json`). En production, le serveur démarre depuis le build : `node backend/dist/server.js` (`npm start` en local, après un `npm run build`). En dev, `npm run dev` lance toujours les sources avec `node --watch server.js`.
-- `src/utils/paths.js` retrouve la racine du backend en remontant jusqu'à `package.json` : les chemins de `data/events.json` et de `frontend/dist` restent valides depuis les sources comme depuis `dist/`.
+- **Build** : `npm run build` compile `server.ts` et `src/` (hors tests) vers `backend/dist/` avec `tsc` (`tsconfig.build.json`). En production, le serveur démarre depuis le build : `node backend/dist/server.js` (`npm start` en local, après un `npm run build`). En dev, `npm run dev` lance les sources TypeScript directement avec `tsx watch server.ts` (sans build).
+- `src/utils/paths.ts` retrouve la racine du backend en remontant jusqu'à `package.json` : les chemins de `data/events.json` et de `frontend/dist` restent valides depuis les sources comme depuis `dist/`.
 - `GET /api/health` (utilisé par Render) renvoie `{ status, commit }`.
 
 ## Frontend
@@ -92,7 +92,8 @@ Commandes définies dans `render.yaml` :
 | 1 à 4 | Frontend : socle, `api/`, `stores/`, `composables/` + `components/` | Fait |
 | 5 | `strict: true` sur le frontend | Fait |
 | 6 | Backend : socle `tsc`, build vers `dist/` et `render.yaml` | Fait |
-| 6 (suite) | Backend : conversion des fichiers en `.ts` (`utils/` → `services/` → `controllers/` → `routes/` → `server.js`), puis `strict: true` | À faire |
+| 6 (suite) | Backend : conversion de tous les fichiers en `.ts` (`utils/`, `services/`, `controllers/`, `routes/`, `server.ts`) | Fait |
+| 6 (fin) | Backend : `strict: true` | À faire |
 | 7 | Conversion des tests `*.test.js` en `.ts` (frontend puis backend) | À faire |
 | 8 | Job `typecheck` dans la CI | À faire |
 

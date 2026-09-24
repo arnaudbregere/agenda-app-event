@@ -4,10 +4,10 @@
   "private": true,
   "description": "API REST pour l'application agenda (stockage JSON fichier)",
   "type": "module",
-  "main": "server.js",
+  "main": "dist/server.js",
   "scripts": {
     "start": "node dist/server.js",
-    "dev": "tsx watch server.js",
+    "dev": "tsx watch server.ts",
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit",
