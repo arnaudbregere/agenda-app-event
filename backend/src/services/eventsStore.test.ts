@@ -21,7 +21,7 @@ vi.mock("node:fs/promises", () => ({
     }
     return fsState.content;
   }),
-  writeFile: vi.fn(async (_path: unknown, data: string) => {
+  writeFile: vi.fn(async (_path, data) => {
     fsState.content = data;
   }),
   mkdir: vi.fn(async () => {}),
