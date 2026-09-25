@@ -97,7 +97,7 @@ Commandes définies dans `render.yaml` :
 | 7 | Conversion des tests `*.test.js` en `.ts` (frontend puis backend) | Fait |
 | 8 | Job `typecheck` dans la CI | Fait |
 
-`typescript` est épinglé en `6.x` (`6.0.3`) tant que `vue-tsc` n'est pas compatible avec TypeScript 7.
+`typescript` reste épinglé en `6.x` (`^6.0.3`) **côté frontend uniquement**, tant que `vue-tsc` n'est pas compatible avec TypeScript 7 (vérifié à nouveau le 25/09/2026 : `vue-tsc@3.3.11`, la dernière version publiée, échoue toujours avec `typescript@7.0.2`, la dernière stable, avec `ERR_PACKAGE_PATH_NOT_EXPORTED`). Le backend, qui utilise `tsc` directement (jamais `vue-tsc`), n'a pas cette contrainte et suit `typescript@^7.x`.
 
 ## Pistes d'amélioration possibles
 
