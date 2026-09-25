@@ -1,21 +1,27 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
+import type { CalendarEvent } from "../types.js";
 
 // eventsStore.js lit/écrit un vrai fichier JSON sur disque. On mocke
 // node:fs/promises avec un petit "fichier" en mémoire pour tester la
 // logique métier (CRUD, sérialisation des accès concurrents) sans I/O réel
 // ni dépendre d'un chemin de fichier particulier.
-const fsState = { content: null }; // null = fichier absent (ENOENT)
+const fsState: { content: string | null } = { content: null }; // null = fichier absent (ENOENT)
+
+// Fixtures volontairement partielles : ces tests exercent la mécanique du
+// store (lecture/écriture du fichier JSON), pas la conformité au schéma
+// complet d'un événement.
+const asEvent = (value: object) => value as CalendarEvent;
 
 vi.mock("node:fs/promises", () => ({
   readFile: vi.fn(async () => {
     if (fsState.content === null) {
-      const err = new Error("ENOENT");
+      const err = new Error("ENOENT") as NodeJS.ErrnoException;
       err.code = "ENOENT";
       throw err;
     }
     return fsState.content;
   }),
-  writeFile: vi.fn(async (_path, data) => {
+  writeFile: vi.fn(async (_path: unknown, data: string) => {
     fsState.content = data;
   }),
   mkdir: vi.fn(async () => {}),
@@ -66,24 +72,24 @@ describe("getEvent", () => {
 describe("createEvent", () => {
   it("ajoute l'événement et persiste le fichier", async () => {
     fsState.content = JSON.stringify([]);
-    const event = { id: "1", title: "Nouveau" };
+    const event = asEvent({ id: "1", title: "Nouveau" });
 
     const created = await store.createEvent(event);
 
     expect(created).toEqual(event);
-    expect(JSON.parse(fsState.content)).toEqual([event]);
+    expect(JSON.parse(fsState.content!)).toEqual([event]);
   });
 
   it("sérialise deux créations concurrentes (pas d'écrasement)", async () => {
     fsState.content = JSON.stringify([]);
-    const a = { id: "a" };
-    const b = { id: "b" };
+    const a = asEvent({ id: "a" });
+    const b = asEvent({ id: "b" });
 
     await Promise.all([store.createEvent(a), store.createEvent(b)]);
 
-    const persisted = JSON.parse(fsState.content);
+    const persisted: { id: string }[] = JSON.parse(fsState.content!);
     expect(persisted).toHaveLength(2);
-    expect(persisted.map((e) => e.id).sort()).toEqual(["a", "b"]);
+    expect(persisted.map((event) => event.id).sort()).toEqual(["a", "b"]);
   });
 });
 
@@ -93,9 +99,9 @@ describe("updateEvent", () => {
 
     const updated = await store.updateEvent("1", { title: "Nouveau" });
 
-    expect(updated.title).toBe("Nouveau");
-    expect(updated.id).toBe("1");
-    expect(updated.updatedAt).not.toBe("2020-01-01");
+    expect(updated!.title).toBe("Nouveau");
+    expect(updated!.id).toBe("1");
+    expect(updated!.updatedAt).not.toBe("2020-01-01");
   });
 
   it("retourne null si l'id est inconnu", async () => {
@@ -105,8 +111,11 @@ describe("updateEvent", () => {
 
   it("ne modifie pas l'id même si le patch en contient un autre", async () => {
     fsState.content = JSON.stringify([{ id: "1", title: "A" }]);
-    const updated = await store.updateEvent("1", { id: "autre-id", title: "B" });
-    expect(updated.id).toBe("1");
+    // "id" n'existe pas dans EventPatch (id non modifiable) : on force le
+    // payload pour vérifier que le store l'ignore bel et bien à l'exécution.
+    const patch = { id: "autre-id", title: "B" } as unknown as Parameters<typeof store.updateEvent>[1];
+    const updated = await store.updateEvent("1", patch);
+    expect(updated!.id).toBe("1");
   });
 });
 
@@ -117,7 +126,7 @@ describe("deleteEvent", () => {
     const result = await store.deleteEvent("1");
 
     expect(result).toBe(true);
-    expect(JSON.parse(fsState.content)).toEqual([{ id: "2" }]);
+    expect(JSON.parse(fsState.content!)).toEqual([{ id: "2" }]);
   });
 
   it("retourne false si l'id est inconnu", async () => {

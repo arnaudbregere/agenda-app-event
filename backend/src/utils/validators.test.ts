@@ -25,7 +25,7 @@ describe("validateEvent", () => {
   });
 
   describe("champs requis (création, partial=false)", () => {
-    it.each(["title", "start", "end"])("rejette un payload sans %s", (field) => {
+    it.each(["title", "start", "end"] as const)("rejette un payload sans %s", (field) => {
       const payload = { ...validPayload };
       delete payload[field];
       const errors = validateEvent(payload);
@@ -52,7 +52,7 @@ describe("validateEvent", () => {
   describe("title", () => {
     it("rejette un title non-string", () => {
       const errors = validateEvent({ ...validPayload, title: 42 });
-      expect(errors.some((e) => e.includes("title"))).toBe(true);
+      expect(errors.some((error) => error.includes("title"))).toBe(true);
     });
 
     it("rejette un title composé uniquement d'espaces", () => {
@@ -74,12 +74,12 @@ describe("validateEvent", () => {
   describe("dates", () => {
     it("rejette une date start invalide", () => {
       const errors = validateEvent({ ...validPayload, start: "pas-une-date" });
-      expect(errors.some((e) => e.includes("start"))).toBe(true);
+      expect(errors.some((error) => error.includes("start"))).toBe(true);
     });
 
     it("rejette une date end invalide", () => {
       const errors = validateEvent({ ...validPayload, end: "pas-une-date" });
-      expect(errors.some((e) => e.includes("end"))).toBe(true);
+      expect(errors.some((error) => error.includes("end"))).toBe(true);
     });
 
     it("rejette end antérieur à start", () => {
@@ -88,7 +88,7 @@ describe("validateEvent", () => {
         start: "2026-08-28T11:00:00.000Z",
         end: "2026-08-28T10:00:00.000Z",
       });
-      expect(errors.some((e) => e.includes("postérieur"))).toBe(true);
+      expect(errors.some((error) => error.includes("postérieur"))).toBe(true);
     });
 
     it("accepte end égal à start (événement instantané)", () => {
@@ -104,14 +104,14 @@ describe("validateEvent", () => {
   describe("allDay", () => {
     it("rejette une valeur non booléenne", () => {
       const errors = validateEvent({ ...validPayload, allDay: "oui" });
-      expect(errors.some((e) => e.includes("allDay"))).toBe(true);
+      expect(errors.some((error) => error.includes("allDay"))).toBe(true);
     });
   });
 
   describe("category", () => {
     it("rejette une catégorie inconnue", () => {
       const errors = validateEvent({ ...validPayload, category: "inexistante" });
-      expect(errors.some((e) => e.includes("category"))).toBe(true);
+      expect(errors.some((error) => error.includes("category"))).toBe(true);
     });
 
     it("accepte chacune des catégories valides", () => {
@@ -124,12 +124,12 @@ describe("validateEvent", () => {
   describe("description / location", () => {
     it("rejette une description non-string", () => {
       const errors = validateEvent({ ...validPayload, description: 123 });
-      expect(errors.some((e) => e.includes("description"))).toBe(true);
+      expect(errors.some((error) => error.includes("description"))).toBe(true);
     });
 
     it("rejette une location non-string", () => {
       const errors = validateEvent({ ...validPayload, location: 123 });
-      expect(errors.some((e) => e.includes("location"))).toBe(true);
+      expect(errors.some((error) => error.includes("location"))).toBe(true);
     });
   });
 
