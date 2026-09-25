@@ -1,5 +1,12 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { setActivePinia, createPinia } from "pinia";
+import type { CalendarEvent, Category, CategoryId } from "../api/types.js";
+
+// Fixtures volontairement partielles : ces tests exercent la mécanique du
+// store (stockage / lecture tel quel), pas la conformité au schéma complet.
+const asEvent = (value: object) => value as CalendarEvent;
+const asEvents = (value: object[]) => value as CalendarEvent[];
+const asCategories = (value: object[]) => value as Category[];
 
 vi.mock("../api/events.js", () => ({
   eventsApi: {
@@ -32,10 +39,10 @@ describe("useEventsStore", () => {
 
   describe("fetchAll", () => {
     it("charge événements et catégories, et gère loading", async () => {
-      const events = [{ id: "1" }];
-      const categories = [{ id: "travail", color: "#0b8043" }];
-      eventsApi.list.mockResolvedValue(events);
-      categoriesApi.list.mockResolvedValue(categories);
+      const events = asEvents([{ id: "1" }]);
+      const categories = asCategories([{ id: "travail", color: "#0b8043" }]);
+      vi.mocked(eventsApi.list).mockResolvedValue(events);
+      vi.mocked(categoriesApi.list).mockResolvedValue(categories);
 
       const store = useEventsStore();
       const promise = store.fetchAll();
@@ -49,8 +56,8 @@ describe("useEventsStore", () => {
     });
 
     it("capture une erreur et la stocke dans state.error", async () => {
-      eventsApi.list.mockRejectedValue(new Error("réseau HS"));
-      categoriesApi.list.mockResolvedValue([]);
+      vi.mocked(eventsApi.list).mockRejectedValue(new Error("réseau HS"));
+      vi.mocked(categoriesApi.list).mockResolvedValue([]);
 
       const store = useEventsStore();
       await store.fetchAll();
@@ -62,11 +69,11 @@ describe("useEventsStore", () => {
 
   describe("createEvent", () => {
     it("ajoute l'événement créé à la liste", async () => {
-      const created = { id: "new", title: "Créé" };
-      eventsApi.create.mockResolvedValue(created);
+      const created = asEvent({ id: "new", title: "Créé" });
+      vi.mocked(eventsApi.create).mockResolvedValue(created);
 
       const store = useEventsStore();
-      const result = await store.createEvent({ title: "Créé" });
+      const result = await store.createEvent({ title: "Créé" } as Parameters<typeof store.createEvent>[0]);
 
       expect(result).toEqual(created);
       expect(store.events).toContainEqual(created);
@@ -76,9 +83,9 @@ describe("useEventsStore", () => {
   describe("updateEvent", () => {
     it("remplace l'événement existant dans la liste", async () => {
       const store = useEventsStore();
-      store.events = [{ id: "1", title: "Ancien" }];
-      const updated = { id: "1", title: "Nouveau" };
-      eventsApi.update.mockResolvedValue(updated);
+      store.events = asEvents([{ id: "1", title: "Ancien" }]);
+      const updated = asEvent({ id: "1", title: "Nouveau" });
+      vi.mocked(eventsApi.update).mockResolvedValue(updated);
 
       await store.updateEvent("1", { title: "Nouveau" });
 
@@ -87,37 +94,37 @@ describe("useEventsStore", () => {
 
     it("ne touche pas la liste si l'id n'existe pas localement", async () => {
       const store = useEventsStore();
-      store.events = [{ id: "1", title: "Ancien" }];
-      eventsApi.update.mockResolvedValue({ id: "autre", title: "X" });
+      store.events = asEvents([{ id: "1", title: "Ancien" }]);
+      vi.mocked(eventsApi.update).mockResolvedValue(asEvent({ id: "autre", title: "X" }));
 
       await store.updateEvent("autre", { title: "X" });
 
-      expect(store.events).toEqual([{ id: "1", title: "Ancien" }]);
+      expect(store.events).toEqual(asEvents([{ id: "1", title: "Ancien" }]));
     });
   });
 
   describe("deleteEvent", () => {
     it("retire l'événement de la liste", async () => {
       const store = useEventsStore();
-      store.events = [{ id: "1" }, { id: "2" }];
-      eventsApi.remove.mockResolvedValue(undefined);
+      store.events = asEvents([{ id: "1" }, { id: "2" }]);
+      vi.mocked(eventsApi.remove).mockResolvedValue(undefined);
 
       await store.deleteEvent("1");
 
-      expect(store.events).toEqual([{ id: "2" }]);
+      expect(store.events).toEqual(asEvents([{ id: "2" }]));
     });
   });
 
   describe("categoryColor", () => {
     it("retourne la couleur de la catégorie", () => {
       const store = useEventsStore();
-      store.categories = [{ id: "travail", color: "#0b8043" }];
+      store.categories = asCategories([{ id: "travail", color: "#0b8043" }]);
       expect(store.categoryColor("travail")).toBe("#0b8043");
     });
 
     it("retourne une couleur par défaut si catégorie inconnue", () => {
       const store = useEventsStore();
-      expect(store.categoryColor("inconnue")).toBe("#616161");
+      expect(store.categoryColor("inconnue" as CategoryId)).toBe("#616161");
     });
   });
 });
