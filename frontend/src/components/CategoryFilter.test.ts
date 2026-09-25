@@ -4,11 +4,14 @@ import { setActivePinia, createPinia } from "pinia";
 import CategoryFilter from "./CategoryFilter.vue";
 import { useEventsStore } from "../stores/events.js";
 import { useCalendarStore } from "../stores/calendar.js";
+import type { Category } from "../api/types.js";
 
-const CATEGORIES = [
+const CATEGORIES: Category[] = [
   { id: "travail", label: "Travail", color: "#0b8043" },
   { id: "famille", label: "Famille", color: "#e67c73" },
 ];
+
+const isChecked = (checkbox: { element: Element }) => (checkbox.element as HTMLInputElement).checked;
 
 beforeEach(() => {
   setActivePinia(createPinia());
@@ -29,7 +32,7 @@ describe("CategoryFilter", () => {
     const wrapper = mount(CategoryFilter);
 
     const checkboxes = wrapper.findAll('input[type="checkbox"]');
-    checkboxes.forEach((checkbox) => expect(checkbox.element.checked).toBe(true));
+    checkboxes.forEach((checkbox) => expect(isChecked(checkbox)).toBe(true));
   });
 
   it("décocher une catégorie appelle toggleCategory et retire l'état visuel is-checked", async () => {
@@ -51,7 +54,7 @@ describe("CategoryFilter", () => {
     const wrapper = mount(CategoryFilter);
 
     const checkboxes = wrapper.findAll('input[type="checkbox"]');
-    expect(checkboxes[0].element.checked).toBe(false);
+    expect(isChecked(checkboxes[0]!)).toBe(false);
 
     await checkboxes[0].setValue(true);
 

@@ -4,6 +4,7 @@ import { setActivePinia, createPinia } from "pinia";
 import MonthView from "./MonthView.vue";
 import { useCalendarStore } from "../../stores/calendar.js";
 import { useEventsStore } from "../../stores/events.js";
+import { asCategories, asEvents } from "../../test-support/fixtures.js";
 
 beforeEach(() => {
   setActivePinia(createPinia());
@@ -57,8 +58,8 @@ describe("MonthView", () => {
     const store = useCalendarStore();
     const eventsStore = useEventsStore();
     store.setCurrentDate(new Date(2026, 7, 15));
-    eventsStore.categories = [{ id: "travail", label: "Travail", color: "#0b8043" }];
-    eventsStore.events = [
+    eventsStore.categories = asCategories([{ id: "travail", label: "Travail", color: "#0b8043" }]);
+    eventsStore.events = asEvents([
       {
         id: "1",
         title: "Réunion",
@@ -69,7 +70,7 @@ describe("MonthView", () => {
         start: new Date(2026, 7, 15, 9, 0).toISOString(),
         end: new Date(2026, 7, 15, 10, 0).toISOString(),
       },
-    ];
+    ]);
     const wrapper = mount(MonthView);
 
     const pill = wrapper.find(".c-event-pill");

@@ -19,7 +19,7 @@ describe("AppSidebar — accès rapide", () => {
     store.setCurrentDate(new Date(2000, 0, 1));
     const wrapper = mount(AppSidebar);
 
-    const btn = wrapper.findAll(".c-sidebar__quick-btn").find((b) => b.text() === label);
+    const btn = wrapper.findAll(".c-sidebar__quick-btn").find((b) => b.text() === label)!;
     await btn.trigger("click");
 
     expect(store.currentView).toBe(view);
