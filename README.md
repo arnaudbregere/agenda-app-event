@@ -25,6 +25,29 @@ agenda-app-event/
 └── frontend/    App Vue 3 + Vite + Pinia — vues Mois/Semaine/Jour/Liste
 ```
 
+### Schéma d'ensemble (runtime)
+
+Un seul serveur Express sert à la fois l'API et le build du frontend — pas de séparation réseau entre les deux, donc pas de CORS à gérer en prod :
+
+```
+Navigateur (SPA Vue 3, une seule URL, pas de routeur)
+        │
+        │  HTTP (fetch)
+        ▼
+Serveur Express unique — backend/server.ts
+        │
+        ├── /api/events, /api/categories, /api/health
+        │       │
+        │       ▼
+        │   backend/data/events.json  (fichier JSON, pas de BDD)
+        │
+        └── tout le reste (GET hors /api/*)
+                │
+                ▼
+        frontend/dist  (build Vue servi en statique)
+        fallback index.html pour la route SPA
+```
+
 ### Backend (`backend/`)
 
 - `server.ts` : point d'entrée Express — montage des routes, service du build frontend, health check, gestion d'erreurs centralisée.
@@ -52,6 +75,24 @@ Endpoints :
 - `src/composables/` : logique réutilisable pure (`useCalendarGrid` — découpage en semaines/jours, `useEventLayout` — positionnement des événements qui se chevauchent).
 - `src/api/` : client HTTP (`client.ts`) et appels typés (`events.ts`), URL configurable via `frontend/.env.development` (`VITE_API_URL`).
 - `src/styles/` : SCSS organisé en **ITCSS** (Settings → Tools → Generic → Elements → Objects → Components → Utilities, composé via `@use`). Design tokens en custom properties CSS (thémabilité à l'exécution) ; breakpoints en variables Sass consommées par un mixin (`respond-down()`), seul cas où le CSS natif ne suffit pas. Pas de framework CSS externe.
+
+### Plan de l'application (SPA)
+
+Pas de `vue-router` : une seule URL, une seule page HTML (`index.html`). La navigation entre vues change l'état du store Pinia `calendarStore.currentView`, qui bascule le composant affiché sans rechargement ni changement d'URL.
+
+```
+index.html
+  └── #app (main.ts monte App.vue)
+        └── App.vue (o-app-shell)
+              ├── AppHeader     — titre de la période, précédent/suivant, recherche, sélecteur de vue
+              ├── AppSidebar    — bouton Créer, raccourcis (aujourd'hui/semaine/mois), mini-calendrier, filtre catégories
+              ├── <main>        — une seule vue rendue à la fois, selon calendarStore.currentView :
+              │     ├── MonthView
+              │     ├── WeekView   (grille horaire commune : TimeGrid)
+              │     ├── DayView    (grille horaire commune : TimeGrid)
+              │     └── ListView
+              └── EventModal    — <Teleport to="body">, ouverte/fermée par le store (création ou édition)
+```
 
 ### Fonctionnalités
 
