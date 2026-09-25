@@ -7,8 +7,8 @@ import type { CalendarEvent } from "../api/types.js";
 
 // Fixtures volontairement partielles : ces tests exercent la mécanique du
 // store (stockage / lecture tel quel), pas la conformité au schéma complet.
-const asModalDefaults = (v: object) => v as ModalDefaults;
-const asEvent = (v: object) => v as CalendarEvent;
+const asModalDefaults = (value: object) => value as ModalDefaults;
+const asEvent = (value: object) => value as CalendarEvent;
 
 beforeEach(() => {
   setActivePinia(createPinia());
