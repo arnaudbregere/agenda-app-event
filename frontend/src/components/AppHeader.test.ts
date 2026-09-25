@@ -23,7 +23,7 @@ describe("AppHeader", () => {
     const wrapper = mount(AppHeader);
 
     const buttons = wrapper.findAll(".c-view-switcher__btn");
-    const weekBtn = buttons.find((b) => b.text() === "Semaine")!;
+    const weekBtn = buttons.find((button) => button.text() === "Semaine")!;
     await weekBtn.trigger("click");
 
     expect(store.currentView).toBe("week");

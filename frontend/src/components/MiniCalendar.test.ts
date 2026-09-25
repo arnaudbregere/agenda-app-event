@@ -47,7 +47,7 @@ describe("MiniCalendar", () => {
     const wrapper = mount(MiniCalendar);
 
     const days = wrapper.findAll(".c-mini-cal__day");
-    const target = days.find((d) => d.text() === "20" && !d.classes().includes("is-outside"))!;
+    const target = days.find((day) => day.text() === "20" && !day.classes().includes("is-outside"))!;
     await target.trigger("click");
 
     expect(format(store.currentDate, "yyyy-MM-dd")).toBe("2026-08-20");
