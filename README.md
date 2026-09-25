@@ -94,8 +94,8 @@ Commandes définies dans `render.yaml` :
 | 6 | Backend : socle `tsc`, build vers `dist/` et `render.yaml` | Fait |
 | 6 (suite) | Backend : conversion de tous les fichiers en `.ts` (`utils/`, `services/`, `controllers/`, `routes/`, `server.ts`) | Fait |
 | 6 (fin) | Backend : `strict: true` | Fait |
-| 7 | Conversion des tests `*.test.js` en `.ts` (frontend puis backend) | À faire |
-| 8 | Job `typecheck` dans la CI | À faire |
+| 7 | Conversion des tests `*.test.js` en `.ts` (frontend puis backend) | Fait |
+| 8 | Job `typecheck` dans la CI | Fait |
 
 `typescript` est épinglé en `6.x` (`6.0.3`) tant que `vue-tsc` n'est pas compatible avec TypeScript 7.
 
