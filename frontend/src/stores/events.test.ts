@@ -4,9 +4,9 @@ import type { CalendarEvent, Category, CategoryId } from "../api/types.js";
 
 // Fixtures volontairement partielles : ces tests exercent la mécanique du
 // store (stockage / lecture tel quel), pas la conformité au schéma complet.
-const asEvent = (v: object) => v as unknown as CalendarEvent;
-const asEvents = (v: object[]) => v as unknown as CalendarEvent[];
-const asCategories = (v: object[]) => v as unknown as Category[];
+const asEvent = (v: object) => v as CalendarEvent;
+const asEvents = (v: object[]) => v as CalendarEvent[];
+const asCategories = (v: object[]) => v as Category[];
 
 vi.mock("../api/events.js", () => ({
   eventsApi: {
