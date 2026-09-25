@@ -1,7 +1,14 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { setActivePinia, createPinia } from "pinia";
 import { useCalendarStore } from "./calendar.js";
+import type { ModalDefaults } from "./calendar.js";
 import { useEventsStore } from "./events.js";
+import type { CalendarEvent } from "../api/types.js";
+
+// Fixtures volontairement partielles : ces tests exercent la mécanique du
+// store (stockage / lecture tel quel), pas la conformité au schéma complet.
+const asModalDefaults = (v: object) => v as unknown as ModalDefaults;
+const asEvent = (v: object) => v as unknown as CalendarEvent;
 
 beforeEach(() => {
   setActivePinia(createPinia());
@@ -31,7 +38,7 @@ describe("useCalendarStore", () => {
   });
 
   describe("goToCurrent", () => {
-    it.each(["day", "week", "month"])("bascule en vue %s et recentre sur aujourd'hui", (view) => {
+    it.each(["day", "week", "month"] as const)("bascule en vue %s et recentre sur aujourd'hui", (view) => {
       const store = useCalendarStore();
       store.setCurrentDate(new Date(2000, 0, 1));
       store.goToCurrent(view);
@@ -59,7 +66,7 @@ describe("useCalendarStore", () => {
     it("openCreateModal ouvre en mode création avec defaults", () => {
       const store = useCalendarStore();
       const defaults = { start: "2026-08-28T09:00:00.000Z" };
-      store.openCreateModal(defaults);
+      store.openCreateModal(asModalDefaults(defaults));
       expect(store.modalOpen).toBe(true);
       expect(store.editingEvent).toBeNull();
       expect(store.modalDefaults).toEqual(defaults);
@@ -68,7 +75,7 @@ describe("useCalendarStore", () => {
     it("openEditModal ouvre en mode édition avec l'événement", () => {
       const store = useCalendarStore();
       const event = { id: "1", title: "Existant" };
-      store.openEditModal(event);
+      store.openEditModal(asEvent(event));
       expect(store.modalOpen).toBe(true);
       expect(store.editingEvent).toEqual(event);
       expect(store.modalDefaults).toBeNull();
@@ -76,7 +83,7 @@ describe("useCalendarStore", () => {
 
     it("closeModal réinitialise tout", () => {
       const store = useCalendarStore();
-      store.openEditModal({ id: "1" });
+      store.openEditModal(asEvent({ id: "1" }));
       store.closeModal();
       expect(store.modalOpen).toBe(false);
       expect(store.editingEvent).toBeNull();
@@ -91,7 +98,7 @@ describe("useCalendarStore", () => {
         { id: "1", title: "Réunion projet", description: "", location: "", category: "travail" },
         { id: "2", title: "Anniversaire", description: "", location: "Chez Paul", category: "famille" },
         { id: "3", title: "Sport", description: "Footing", location: "", category: "loisirs" },
-      ];
+      ].map(asEvent);
     }
 
     it("retourne tous les événements sans filtre actif", () => {
@@ -129,7 +136,7 @@ describe("useCalendarStore", () => {
         { id: "1", title: "Réunion B", start: "2026-10-05T09:00:00", category: "travail" },
         { id: "2", title: "Réunion A", start: "2026-03-01T09:00:00", category: "travail" },
         { id: "3", title: "Sport", start: "2026-04-01T09:00:00", category: "loisirs" },
-      ];
+      ].map(asEvent);
     }
 
     it("est vide sans recherche", () => {

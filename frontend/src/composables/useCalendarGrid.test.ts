@@ -13,7 +13,7 @@ describe("getMonthWeeks", () => {
   it("couvre bien le 1er et le dernier jour du mois", () => {
     const weeks = getMonthWeeks(new Date("2026-08-15"));
     const allDays = weeks.flat();
-    const hasDay = (iso) => allDays.some((d) => d.toISOString().slice(0, 10) === iso);
+    const hasDay = (iso: string) => allDays.some((d) => d.toISOString().slice(0, 10) === iso);
     expect(hasDay("2026-08-01")).toBe(true);
     expect(hasDay("2026-08-31")).toBe(true);
   });
