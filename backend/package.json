@@ -24,7 +24,7 @@
     "@types/node": "^20.19.43",
     "@types/uuid": "^9.0.8",
     "tsx": "^4.23.15",
-    "typescript": "^6.0.3",
+    "typescript": "^7.0.2",
     "vitest": "^4.1.11"
   }
 }
