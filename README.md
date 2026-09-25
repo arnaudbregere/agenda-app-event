@@ -1,18 +1,66 @@
 # Agenda
 
-Application de calendrier (façon Google Agenda) — **Vue 3** (frontend) + **Node/Express** (API REST) avec stockage des événements dans un fichier JSON. Frontend et backend en **TypeScript strict** (seuls les fichiers de tests restent en JavaScript, voir [Migration TypeScript](#migration-typescript)).
+Application de calendrier façon Google Agenda : gestion d'événements (vues Mois / Semaine / Jour / Liste, catégories, recherche), sans dépendre d'un service tiers.
+
+C'est un projet portfolio/démo — la démonstration technique (Vue 3 Composition API, TypeScript strict, architecture CSS ITCSS, pipeline CI/CD) compte autant que les fonctionnalités livrées, pas d'authentification multi-utilisateur prévue.
 
 🔗 **App déployée : [agenda-app-event.onrender.com](https://agenda-app-event.onrender.com/)**
 
-## Structure
+## Stack technique
+
+| | |
+|---|---|
+| Frontend | Vue 3 (Composition API, `<script setup>`), Vite, Pinia, `date-fns`, SCSS (ITCSS) |
+| Backend | Node.js, Express, aucune base de données |
+| Langage | TypeScript strict des deux côtés (frontend et backend), Vitest pour les tests |
+| Déploiement | Render (service web unique), piloté par GitHub Actions |
+
+## Architecture
+
+Monorepo à deux packages indépendants, sans dépendance croisée au runtime :
 
 ```
 agenda-app-event/
-├── backend/     API Express — CRUD événements, stockage data/events.json
+├── backend/     API Express — CRUD événements, stockage backend/data/events.json
 └── frontend/    App Vue 3 + Vite + Pinia — vues Mois/Semaine/Jour/Liste
 ```
 
-## Démarrage
+### Backend (`backend/`)
+
+- `server.ts` : point d'entrée Express — montage des routes, service du build frontend, health check, gestion d'erreurs centralisée.
+- `src/routes/` : déclaration des routes (`events.ts`, `categories.ts`), déléguées à...
+- `src/controllers/` : logique HTTP (`eventsController.ts` — parsing du body, codes de statut).
+- `src/services/` : accès aux données (`eventsStore.ts` — lecture/écriture de `data/events.json`, file de promesses pour sérialiser les accès concurrents).
+- `src/utils/` : validation des payloads (`validators.ts`), catégories (`categories.ts`), résolution de chemins indépendante des sources/du build (`paths.ts`).
+- **Pas de base de données** : les événements sont persistés dans un simple fichier JSON (`backend/data/events.json`).
+
+Endpoints :
+
+| Méthode | Route | Description |
+|---|---|---|
+| GET | `/api/events` | Liste des événements |
+| POST | `/api/events` | Création |
+| PUT | `/api/events/:id` | Modification |
+| DELETE | `/api/events/:id` | Suppression |
+| GET | `/api/categories` | 6 catégories fixes (personnel, travail, important, famille, loisirs, autre) |
+| GET | `/api/health` | `{ status, commit }` — utilisé par Render pour le health check |
+
+### Frontend (`frontend/`)
+
+- `src/stores/` : état Pinia — `events.ts` (données, appels API) et `calendar.ts` (navigation, filtres, recherche, modale).
+- `src/components/` : `AppHeader`, `AppSidebar`, `EventModal`, `CategoryFilter`, `MiniCalendar`, `SearchResults`, et `components/views/` pour les 4 vues (Mois, Semaine, Jour, Liste).
+- `src/composables/` : logique réutilisable pure (`useCalendarGrid` — découpage en semaines/jours, `useEventLayout` — positionnement des événements qui se chevauchent).
+- `src/api/` : client HTTP (`client.ts`) et appels typés (`events.ts`), URL configurable via `frontend/.env.development` (`VITE_API_URL`).
+- `src/styles/` : SCSS organisé en **ITCSS** (Settings → Tools → Generic → Elements → Objects → Components → Utilities, composé via `@use`). Design tokens en custom properties CSS (thémabilité à l'exécution) ; breakpoints en variables Sass consommées par un mixin (`respond-down()`), seul cas où le CSS natif ne suffit pas. Pas de framework CSS externe.
+
+### Fonctionnalités
+
+- Vues Mois / Semaine / Jour / Liste, navigation (aujourd'hui, précédent/suivant), mini-calendrier de navigation rapide, accès direct au jour/semaine/mois en cours depuis la barre latérale.
+- Création / édition / suppression d'événements (titre, description, lieu, dates, toute la journée, catégorie).
+- 6 catégories colorées avec filtre dans la barre latérale.
+- Recherche plein texte (titre, description, lieu), résultats affichés dans une liste sous la barre de recherche.
+
+## Démarrage local
 
 Deux serveurs à lancer en parallèle (deux terminaux) :
 
@@ -28,81 +76,39 @@ npm install
 npm run dev
 ```
 
-Ouvrir http://localhost:5173.
+Ouvrir http://localhost:5173. En prod, un seul service sert les deux (voir [Déploiement](#déploiement)).
 
 ### Tests et vérifications
 
+Mêmes commandes dans `backend/` et `frontend/` :
+
 ```bash
-# Dans backend/ et dans frontend/
 npm test              # Vitest (vitest run)
 npm run typecheck     # tsc --noEmit (backend) / vue-tsc --noEmit (frontend)
-
-# Build
-cd frontend && npm run build   # -> frontend/dist
-cd backend && npm run build    # -> backend/dist (tsc), lancé par npm start
+npm run build         # frontend -> frontend/dist ; backend -> backend/dist (tsc), lancé par npm start
 ```
 
-## Backend
+## Flow CI/CD
 
-- `GET /api/events`, `POST /api/events`, `PUT /api/events/:id`, `DELETE /api/events/:id`
-- `GET /api/categories`
-- Les événements sont persistés dans `backend/data/events.json` (aucune base de données).
-- Port configurable via la variable d'env `PORT` (défaut `4000`).
-- **Build** : `npm run build` compile `server.ts` et `src/` (hors tests) vers `backend/dist/` avec `tsc` (`tsconfig.build.json`). En production, le serveur démarre depuis le build : `node backend/dist/server.js` (`npm start` en local, après un `npm run build`). En dev, `npm run dev` lance les sources TypeScript directement avec `tsx watch server.ts` (sans build).
-- `src/utils/paths.ts` retrouve la racine du backend en remontant jusqu'à `package.json` : les chemins de `data/events.json` et de `frontend/dist` restent valides depuis les sources comme depuis `dist/`.
-- `GET /api/health` (utilisé par Render) renvoie `{ status, commit }`.
+Workflow unique `.github/workflows/tests.yml`, sur chaque push et pull request vers `main` :
 
-## Frontend
+1. **Job `backend`** : `npm ci`, `npm run typecheck`, `npm run build`, `npm test`.
+2. **Job `frontend`** : `npm ci`, `npm run typecheck`, `npm test`.
+3. **Job `deploy`** (uniquement sur un push vers `main`, donc à chaque merge de PR, jamais sur une pull request) : appelle l'API Render pour déclencher le déploiement, attend qu'il soit `live`, puis vérifie `GET /api/health`. Nécessite les secrets GitHub `RENDER_API_KEY` et `RENDER_SERVICE_ID`.
 
-- Vue 3 (`<script setup lang="ts">`), **TypeScript** en mode `strict` (`npm run typecheck`), Pinia pour l'état (événements + navigation calendrier), `date-fns` pour les calculs de dates.
-- **SCSS** organisé selon la méthodologie **ITCSS** (`frontend/src/styles`) : Settings → Tools → Generic → Elements → Objects → Components → Utilities, composé via `@use` (modules Sass). Design tokens en custom properties CSS (thémabilité à l'exécution) ; breakpoints en variables Sass consommées par un mixin (`respond-down()`), seul cas où le CSS natif ne suffit pas. Pas de framework CSS externe.
-- URL de l'API configurable via `frontend/.env.development` (`VITE_API_URL`).
-
-## Fonctionnalités
-
-- Vues Mois / Semaine / Jour / Liste, navigation (aujourd'hui, précédent/suivant), mini-calendrier de navigation rapide.
-- Accès direct au jour, à la semaine ou au mois en cours depuis la barre latérale, sans passer par le calendrier.
-- Création / édition / suppression d'événements (titre, description, lieu, dates, toute la journée, catégorie).
-- 6 catégories colorées avec filtre par catégorie dans la barre latérale.
-- Recherche plein texte (titre, description, lieu), avec les résultats affichés dans une liste sous la barre de recherche, sans passer par la vue Liste.
+`main` est protégée : tout changement passe par une PR, mergée en squash une fois la CI verte (`gh pr merge --squash --delete-branch`). L'auto-deploy natif de Render est désactivé (`autoDeploy: false` dans `render.yaml`) — c'est le job `deploy` ci-dessus qui pilote entièrement le déploiement, pas Render lui-même.
 
 ## Déploiement
 
-L'app est prête pour un déploiement en **un seul service Render** (voir `render.yaml` à la racine) : le build du frontend (`frontend/dist`) est servi directement par le serveur Express, donc une seule URL, sans souci de CORS.
+Un seul service Render (config dans `render.yaml` à la racine) : le build du frontend (`frontend/dist`) est servi directement par le serveur Express, donc une seule URL, sans souci de CORS.
 
-1. Sur [render.com](https://dashboard.render.com), **New +** → **Blueprint**, connecter le repo GitHub `agenda-app-event`. Render détecte `render.yaml` et configure tout automatiquement (build + start command).
-2. Une fois déployé, remplacer le lien tout en haut de ce README par l'URL fournie par Render (`https://agenda-app-event.onrender.com` ou équivalent).
+```yaml
+# render.yaml
+buildCommand: cd frontend && npm ci && npm run build && cd ../backend && npm ci && npm run build
+startCommand: node backend/dist/server.js
+healthCheckPath: /api/health
+```
 
-Commandes définies dans `render.yaml` :
-
-- Build : `cd frontend && npm ci && npm run build && cd ../backend && npm ci && npm run build`
-- Start : `node backend/dist/server.js`
-- Health check : `/api/health`
-
-**Le déploiement est piloté par GitHub Actions**, pas par l'auto-deploy de Render (`autoDeploy: false`). Sur chaque push sur `main` (donc à chaque merge de PR), le workflow `.github/workflows/tests.yml` lance les tests et le build backend, puis le job `deploy` appelle l'API Render, attend que le déploiement soit `live` et vérifie `/api/health`. Le job `deploy` est ignoré sur les pull requests. Il nécessite les secrets GitHub `RENDER_API_KEY` et `RENDER_SERVICE_ID`. `main` est protégée : tout changement passe par une PR, mergée en squash une fois la CI verte.
-
-✅ Déployé : **https://agenda-app-event.onrender.com/**
+Pour redéployer ailleurs : sur [render.com](https://dashboard.render.com), **New +** → **Blueprint**, connecter le repo GitHub. Render détecte `render.yaml` et configure tout automatiquement.
 
 ⚠️ **Limite du plan gratuit Render** : le disque n'est pas persistant sur les instances free — `backend/data/events.json` peut être réinitialisé à chaque redéploiement ou redémarrage après une période d'inactivité. Pour une persistance fiable, ajouter un [Disk Render](https://render.com/docs/disks) (nécessite un plan payant) monté sur `backend/data`.
-
-## Migration TypeScript
-
-| Étape | Contenu | État |
-|---|---|---|
-| 1 à 4 | Frontend : socle, `api/`, `stores/`, `composables/` + `components/` | Fait |
-| 5 | `strict: true` sur le frontend | Fait |
-| 6 | Backend : socle `tsc`, build vers `dist/` et `render.yaml` | Fait |
-| 6 (suite) | Backend : conversion de tous les fichiers en `.ts` (`utils/`, `services/`, `controllers/`, `routes/`, `server.ts`) | Fait |
-| 6 (fin) | Backend : `strict: true` | Fait |
-| 7 | Conversion des tests `*.test.js` en `.ts` (frontend puis backend) | Fait |
-| 8 | Job `typecheck` dans la CI | Fait |
-
-`typescript` reste épinglé en `6.x` (`^6.0.3`) **côté frontend uniquement**, tant que `vue-tsc` n'est pas compatible avec TypeScript 7 (vérifié à nouveau le 25/09/2026 : `vue-tsc@3.3.11`, la dernière version publiée, échoue toujours avec `typescript@7.0.2`, la dernière stable, avec `ERR_PACKAGE_PATH_NOT_EXPORTED`). Le backend, qui utilise `tsc` directement (jamais `vue-tsc`), n'a pas cette contrainte et suit `typescript@^7.x`.
-
-## Pistes d'amélioration possibles
-
-- Événements récurrents (quotidien / hebdomadaire / mensuel).
-- Drag & drop des événements pour les déplacer/redimensionner.
-- Export/import iCal (.ics).
-- Authentification si l'app doit devenir multi-utilisateur.
-- Tests d'intégration de l'API côté backend (les tests unitaires Vitest existent déjà, backend et frontend).
