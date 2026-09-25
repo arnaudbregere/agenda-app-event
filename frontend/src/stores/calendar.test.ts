@@ -111,14 +111,14 @@ describe("useCalendarStore", () => {
       seedEvents();
       const store = useCalendarStore();
       store.toggleCategory("famille");
-      expect(store.filteredEvents.map((e) => e.id)).toEqual(["1", "3"]);
+      expect(store.filteredEvents.map((event) => event.id)).toEqual(["1", "3"]);
     });
 
     it("filtre par recherche texte sur title/description/location (insensible à la casse)", () => {
       seedEvents();
       const store = useCalendarStore();
       store.searchQuery = "PAUL";
-      expect(store.filteredEvents.map((e) => e.id)).toEqual(["2"]);
+      expect(store.filteredEvents.map((event) => event.id)).toEqual(["2"]);
     });
 
     it("combine filtre catégorie et recherche texte", () => {
@@ -148,7 +148,7 @@ describe("useCalendarStore", () => {
       seed();
       const store = useCalendarStore();
       store.searchQuery = "réunion";
-      expect(store.searchResults.map((e) => e.id)).toEqual(["2", "1"]);
+      expect(store.searchResults.map((event) => event.id)).toEqual(["2", "1"]);
     });
   });
 });

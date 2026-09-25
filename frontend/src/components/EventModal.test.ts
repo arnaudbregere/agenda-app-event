@@ -141,7 +141,7 @@ describe("EventModal", () => {
       const swatches = body().findAll(".c-form__swatch");
       expect(swatches).toHaveLength(CATEGORIES.length);
       // catégorie par défaut "autre" : aucun swatch de la liste n'est sélectionné au départ
-      expect(swatches.some((s) => s.classes().includes("is-selected"))).toBe(false);
+      expect(swatches.some((swatch) => swatch.classes().includes("is-selected"))).toBe(false);
 
       await swatches[1].trigger("click");
 
