@@ -18,8 +18,8 @@ describe("layoutTimedEvents", () => {
       { id: "a", startMinutes: 0, endMinutes: 60 },
       { id: "b", startMinutes: 60, endMinutes: 120 },
     ]);
-    expect(result.find((e) => e.id === "a")!.width).toBe(100);
-    expect(result.find((e) => e.id === "b")!.width).toBe(100);
+    expect(result.find((event) => event.id === "a")!.width).toBe(100);
+    expect(result.find((event) => event.id === "b")!.width).toBe(100);
   });
 
   it("partage la largeur en deux colonnes pour deux événements chevauchants", () => {
@@ -27,8 +27,8 @@ describe("layoutTimedEvents", () => {
       { id: "a", startMinutes: 0, endMinutes: 120 },
       { id: "b", startMinutes: 60, endMinutes: 180 },
     ]);
-    const a = result.find((e) => e.id === "a")!;
-    const b = result.find((e) => e.id === "b")!;
+    const a = result.find((event) => event.id === "a")!;
+    const b = result.find((event) => event.id === "b")!;
     expect(a.width).toBe(50);
     expect(b.width).toBe(50);
     expect(new Set([a.left, b.left])).toEqual(new Set([0, 50]));
@@ -40,10 +40,10 @@ describe("layoutTimedEvents", () => {
       { id: "b", startMinutes: 10, endMinutes: 90 },
       { id: "c", startMinutes: 20, endMinutes: 90 },
     ]);
-    for (const ev of result) {
-      expect(ev.width).toBeCloseTo(100 / 3);
+    for (const event of result) {
+      expect(event.width).toBeCloseTo(100 / 3);
     }
-    const lefts = result.map((e) => e.left).sort((x, y) => x - y);
+    const lefts = result.map((event) => event.left).sort((x, y) => x - y);
     [0, 100 / 3, 200 / 3].forEach((expected, i) => expect(lefts[i]).toBeCloseTo(expected));
   });
 
@@ -54,7 +54,7 @@ describe("layoutTimedEvents", () => {
       { id: "c", startMinutes: 120, endMinutes: 180 },
     ]);
     // a et b se chevauchent (2 colonnes) ; c est seul dans son cluster (pleine largeur)
-    expect(result.find((e) => e.id === "c")!.width).toBe(100);
+    expect(result.find((event) => event.id === "c")!.width).toBe(100);
   });
 
   it("réutilise une colonne libérée par un événement déjà terminé", () => {
@@ -63,8 +63,8 @@ describe("layoutTimedEvents", () => {
       { id: "b", startMinutes: 0, endMinutes: 60 },
       { id: "c", startMinutes: 30, endMinutes: 90 }, // chevauche b, mais pas a (a fini à 30)
     ]);
-    const a = result.find((e) => e.id === "a")!;
-    const c = result.find((e) => e.id === "c")!;
+    const a = result.find((event) => event.id === "a")!;
+    const c = result.find((event) => event.id === "c")!;
     // c doit pouvoir reprendre la colonne de a puisque a est terminé
     expect(c.left).toBe(a.left);
   });
