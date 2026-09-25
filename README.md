@@ -236,13 +236,21 @@ Les deux packages sont en TypeScript strict, **code et tests** : `npm run typech
 
 ## Flow CI/CD
 
-Workflow unique `.github/workflows/tests.yml`, sur chaque push et pull request vers `main` :
+`main` est **protégée** : aucun push direct, tout changement passe par une branche puis une pull request. Du commit local à la prod :
 
-1. **Job `backend`** : `npm ci`, `npm run typecheck`, `npm run build`, `npm test`.
-2. **Job `frontend`** : `npm ci`, `npm run typecheck`, `npm test`.
-3. **Job `deploy`** (uniquement sur un push vers `main`, donc à chaque merge de PR, jamais sur une pull request) : appelle l'API Render pour déclencher le déploiement, attend qu'il soit `live`, puis vérifie `GET /api/health`. Nécessite les secrets GitHub `RENDER_API_KEY` et `RENDER_SERVICE_ID`.
+1. **Branche** depuis `main`, nommée par préfixe conventionnel : `feat/...`, `fix/...`, `chore/...`, `docs/...`.
+2. **Pull request** (`gh pr create`) — même pour un changement mineur.
+3. **CI sur la PR** : le workflow `.github/workflows/tests.yml` se déclenche (`pull_request` vers `main`), jobs `backend` et `frontend` uniquement (pas `deploy` à ce stade, voir plus bas) :
+   - **Job `backend`** : `npm ci`, `npm run typecheck`, `npm run build`, `npm test`.
+   - **Job `frontend`** : `npm ci`, `npm run typecheck`, `npm test`.
+   - Les deux doivent passer avant merge.
+4. **Merge en squash** une fois la CI verte, avec suppression de la branche (`gh pr merge --squash --delete-branch`).
+5. **Push sur `main`** (généré par le merge) : le même workflow se redéclenche (`push` vers `main`), cette fois avec le job **`deploy`** en plus des deux précédents :
+   - Appelle l'API Render (`POST /v1/services/{id}/deploys`, secrets GitHub `RENDER_API_KEY` / `RENDER_SERVICE_ID`) pour déclencher le déploiement.
+   - Poll le statut jusqu'à `live` (échec du job si `build_failed`/`update_failed`/`canceled`, ou timeout).
+   - Vérifie `GET /api/health` en dernière étape.
 
-`main` est protégée : tout changement passe par une PR, mergée en squash une fois la CI verte (`gh pr merge --squash --delete-branch`). L'auto-deploy natif de Render est désactivé (`autoDeploy: false` dans `render.yaml`) — c'est le job `deploy` ci-dessus qui pilote entièrement le déploiement, pas Render lui-même.
+L'auto-deploy natif de Render est désactivé (`autoDeploy: false` dans `render.yaml`) — c'est ce job `deploy` qui pilote entièrement le déploiement, jamais Render tout seul. Résultat : aucune action manuelle après un merge, le statut du job `deploy` dans l'onglet Actions du dépôt dit si le déploiement a réussi.
 
 ## Déploiement
 
