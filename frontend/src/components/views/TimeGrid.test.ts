@@ -4,6 +4,7 @@ import { setActivePinia, createPinia } from "pinia";
 import TimeGrid from "./TimeGrid.vue";
 import { useCalendarStore } from "../../stores/calendar.js";
 import { useEventsStore } from "../../stores/events.js";
+import { asCategories, asEvents } from "../../test-support/fixtures.js";
 
 const DAY = new Date(2026, 7, 28); // vendredi 28 août 2026
 
@@ -23,8 +24,8 @@ describe("TimeGrid", () => {
 
   it("positionne un événement chronométré selon son heure de début/fin (HOUR_ROW_HEIGHT = 48px)", () => {
     const eventsStore = useEventsStore();
-    eventsStore.categories = [{ id: "travail", label: "Travail", color: "#0b8043" }];
-    eventsStore.events = [
+    eventsStore.categories = asCategories([{ id: "travail", label: "Travail", color: "#0b8043" }]);
+    eventsStore.events = asEvents([
       {
         id: "1",
         title: "Réunion",
@@ -35,7 +36,7 @@ describe("TimeGrid", () => {
         start: new Date(2026, 7, 28, 9, 0).toISOString(),
         end: new Date(2026, 7, 28, 10, 0).toISOString(),
       },
-    ];
+    ]);
     const wrapper = mount(TimeGrid, { props: { days: [DAY] } });
 
     const block = wrapper.find(".c-event-block");
@@ -46,8 +47,8 @@ describe("TimeGrid", () => {
 
   it("affiche les événements 'toute la journée' dans le bandeau dédié, pas dans la grille horaire", () => {
     const eventsStore = useEventsStore();
-    eventsStore.categories = [{ id: "travail", label: "Travail", color: "#0b8043" }];
-    eventsStore.events = [
+    eventsStore.categories = asCategories([{ id: "travail", label: "Travail", color: "#0b8043" }]);
+    eventsStore.events = asEvents([
       {
         id: "1",
         title: "Séminaire",
@@ -58,7 +59,7 @@ describe("TimeGrid", () => {
         start: new Date(2026, 7, 28, 0, 0).toISOString(),
         end: new Date(2026, 7, 28, 23, 59).toISOString(),
       },
-    ];
+    ]);
     const wrapper = mount(TimeGrid, { props: { days: [DAY] } });
 
     expect(wrapper.find(".c-event-allday").text()).toBe("Séminaire");
@@ -73,15 +74,15 @@ describe("TimeGrid", () => {
     await hourLines[14].trigger("click"); // 14h
 
     expect(store.modalOpen).toBe(true);
-    expect(store.modalDefaults.start.getHours()).toBe(14);
-    expect(store.modalDefaults.end.getHours()).toBe(15);
+    expect(store.modalDefaults!.start.getHours()).toBe(14);
+    expect(store.modalDefaults!.end.getHours()).toBe(15);
   });
 
   it("cliquer sur un événement chronométré ouvre la modale d'édition", async () => {
     const store = useCalendarStore();
     const eventsStore = useEventsStore();
-    eventsStore.categories = [{ id: "travail", label: "Travail", color: "#0b8043" }];
-    eventsStore.events = [
+    eventsStore.categories = asCategories([{ id: "travail", label: "Travail", color: "#0b8043" }]);
+    eventsStore.events = asEvents([
       {
         id: "1",
         title: "Réunion",
@@ -92,7 +93,7 @@ describe("TimeGrid", () => {
         start: new Date(2026, 7, 28, 9, 0).toISOString(),
         end: new Date(2026, 7, 28, 10, 0).toISOString(),
       },
-    ];
+    ]);
     const wrapper = mount(TimeGrid, { props: { days: [DAY] } });
 
     await wrapper.find(".c-event-block").trigger("click");

@@ -4,6 +4,7 @@ import { setActivePinia, createPinia } from "pinia";
 import ListView from "./ListView.vue";
 import { useCalendarStore } from "../../stores/calendar.js";
 import { useEventsStore } from "../../stores/events.js";
+import { asCategories, asEvents } from "../../test-support/fixtures.js";
 
 beforeEach(() => {
   setActivePinia(createPinia());
@@ -23,8 +24,8 @@ describe("ListView", () => {
     const store = useCalendarStore();
     const eventsStore = useEventsStore();
     store.setCurrentDate(new Date(2026, 7, 15));
-    eventsStore.categories = [{ id: "travail", label: "Travail", color: "#0b8043" }];
-    eventsStore.events = [
+    eventsStore.categories = asCategories([{ id: "travail", label: "Travail", color: "#0b8043" }]);
+    eventsStore.events = asEvents([
       {
         id: "1",
         title: "Second",
@@ -45,7 +46,7 @@ describe("ListView", () => {
         start: new Date(2026, 7, 5, 9, 0).toISOString(),
         end: new Date(2026, 7, 5, 10, 0).toISOString(),
       },
-    ];
+    ]);
     const wrapper = mount(ListView);
 
     const groups = wrapper.findAll(".c-agenda-list__group");
@@ -58,8 +59,8 @@ describe("ListView", () => {
     const store = useCalendarStore();
     const eventsStore = useEventsStore();
     store.setCurrentDate(new Date(2026, 7, 15));
-    eventsStore.categories = [{ id: "travail", label: "Travail", color: "#0b8043" }];
-    eventsStore.events = [
+    eventsStore.categories = asCategories([{ id: "travail", label: "Travail", color: "#0b8043" }]);
+    eventsStore.events = asEvents([
       {
         id: "1",
         title: "Hors mois",
@@ -70,7 +71,7 @@ describe("ListView", () => {
         start: new Date(2026, 8, 5, 9, 0).toISOString(),
         end: new Date(2026, 8, 5, 10, 0).toISOString(),
       },
-    ];
+    ]);
     const wrapper = mount(ListView);
 
     expect(wrapper.find(".c-agenda-list__empty").exists()).toBe(true);
@@ -80,8 +81,8 @@ describe("ListView", () => {
     const store = useCalendarStore();
     const eventsStore = useEventsStore();
     store.setCurrentDate(new Date(2026, 7, 15));
-    eventsStore.categories = [{ id: "travail", label: "Travail", color: "#0b8043" }];
-    eventsStore.events = [
+    eventsStore.categories = asCategories([{ id: "travail", label: "Travail", color: "#0b8043" }]);
+    eventsStore.events = asEvents([
       {
         id: "1",
         title: "Réunion",
@@ -92,7 +93,7 @@ describe("ListView", () => {
         start: new Date(2026, 7, 20, 14, 0).toISOString(),
         end: new Date(2026, 7, 20, 15, 0).toISOString(),
       },
-    ];
+    ]);
     const wrapper = mount(ListView);
 
     await wrapper.find(".c-agenda-item").trigger("click");

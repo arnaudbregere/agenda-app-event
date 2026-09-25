@@ -4,6 +4,7 @@ import { setActivePinia, createPinia } from "pinia";
 import AppHeader from "./AppHeader.vue";
 import { useCalendarStore } from "../stores/calendar.js";
 import { useEventsStore } from "../stores/events.js";
+import { asEvents } from "../test-support/fixtures.js";
 
 beforeEach(() => {
   setActivePinia(createPinia());
@@ -22,7 +23,7 @@ describe("AppHeader", () => {
     const wrapper = mount(AppHeader);
 
     const buttons = wrapper.findAll(".c-view-switcher__btn");
-    const weekBtn = buttons.find((b) => b.text() === "Semaine");
+    const weekBtn = buttons.find((button) => button.text() === "Semaine")!;
     await weekBtn.trigger("click");
 
     expect(store.currentView).toBe("week");
@@ -63,9 +64,9 @@ describe("AppHeader", () => {
 
   describe("résultats de recherche", () => {
     function seed() {
-      useEventsStore().events = [
+      useEventsStore().events = asEvents([
         { id: "1", title: "Réunion projet", start: "2026-10-05T09:00:00", end: "2026-10-05T10:00:00", category: "travail" },
-      ];
+      ]);
     }
 
     it("affiche une liste de résultats sous la barre pendant la recherche", async () => {
@@ -102,7 +103,7 @@ describe("AppHeader", () => {
       await wrapper.find(".c-search-results__item").trigger("click");
 
       expect(store.modalOpen).toBe(true);
-      expect(store.editingEvent.id).toBe("1");
+      expect(store.editingEvent?.id).toBe("1");
       expect(wrapper.find(".c-search-results").exists()).toBe(false);
     });
 

@@ -6,13 +6,16 @@ import { format } from "date-fns";
 import EventModal from "./EventModal.vue";
 import { useCalendarStore } from "../stores/calendar.js";
 import { useEventsStore } from "../stores/events.js";
+import { asCategories, asEvent } from "../test-support/fixtures.js";
 
-const CATEGORIES = [
+const CATEGORIES = asCategories([
   { id: "travail", label: "Travail", color: "#0b8043" },
   { id: "famille", label: "Famille", color: "#e67c73" },
-];
+]);
 
-let wrapper;
+const inputValue = (input: { element: Element }) => (input.element as HTMLInputElement).value;
+
+let wrapper: ReturnType<typeof mount> | undefined;
 
 function mountModal() {
   wrapper = mount(EventModal, { attachTo: document.body });
@@ -69,13 +72,13 @@ describe("EventModal", () => {
     it("préremplit le formulaire avec l'événement et affiche 'Modifier l'événement'", async () => {
       const calendarStore = useCalendarStore();
       mountModal();
-      calendarStore.openEditModal(event);
+      calendarStore.openEditModal(asEvent(event));
       await nextTick();
 
       expect(body().find("#event-modal-title").text()).toBe("Modifier l'événement");
-      expect(body().find("#event-title").element.value).toBe("Réunion projet");
-      expect(body().find("#event-location").element.value).toBe("Salle A");
-      expect(body().find("#event-description").element.value).toBe("Point d'équipe");
+      expect(inputValue(body().find("#event-title"))).toBe("Réunion projet");
+      expect(inputValue(body().find("#event-location"))).toBe("Salle A");
+      expect(inputValue(body().find("#event-description"))).toBe("Point d'équipe");
       expect(body().find(".c-btn--danger").exists()).toBe(true);
     });
   });
@@ -117,7 +120,7 @@ describe("EventModal", () => {
 
       await body().find("#event-title").setValue("Titre valide");
       const dateInputs = body().findAll('input[type="date"]');
-      const [y, m, d] = dateInputs[0].element.value.split("-").map(Number);
+      const [y, m, d] = inputValue(dateInputs[0]!).split("-").map(Number);
       const earlier = format(new Date(y, m - 1, d - 1), "yyyy-MM-dd");
       await dateInputs[1].setValue(earlier);
 
@@ -151,7 +154,7 @@ describe("EventModal", () => {
     it("mode création : appelle eventsStore.createEvent avec le payload puis ferme la modale", async () => {
       const calendarStore = useCalendarStore();
       const eventsStore = useEventsStore();
-      const createSpy = vi.spyOn(eventsStore, "createEvent").mockResolvedValue({ id: "new" });
+      const createSpy = vi.spyOn(eventsStore, "createEvent").mockResolvedValue(asEvent({ id: "new" }));
       mountModal();
       calendarStore.openCreateModal();
       await nextTick();
@@ -178,9 +181,9 @@ describe("EventModal", () => {
         start: "2026-08-28T09:00:00.000Z",
         end: "2026-08-28T10:00:00.000Z",
       };
-      const updateSpy = vi.spyOn(eventsStore, "updateEvent").mockResolvedValue({ ...event, title: "Nouveau titre" });
+      const updateSpy = vi.spyOn(eventsStore, "updateEvent").mockResolvedValue(asEvent({ ...event, title: "Nouveau titre" }));
       mountModal();
-      calendarStore.openEditModal(event);
+      calendarStore.openEditModal(asEvent(event));
       await nextTick();
 
       await body().find("#event-title").setValue("Nouveau titre");
