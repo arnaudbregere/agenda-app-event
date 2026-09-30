@@ -38,8 +38,9 @@ agenda-app-event/
 ├── .gitignore
 │
 ├── backend/
-│   ├── server.ts                          — point d'entrée Express (routes, static, health check, erreurs)
+│   ├── server.ts                          — écoute réseau uniquement (app.listen), point d'entrée de dist/
 │   ├── src/
+│   │   ├── app.ts                         — app Express (routes, static, health check, erreurs), app.test.ts
 │   │   ├── routes/
 │   │   │   ├── events.ts                  — GET/POST /api/events, GET/PUT/DELETE /api/events/:id
 │   │   │   └── categories.ts              — GET /api/categories
@@ -137,7 +138,7 @@ Serveur Express unique — backend/server.ts
 
 ### Backend (`backend/`)
 
-- `server.ts` : point d'entrée Express — montage des routes, service du build frontend, health check, gestion d'erreurs centralisée.
+- `src/app.ts` : l'app Express — montage des routes, service du build frontend, health check, gestion d'erreurs centralisée. `server.ts`, à la racine, ne fait que l'écouter sur `PORT` (séparation utile pour `app.test.ts`, qui pilote l'app avec `supertest` sans ouvrir de port).
 - `src/routes/` : déclaration des routes (`events.ts`, `categories.ts`), déléguées à...
 - `src/controllers/` : logique HTTP (`eventsController.ts` — parsing du body, codes de statut).
 - `src/services/` : accès aux données (`eventsStore.ts` — lecture/écriture de `data/events.json`, file de promesses pour sérialiser les accès concurrents).
@@ -218,21 +219,20 @@ npm run build         # frontend -> frontend/dist ; backend -> backend/dist (tsc
 
 Les deux packages sont en TypeScript strict, **code et tests** : `npm run typecheck` inclut les fichiers `*.test.ts`, et la CI l'exécute (voir [Flow CI/CD](#flow-cicd)).
 
-14 fichiers de tests Vitest au total :
+16 fichiers de tests Vitest au total :
 
 | Package | Fichier | Couvre |
 |---|---|---|
-| Backend (2) | `src/utils/validators.test.ts` | Validation des payloads événement (champs requis, formats, dates) |
+| Backend (3) | `src/utils/validators.test.ts` | Validation des payloads événement (champs requis, formats, dates) |
 | | `src/services/eventsStore.test.ts` | CRUD + sérialisation des accès concurrents (mock de `node:fs/promises`) |
+| | `src/app.test.ts` | Intégration : cycle HTTP complet via `supertest` à travers `routes/` → `controllers/` → `services/` — CRUD, validations, 404, `/api/health`, `/api/categories`, fallback SPA |
 | Frontend — stores (2) | `src/stores/calendar.test.ts` | Navigation, filtres, recherche, modale |
 | | `src/stores/events.test.ts` | Appels API mockés, mise à jour du state |
 | Frontend — composables (2) | `src/composables/useCalendarGrid.test.ts` | Découpage semaines/jours |
 | | `src/composables/useEventLayout.test.ts` | Positionnement des événements qui se chevauchent |
-| Frontend — components (8) | `AppHeader`, `AppSidebar`, `CategoryFilter`, `EventModal`, `MiniCalendar`, `MonthView`, `ListView`, `TimeGrid` | Montage via `@vue/test-utils`, interactions utilisateur, intégration avec les stores |
+| Frontend — components (9) | `AppHeader`, `AppSidebar`, `CategoryFilter`, `ConfirmDialog`, `EventModal`, `MiniCalendar`, `MonthView`, `ListView`, `TimeGrid` | Montage via `@vue/test-utils`, interactions utilisateur, intégration avec les stores |
 
-`frontend/src/test-support/fixtures.ts` mutualise les fixtures d'événements/catégories volontairement partielles utilisées par plusieurs fichiers de tests (les stores ne valident pas leurs entrées : ces tests exercent leur mécanique, pas la conformité au schéma complet).
-
-**Pas encore couvert** : tests d'intégration API bout en bout (démarrage réel du serveur Express) — voir [issue #58](https://github.com/arnaudbregere/agenda-app-event/issues/58).
+`frontend/src/test-support/fixtures.ts` mutualise les fixtures d'événements/catégories volontairement partielles utilisées par plusieurs fichiers de tests (les stores ne valident pas leurs entrées : ces tests exercent leur mécanique, pas la conformité au schéma complet). `backend/src/app.ts` exporte l'app Express (routes, middlewares, gestion d'erreurs) séparément de `backend/server.ts` (qui ne fait plus que l'écoute réseau), pour que `app.test.ts` puisse la piloter avec `supertest` sans ouvrir de vrai port.
 
 ## Flow CI/CD
 
