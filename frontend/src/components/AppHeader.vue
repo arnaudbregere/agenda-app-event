@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed, nextTick, ref } from "vue";
 import {
   addMonths,
   subMonths,
@@ -46,8 +46,55 @@ function onSearchFocusOut(e: FocusEvent) {
   if (!container.contains(e.relatedTarget as Node | null)) searchOpen.value = false;
 }
 
+// Sous 900px, le champ de recherche est masqué par défaut (place limitée
+// dans le header, voir _app-header.scss) et se déplie via un bouton dédié
+// (issue #40) plutôt que d'être toujours visible comme sur desktop. Le
+// déclencheur est toujours ce même bouton (pas de document.activeElement :
+// Safari ne lui donne pas le focus au clic, cf. commentaire sur
+// mousedown.prevent plus bas).
+const mobileSearchOpen = ref(false);
+const searchContainerRef = ref<HTMLElement | null>(null);
+const searchToggleRef = ref<HTMLElement | null>(null);
+
+const toggleMobileSearch = async () => {
+  mobileSearchOpen.value = !mobileSearchOpen.value;
+  if (mobileSearchOpen.value) {
+    await nextTick();
+    searchContainerRef.value?.querySelector("input")?.focus();
+  } else {
+    searchToggleRef.value?.focus();
+  }
+};
+
+const closeMobileSearch = () => {
+  if (!mobileSearchOpen.value) return;
+  mobileSearchOpen.value = false;
+  searchToggleRef.value?.focus();
+};
+
+// Échap referme d'abord la liste de résultats si elle est ouverte, sinon le
+// champ mobile lui-même (même logique « la couche du dessus d'abord » que
+// la modale d'édition / la confirmation de suppression, issue #61).
+const onSearchKeydown = () => {
+  if (searchOpen.value) {
+    searchOpen.value = false;
+    return;
+  }
+  closeMobileSearch();
+};
+
+// AppSidebar.vue restitue le focus au déclencheur en lisant
+// document.activeElement à l'ouverture : on le force explicitement ici
+// (même raison que pour la recherche mobile ci-dessus) plutôt que de
+// compter sur le focus-au-clic natif du bouton.
+const onToggleSidebar = (e: MouseEvent) => {
+  (e.currentTarget as HTMLElement).focus();
+  store.toggleSidebar();
+};
+
 function selectResult(event: CalendarEvent) {
   searchOpen.value = false;
+  mobileSearchOpen.value = false;
   store.openEditModal(event);
 }
 
@@ -67,14 +114,14 @@ function step(direction: 1 | -1) {
 </script>
 
 <template>
-  <header class="c-app-header">
+  <header class="c-app-header" :class="{ 'is-search-open': mobileSearchOpen }">
     <button
       type="button"
       class="c-btn c-btn--icon c-app-header__menu-toggle"
       :aria-expanded="store.isSidebarOpen"
       aria-controls="app-sidebar"
       :aria-label="store.isSidebarOpen ? 'Fermer le menu' : 'Ouvrir le menu'"
-      @click="store.toggleSidebar()"
+      @click="onToggleSidebar"
     >
       <Icon :name="store.isSidebarOpen ? 'x' : 'menu'" class="c-btn__icon" />
     </button>
@@ -98,12 +145,12 @@ function step(direction: 1 | -1) {
       <h1 class="c-app-header__title">{{ periodLabel }}</h1>
     </div>
 
-    <div class="c-app-header__search">
+    <div id="mobile-search" ref="searchContainerRef" class="c-app-header__search">
       <div
         class="c-search"
         @focusin="searchOpen = true"
         @focusout="onSearchFocusOut"
-        @keydown.esc="searchOpen = false"
+        @keydown.esc="onSearchKeydown"
       >
         <Icon name="search" class="c-search__icon" />
         <input
@@ -132,6 +179,18 @@ function step(direction: 1 | -1) {
     </div>
 
     <div class="c-app-header__actions">
+      <button
+        ref="searchToggleRef"
+        type="button"
+        class="c-btn c-btn--icon c-app-header__search-toggle"
+        :aria-expanded="mobileSearchOpen"
+        aria-controls="mobile-search"
+        :aria-label="mobileSearchOpen ? 'Fermer la recherche' : 'Rechercher'"
+        @click="toggleMobileSearch"
+      >
+        <Icon :name="mobileSearchOpen ? 'x' : 'search'" class="c-btn__icon" />
+      </button>
+
       <div class="c-view-switcher">
         <button
           v-for="view in VIEWS"

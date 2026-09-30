@@ -69,6 +69,34 @@
     display: none;
   }
 
+  // Recherche dépliée par le bouton dédié (__search-toggle, issue #40) :
+  // prend sa propre ligne pleine largeur sous le reste du header. Le
+  // flex-wrap forcé prime sur le nowrap de respond-up(sm) — plus haute
+  // spécificité (2 classes), sans dépendre de l'ordre des règles.
+  &.is-search-open {
+    flex-wrap: wrap;
+
+    &__search {
+      display: block;
+      flex-basis: 100%;
+      order: 1;
+    }
+  }
+
+  &__search-toggle {
+    flex-shrink: 0;
+
+    @media (pointer: coarse) {
+      position: relative;
+
+      &::after {
+        content: "";
+        position: absolute;
+        inset: -2px;
+      }
+    }
+  }
+
   &__actions {
     display: flex;
     align-items: center;
@@ -80,7 +108,8 @@
 
 @include respond-up(md) {
   .c-app-header {
-    &__menu-toggle {
+    &__menu-toggle,
+    &__search-toggle {
       display: none;
     }
 
