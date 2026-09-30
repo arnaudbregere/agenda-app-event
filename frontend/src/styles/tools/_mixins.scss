@@ -7,20 +7,9 @@
 @use "sass:map";
 @use "../settings/breakpoints" as bp;
 
-/// Enrobe le contenu dans une media query `max-width` à partir d'un nom de
-/// breakpoint défini dans settings/_breakpoints.scss (sm | md | lg).
-@mixin respond-down($name) {
-  @media (max-width: map.get(bp.$breakpoints, $name)) {
-    @content;
-  }
-}
-
-/// Enrobe le contenu dans une media query `min-width`. Le reste du projet
-/// est desktop-first (voir `respond-down`) ; `c-confirm-dialog` (issue #39)
-/// est le premier composant écrit mobile-first (bottom sheet en base, mise
-/// en page desktop ajoutée ici), donc le seul consommateur de ce mixin pour
-/// l'instant. Généraliser le reste du projet au mobile-first est le
-/// périmètre de l'issue #40, pas de celle-ci.
+/// Enrobe le contenu dans une media query `min-width`. Mixin standard du
+/// projet depuis l'issue #40 (mobile-first généralisé) : base = petit
+/// écran, styles plus larges ajoutés via respond-up().
 @mixin respond-up($name) {
   @media (min-width: map.get(bp.$breakpoints, $name)) {
     @content;

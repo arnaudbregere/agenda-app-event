@@ -74,15 +74,17 @@
     }
   }
 
+  // Base mobile-first : chiffres compacts (20px, cf. respond-up(sm)
+  // ci-dessous pour la taille desktop).
   &__day-number {
     align-self: flex-start;
-    width: 24px;
-    height: 24px;
+    width: 20px;
+    height: 20px;
     padding: 0;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: var(--font-size-sm);
+    font-size: var(--font-size-xs);
     border-radius: 50%;
     margin-bottom: 2px;
     flex-shrink: 0;
@@ -110,16 +112,14 @@
       border-radius: var(--radius-sm);
     }
   }
+}
 
-  @include respond-down(sm) {
-    &__weekday {
-      font-size: var(--font-size-xs);
-    }
-
+@include respond-up(sm) {
+  .c-month-grid {
     &__day-number {
-      width: 20px;
-      height: 20px;
-      font-size: var(--font-size-xs);
+      width: 24px;
+      height: 24px;
+      font-size: var(--font-size-sm);
     }
   }
 }
