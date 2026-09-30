@@ -26,3 +26,28 @@ describe("AppSidebar — accès rapide", () => {
     expect(store.currentDate.toDateString()).toBe(new Date().toDateString());
   });
 });
+
+describe("AppSidebar — drawer mobile", () => {
+  it("Échap referme la sidebar quand elle est ouverte", async () => {
+    const store = useCalendarStore();
+    store.openSidebar();
+    mount(AppSidebar, { attachTo: document.body });
+
+    window.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" }));
+    await Promise.resolve();
+
+    expect(store.isSidebarOpen).toBe(false);
+  });
+
+  it("le focus part vers le premier élément du panneau à l'ouverture", async () => {
+    const store = useCalendarStore();
+    const wrapper = mount(AppSidebar, { attachTo: document.body });
+
+    store.openSidebar();
+    await wrapper.vm.$nextTick();
+    await Promise.resolve();
+
+    expect(document.activeElement?.className).toContain("c-sidebar__create");
+    wrapper.unmount();
+  });
+});

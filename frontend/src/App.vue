@@ -21,13 +21,15 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="o-app-shell">
-    <div class="o-app-shell__header">
-      <AppHeader />
-    </div>
-    <div class="o-app-shell__sidebar">
-      <AppSidebar />
-    </div>
+  <div class="o-app-shell" :class="{ 'is-sidebar-open': calendarStore.isSidebarOpen }">
+    <AppHeader class="o-app-shell__header" />
+    <div
+      v-if="calendarStore.isSidebarOpen"
+      class="o-app-shell__backdrop"
+      aria-hidden="true"
+      @click="calendarStore.closeSidebar()"
+    ></div>
+    <AppSidebar class="o-app-shell__sidebar" />
     <main class="o-app-shell__main">
       <p v-if="eventsStore.error" class="c-form__banner" style="margin: var(--space-3)">
         Impossible de contacter l'API : {{ eventsStore.error }}

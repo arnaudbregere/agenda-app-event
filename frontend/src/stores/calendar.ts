@@ -21,6 +21,9 @@ export const useCalendarStore = defineStore("calendar", {
     modalOpen: false,
     editingEvent: null as CalendarEvent | null, // événement complet en édition, null en création
     modalDefaults: null as ModalDefaults | null, // pré-rempli à la création
+    // Drawer sidebar sous 900px : toujours false sur desktop, où le bouton
+    // qui le fait varier n'est pas affiché (voir _app-header.scss).
+    isSidebarOpen: false,
   }),
 
   getters: {
@@ -65,6 +68,7 @@ export const useCalendarStore = defineStore("calendar", {
     goToCurrent(view: CalendarView) {
       this.currentView = view
       this.currentDate = new Date()
+      this.isSidebarOpen = false
     },
 
     setCurrentDate(date: Date) {
@@ -93,6 +97,18 @@ export const useCalendarStore = defineStore("calendar", {
       this.modalOpen = false
       this.editingEvent = null
       this.modalDefaults = null
+    },
+
+    openSidebar() {
+      this.isSidebarOpen = true
+    },
+
+    closeSidebar() {
+      this.isSidebarOpen = false
+    },
+
+    toggleSidebar() {
+      this.isSidebarOpen = !this.isSidebarOpen
     },
   },
 })

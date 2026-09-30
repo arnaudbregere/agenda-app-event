@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed, nextTick, ref } from "vue";
 import {
   addMonths,
   subMonths,
@@ -37,21 +37,60 @@ const periodLabel = computed(() => {
   return format(date, "MMMM yyyy", { locale: fr });
 });
 
-// Le panneau de résultats reste fermé tant que la recherche n'a pas le focus ;
-// il se referme à la sortie du champ, sur Échap ou après sélection.
+// Liste de résultats : reste fermée tant que la recherche n'a pas le
+// focus ; se referme à la sortie du champ, sur Échap ou après sélection.
 const searchOpen = ref(false);
 
-function onSearchFocusOut(e: FocusEvent) {
+const onSearchFocusOut = (e: FocusEvent) => {
   const container = e.currentTarget as HTMLElement;
   if (!container.contains(e.relatedTarget as Node | null)) searchOpen.value = false;
-}
+};
 
-function selectResult(event: CalendarEvent) {
+// Repli mobile de la recherche (masquée sous 900px, voir _app-header.scss) :
+// le champ se déplie via un bouton dédié plutôt que d'être toujours visible.
+const mobileSearchOpen = ref(false);
+const searchInputRef = ref<HTMLInputElement | null>(null);
+const searchToggleRef = ref<HTMLElement | null>(null);
+
+const toggleMobileSearch = async () => {
+  mobileSearchOpen.value = !mobileSearchOpen.value;
+  if (mobileSearchOpen.value) {
+    await nextTick();
+    searchInputRef.value?.focus();
+  } else {
+    searchToggleRef.value?.focus();
+  }
+};
+
+// Échap referme liste de résultats et champ mobile en un appui.
+// preventDefault() : <input type="search"> vide nativement son contenu sur
+// Échap, ce qui effacerait la recherche par accident. setTimeout : ce même
+// comportement natif retire aussi le focus après nos gestionnaires (même
+// avec preventDefault()), donc on repousse notre focus() après coup plutôt
+// que de se le faire écraser.
+const onSearchKeydown = (e: KeyboardEvent) => {
+  e.preventDefault();
   searchOpen.value = false;
-  store.openEditModal(event);
-}
+  if (!mobileSearchOpen.value) return;
+  mobileSearchOpen.value = false;
+  setTimeout(() => searchToggleRef.value?.focus(), 0);
+};
 
-function step(direction: 1 | -1) {
+const selectResult = (event: CalendarEvent) => {
+  searchOpen.value = false;
+  mobileSearchOpen.value = false;
+  store.openEditModal(event);
+};
+
+// Sidebar mobile : focus forcé au clic (Safari ne focus pas les boutons au
+// clic) pour que AppSidebar.vue, qui lit document.activeElement à
+// l'ouverture, restitue bien le focus à ce bouton en refermant.
+const onToggleSidebar = (e: MouseEvent) => {
+  (e.currentTarget as HTMLElement).focus();
+  store.toggleSidebar();
+};
+
+const step = (direction: 1 | -1) => {
   const date = store.currentDate;
   switch (store.currentView) {
     case "week":
@@ -63,11 +102,22 @@ function step(direction: 1 | -1) {
     default:
       store.setCurrentDate(direction > 0 ? addMonths(date, 1) : subMonths(date, 1));
   }
-}
+};
 </script>
 
 <template>
-  <header class="c-app-header">
+  <header class="c-app-header" :class="{ 'is-search-open': mobileSearchOpen }">
+    <button
+      type="button"
+      class="c-btn c-btn--icon c-app-header__menu-toggle"
+      :aria-expanded="store.isSidebarOpen"
+      aria-controls="app-sidebar"
+      :aria-label="store.isSidebarOpen ? 'Fermer le menu' : 'Ouvrir le menu'"
+      @click="onToggleSidebar"
+    >
+      <Icon :name="store.isSidebarOpen ? 'x' : 'menu'" class="c-btn__icon" />
+    </button>
+
     <div class="c-app-header__brand">
       <svg class="c-app-header__logo" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <rect x="3" y="4" width="18" height="17" rx="2" />
@@ -87,15 +137,16 @@ function step(direction: 1 | -1) {
       <h1 class="c-app-header__title">{{ periodLabel }}</h1>
     </div>
 
-    <div class="c-app-header__search">
+    <div id="mobile-search" class="c-app-header__search">
       <div
         class="c-search"
         @focusin="searchOpen = true"
         @focusout="onSearchFocusOut"
-        @keydown.esc="searchOpen = false"
+        @keydown.esc="onSearchKeydown"
       >
         <Icon name="search" class="c-search__icon" />
         <input
+          ref="searchInputRef"
           v-model="store.searchQuery"
           type="search"
           class="c-search__input"
@@ -121,6 +172,18 @@ function step(direction: 1 | -1) {
     </div>
 
     <div class="c-app-header__actions">
+      <button
+        ref="searchToggleRef"
+        type="button"
+        class="c-btn c-btn--icon c-app-header__search-toggle"
+        :aria-expanded="mobileSearchOpen"
+        aria-controls="mobile-search"
+        :aria-label="mobileSearchOpen ? 'Fermer la recherche' : 'Rechercher'"
+        @click="toggleMobileSearch"
+      >
+        <Icon :name="mobileSearchOpen ? 'x' : 'search'" class="c-btn__icon" />
+      </button>
+
       <div class="c-view-switcher">
         <button
           v-for="view in VIEWS"

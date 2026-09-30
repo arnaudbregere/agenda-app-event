@@ -4,15 +4,38 @@
 @use "../tools/mixins" as *;
 
 .c-app-header {
+  // Base mobile-first : le bloc nav (Aujourd'hui + précédent/suivant +
+  // titre de période) et le sélecteur de vue ne tiennent pas sur une seule
+  // ligne à côté de la marque sous 900px — on autorise le passage à la
+  // ligne plutôt que de risquer un débordement horizontal (WCAG 1.4.10
+  // Reflow). Hauteur fixe et ligne unique ajoutées par respond-up(md), une
+  // fois la place disponible.
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: var(--space-4);
-  height: 100%;
-  padding: 0 var(--space-4);
+  gap: var(--space-2) var(--space-4);
+  height: auto;
+  padding: var(--space-2) var(--space-3);
   background-color: var(--color-bg);
   border-bottom: 1px solid var(--color-border);
   position: relative;
   z-index: var(--z-app-header);
+
+  &__menu-toggle {
+    flex-shrink: 0;
+
+    // Zone de tap 44x44 sans agrandir le bouton visuellement (même
+    // technique que .c-btn--icon.c-btn--sm, voir _button.scss).
+    @media (pointer: coarse) {
+      position: relative;
+
+      &::after {
+        content: "";
+        position: absolute;
+        inset: -2px;
+      }
+    }
+  }
 
   &__brand {
     display: flex;
@@ -30,22 +53,64 @@
   }
 
   &__title {
-    font-size: var(--font-size-lg);
+    font-size: var(--font-size-md);
     font-weight: var(--font-weight-medium);
-    min-width: 180px;
+    min-width: 0;
+    flex: 1 1 auto;
+    // Tronque plutôt que déborder : à 320px, le titre de période (ex.
+    // « septembre 2026 ») associé aux boutons Aujourd'hui/précédent/suivant
+    // ne tient pas toujours sur une ligne (débordement constaté, testé via
+    // iframe 320px — resize_window indisponible dans cet environnement).
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   &__nav {
     display: flex;
     align-items: center;
     gap: var(--space-1);
-    flex-shrink: 0;
+    // min-width: 0 nécessaire pour que __title (flex: 1 1 auto) puisse se
+    // réduire sous sa taille de contenu au lieu de déborder (piège
+    // classique flexbox : un item ne rétrécit jamais sous son min-content
+    // implicite sans min-width: 0 explicite sur lui ou son parent flex).
+    min-width: 0;
+    flex: 1 1 auto;
   }
 
   &__search {
-    flex: 1;
-    max-width: 480px;
-    margin: 0 auto;
+    display: none;
+  }
+
+  // flex-wrap forcé : prime sur le nowrap de respond-up(sm) (2 classes,
+  // plus spécifique, sans dépendre de l'ordre des règles).
+  &.is-search-open {
+    flex-wrap: wrap;
+  }
+
+  // Sélecteur à plat plutôt que &__search imbriqué dans le bloc ci-dessus :
+  // dans ce bloc, & vaut déjà .c-app-header.is-search-open, donc &__search
+  // concatènerait __search à la fin de ce composé au lieu de cibler
+  // .c-app-header__search.
+
+  &.is-search-open &__search {
+    display: block;
+    flex-basis: 100%;
+    order: 1;
+  }
+
+  &__search-toggle {
+    flex-shrink: 0;
+
+    @media (pointer: coarse) {
+      position: relative;
+
+      &::after {
+        content: "";
+        position: absolute;
+        inset: -2px;
+      }
+    }
   }
 
   &__actions {
@@ -53,31 +118,46 @@
     align-items: center;
     gap: var(--space-3);
     flex-shrink: 0;
+    flex-basis: 100%;
   }
+}
 
-  @include respond-down(md) {
+@include respond-up(md) {
+  .c-app-header {
+    &__menu-toggle,
+    &__search-toggle {
+      display: none;
+    }
+
+    // Assez de place à partir de 900px : nav retrouve une taille fixe (le
+    // titre n'a plus besoin de se réduire/tronquer, cf. base mobile-first
+    // ci-dessus) — comportement desktop identique à avant la migration.
+    &__nav {
+      flex: 0 0 auto;
+    }
+
     &__title {
-      min-width: 0;
-      font-size: var(--font-size-md);
+      font-size: var(--font-size-lg);
+      min-width: 180px;
     }
 
     &__search {
-      display: none;
+      display: block;
+      flex: 1;
+      max-width: 480px;
+      margin: 0 auto;
     }
   }
+}
 
-  // En dessous de 600px, le bloc nav (Aujourd'hui + précédent/suivant +
-  // titre de période) et le sélecteur de vue ne tiennent plus sur une seule
-  // ligne à côté de la marque : on autorise le passage à la ligne plutôt que
-  // de risquer un débordement horizontal (WCAG 1.4.10 Reflow).
-  @include respond-down(sm) {
-    height: auto;
-    flex-wrap: wrap;
-    row-gap: var(--space-2);
-    padding: var(--space-2) var(--space-3);
+@include respond-up(sm) {
+  .c-app-header {
+    height: var(--header-height);
+    flex-wrap: nowrap;
+    padding: 0 var(--space-4);
 
     &__actions {
-      flex-basis: 100%;
+      flex-basis: auto;
     }
   }
 }

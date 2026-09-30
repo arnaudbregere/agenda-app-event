@@ -27,10 +27,11 @@ settings → tools → generic → elements → objects → components → utili
   `components/`, etc.
 - **Design tokens en custom properties CSS** (`--var`), pas en variables
   Sass — nécessaire pour la thémabilité à l'exécution.
-- **Breakpoints en variables Sass**, consommées via le mixin
-  `respond-down()` — seul cas où le Sass natif est utilisé plutôt que du
-  CSS natif (le CSS n'a pas d'équivalent aux media queries paramétrées par
-  variable).
+- **Mobile-first** : styles de base pour petit écran, enrichis pour les
+  écrans plus larges. **Breakpoints en variables Sass**, consommées via le
+  mixin `respond-up()` (media query `min-width`) — seul cas où le Sass
+  natif est utilisé plutôt que du CSS natif (le CSS n'a pas d'équivalent
+  aux media queries paramétrées par variable).
 - Pas de framework CSS externe (Tailwind, Bootstrap...) — rester cohérent
   avec l'architecture ITCSS existante plutôt que d'en importer un.
 - Avant de chercher une solution JS pour un effet visuel, vérifier si du

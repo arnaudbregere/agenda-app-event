@@ -45,6 +45,31 @@ describe("useCalendarStore", () => {
       expect(store.currentView).toBe(view);
       expect(store.currentDate.toDateString()).toBe(new Date().toDateString());
     });
+
+    it("referme la sidebar (accès rapide mobile)", () => {
+      const store = useCalendarStore();
+      store.openSidebar();
+      store.goToCurrent("week");
+      expect(store.isSidebarOpen).toBe(false);
+    });
+  });
+
+  describe("sidebar", () => {
+    it("fermée par défaut", () => {
+      expect(useCalendarStore().isSidebarOpen).toBe(false);
+    });
+
+    it("openSidebar / closeSidebar / toggleSidebar", () => {
+      const store = useCalendarStore();
+      store.openSidebar();
+      expect(store.isSidebarOpen).toBe(true);
+      store.closeSidebar();
+      expect(store.isSidebarOpen).toBe(false);
+      store.toggleSidebar();
+      expect(store.isSidebarOpen).toBe(true);
+      store.toggleSidebar();
+      expect(store.isSidebarOpen).toBe(false);
+    });
   });
 
   describe("toggleCategory / isCategoryActive", () => {

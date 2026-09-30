@@ -46,6 +46,11 @@
     padding: var(--space-1);
     display: flex;
     flex-direction: column;
+    // min-width: 0 indispensable : par défaut un enfant de grille CSS a
+    // min-width: auto (= sa taille min-content), ce qui empêcherait les
+    // colonnes 1fr de rétrécir sous cette taille (voir la même remarque sur
+    // .o-app-shell__header, objects/_layout.scss, pour le bug réel que ça a
+    // causé à 320px).
     min-width: 0;
     min-height: 0;
     overflow: hidden;
@@ -74,15 +79,17 @@
     }
   }
 
+  // Base mobile-first : chiffres compacts (20px, cf. respond-up(sm)
+  // ci-dessous pour la taille desktop).
   &__day-number {
     align-self: flex-start;
-    width: 24px;
-    height: 24px;
+    width: 20px;
+    height: 20px;
     padding: 0;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: var(--font-size-sm);
+    font-size: var(--font-size-xs);
     border-radius: 50%;
     margin-bottom: 2px;
     flex-shrink: 0;
@@ -110,16 +117,14 @@
       border-radius: var(--radius-sm);
     }
   }
+}
 
-  @include respond-down(sm) {
-    &__weekday {
-      font-size: var(--font-size-xs);
-    }
-
+@include respond-up(sm) {
+  .c-month-grid {
     &__day-number {
-      width: 20px;
-      height: 20px;
-      font-size: var(--font-size-xs);
+      width: 24px;
+      height: 24px;
+      font-size: var(--font-size-sm);
     }
   }
 }

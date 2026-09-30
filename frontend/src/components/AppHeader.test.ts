@@ -62,6 +62,54 @@ describe("AppHeader", () => {
     expect(store.currentDate.toDateString()).toBe(new Date().toDateString());
   });
 
+  describe("bouton menu (drawer sidebar mobile)", () => {
+    it("ouvre/ferme la sidebar et met à jour aria-expanded", async () => {
+      const store = useCalendarStore();
+      const wrapper = mount(AppHeader);
+      const toggle = wrapper.find(".c-app-header__menu-toggle");
+
+      expect(toggle.attributes("aria-expanded")).toBe("false");
+      expect(toggle.attributes("aria-controls")).toBe("app-sidebar");
+
+      await toggle.trigger("click");
+      expect(store.isSidebarOpen).toBe(true);
+      expect(wrapper.find(".c-app-header__menu-toggle").attributes("aria-expanded")).toBe("true");
+
+      await wrapper.find(".c-app-header__menu-toggle").trigger("click");
+      expect(store.isSidebarOpen).toBe(false);
+    });
+  });
+
+  describe("recherche mobile", () => {
+    it("le bouton de recherche déplie le champ et lui donne le focus", async () => {
+      const wrapper = mount(AppHeader, { attachTo: document.body });
+      const toggle = wrapper.find(".c-app-header__search-toggle");
+      expect(toggle.attributes("aria-expanded")).toBe("false");
+      expect(wrapper.classes()).not.toContain("is-search-open");
+
+      await toggle.trigger("click");
+      await wrapper.vm.$nextTick();
+
+      expect(wrapper.classes()).toContain("is-search-open");
+      expect(wrapper.find(".c-app-header__search-toggle").attributes("aria-expanded")).toBe("true");
+      expect(document.activeElement).toBe(wrapper.find('input[type="search"]').element);
+      wrapper.unmount();
+    });
+
+    it("un second clic referme le champ et rend le focus au bouton", async () => {
+      const wrapper = mount(AppHeader, { attachTo: document.body });
+      const toggle = wrapper.find(".c-app-header__search-toggle");
+      await toggle.trigger("click");
+      await wrapper.vm.$nextTick();
+
+      await wrapper.find(".c-app-header__search-toggle").trigger("click");
+
+      expect(wrapper.classes()).not.toContain("is-search-open");
+      expect(document.activeElement).toBe(toggle.element);
+      wrapper.unmount();
+    });
+  });
+
   describe("résultats de recherche", () => {
     function seed() {
       useEventsStore().events = asEvents([
@@ -116,6 +164,41 @@ describe("AppHeader", () => {
       await input.trigger("keydown", { key: "Escape" });
 
       expect(wrapper.find(".c-search-results").exists()).toBe(false);
+    });
+
+    it("Échap referme la liste de résultats et le champ mobile en un seul appui", async () => {
+      seed();
+      const wrapper = mount(AppHeader, { attachTo: document.body });
+      await wrapper.find(".c-app-header__search-toggle").trigger("click");
+      const input = wrapper.find('input[type="search"]');
+      await input.trigger("focusin");
+      await input.setValue("réunion");
+
+      const toggle = wrapper.find(".c-app-header__search-toggle");
+      await input.trigger("keydown", { key: "Escape" });
+
+      expect(wrapper.find(".c-search-results").exists()).toBe(false);
+      expect(wrapper.classes()).not.toContain("is-search-open");
+
+      // Le focus est restitué après un setTimeout(0) (voir commentaire dans
+      // AppHeader.vue : le navigateur retire le focus après les
+      // gestionnaires d'évènements sur Échap pour un input type="search").
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      expect(document.activeElement).toBe(toggle.element);
+      wrapper.unmount();
+    });
+
+    it("sélectionner un résultat referme aussi le champ mobile", async () => {
+      seed();
+      const wrapper = mount(AppHeader, { attachTo: document.body });
+      await wrapper.find(".c-app-header__search-toggle").trigger("click");
+      const input = wrapper.find('input[type="search"]');
+      await input.setValue("réunion");
+
+      await wrapper.find(".c-search-results__item").trigger("click");
+
+      expect(wrapper.classes()).not.toContain("is-search-open");
+      wrapper.unmount();
     });
   });
 });

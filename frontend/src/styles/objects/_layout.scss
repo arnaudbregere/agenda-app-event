@@ -7,35 +7,56 @@
 
 .o-app-shell {
   display: grid;
-  grid-template-columns: var(--sidebar-width) 1fr;
-  grid-template-rows: var(--header-height) 1fr;
+  grid-template-columns: 1fr;
+  // Le header n'a pas de hauteur fixe en base : sous 600px il passe sur
+  // plusieurs lignes (voir _app-header.scss), la ligne de grille doit
+  // pouvoir grandir en conséquence plutôt que de clipper le contenu.
+  grid-template-rows: auto 1fr;
   grid-template-areas:
-    "header header"
-    "sidebar main";
+    "header"
+    "main";
   height: 100%;
-
-  @include respond-down(md) {
-    grid-template-columns: 0 1fr;
-
-    &.is-sidebar-open {
-      grid-template-columns: var(--sidebar-width) 1fr;
-    }
-  }
-
-  // Le header passe sur plusieurs lignes sous 600px (voir _app-header.scss) :
-  // la ligne de grille doit pouvoir grandir au lieu de rester à la hauteur
-  // fixe --header-height, sous peine de clipper le contenu qui a wrappé.
-  @include respond-down(sm) {
-    grid-template-rows: auto 1fr;
-  }
 
   &__header {
     grid-area: header;
+    // Un enfant de grille a min-width: auto par défaut (= son min-content) :
+    // sans ce reset, la colonne 1fr s'élargit au-delà du viewport tant que
+    // le header contient du texte non coupable (__title en white-space:
+    // nowrap, voir _app-header.scss).
+    min-width: 0;
   }
 
+  // Sous 900px, la sidebar n'est pas dans le flux (drawer hors-champ,
+  // superposé au contenu à l'ouverture) : voir AppSidebar.vue pour la
+  // classe .is-sidebar-open posée sur .o-app-shell et le focus management.
   &__sidebar {
-    grid-area: sidebar;
+    position: fixed;
+    inset: var(--header-height) auto 0 0;
+    width: min(var(--sidebar-width), 85vw);
     overflow: hidden;
+    transform: translateX(-100%);
+    // Le drawer fermé est visibility:hidden pour sortir du flux de
+    // tabulation, mais seulement une fois la transition de sortie
+    // terminée (délai = durée de la transition) pour ne pas couper
+    // l'animation de fermeture.
+    visibility: hidden;
+    transition:
+      transform var(--transition-base),
+      visibility 0s linear 200ms;
+    z-index: var(--z-sidebar);
+  }
+
+  &.is-sidebar-open &__sidebar {
+    transform: translateX(0);
+    visibility: visible;
+    transition: transform var(--transition-base);
+  }
+
+  &__backdrop {
+    position: fixed;
+    inset: var(--header-height) 0 0 0;
+    background-color: var(--color-overlay);
+    z-index: var(--z-sidebar-backdrop);
   }
 
   &__main {
@@ -45,6 +66,34 @@
     overflow: hidden;
     display: flex;
     flex-direction: column;
+  }
+}
+
+@include respond-up(md) {
+  .o-app-shell {
+    grid-template-columns: var(--sidebar-width) 1fr;
+    grid-template-rows: var(--header-height) 1fr;
+    grid-template-areas:
+      "header header"
+      "sidebar main";
+
+    &__sidebar {
+      position: static;
+      inset: auto;
+      width: auto;
+      transform: none;
+      visibility: visible;
+      transition: none;
+      grid-area: sidebar;
+    }
+
+    // Le bouton qui ouvre le drawer n'est affiché que sous 900px
+    // (_app-header.scss) : isSidebarOpen ne peut donc pas valoir true ici
+    // en usage normal, mais la règle protège quand même contre le cas d'un
+    // redimensionnement de fenêtre pendant que le drawer mobile est ouvert.
+    &__backdrop {
+      display: none;
+    }
   }
 }
 
