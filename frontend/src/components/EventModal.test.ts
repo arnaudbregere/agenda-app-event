@@ -282,11 +282,32 @@ describe("EventModal", () => {
       await nextTick();
       await body().find(".c-btn--danger").trigger("click");
 
-      await body().find('[role="alertdialog"]').trigger("keydown", { key: "Escape" });
+      // Un <dialog> ouvert répond nativement à Échap en émettant "cancel",
+      // pas un keydown classique (voir ConfirmDialog.vue).
+      await body().find('[role="alertdialog"]').trigger("cancel");
 
       expect(deleteSpy).not.toHaveBeenCalled();
       expect(body().find('[role="alertdialog"]').exists()).toBe(false);
       expect(calendarStore.modalOpen).toBe(true);
+    });
+
+    it("régression : la modale d'édition redevient utilisable après Échap dans la confirmation", async () => {
+      const calendarStore = useCalendarStore();
+      mountModal();
+      calendarStore.openEditModal(asEvent(event));
+      await nextTick();
+      await body().find(".c-btn--danger").trigger("click");
+
+      await body().find('[role="alertdialog"]').trigger("cancel");
+      await nextTick();
+
+      // Avant fix : un <dialog> ouvert ferme sa boîte via son propre
+      // événement natif "cancel" sur Échap, sans passer par emit("cancel").
+      // Vue ne l'apprenait donc jamais, deleteConfirmOpen restait bloqué à
+      // true et le panneau d'édition restait inert indéfiniment.
+      expect(body().find('[role="alertdialog"]').exists()).toBe(false);
+      await body().find(".c-modal__panel").trigger("keydown", { key: "Escape" });
+      expect(calendarStore.modalOpen).toBe(false);
     });
   });
 });

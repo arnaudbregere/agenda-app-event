@@ -74,10 +74,13 @@ describe("ConfirmDialog", () => {
     expect(wrapper!.emitted("cancel")).toBeUndefined();
   });
 
-  it("Échap émet cancel", async () => {
+  it("Échap émet cancel (événement natif \"cancel\" du <dialog>)", async () => {
     mountDialog({ open: true, title: "Titre", message: "Message" });
 
-    await body().find('[role="alertdialog"]').trigger("keydown", { key: "Escape" });
+    // Un <dialog> ouvert répond nativement à Échap en émettant "cancel",
+    // pas un keydown classique : on simule cet événement natif plutôt que
+    // le keydown, pour ne pas dépendre d'une gestion manuelle inexistante.
+    await body().find('[role="alertdialog"]').trigger("cancel");
 
     expect(wrapper!.emitted("cancel")).toHaveLength(1);
   });

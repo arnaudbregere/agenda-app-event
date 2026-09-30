@@ -45,11 +45,11 @@ watch(
 
 const FOCUSABLE_SELECTOR = 'button:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
+// Pas de gestion d'Échap ici : un <dialog> ouvert répond nativement à Échap
+// via son propre événement "cancel" (voir @cancel.prevent sur <dialog>
+// ci-dessous). L'intercepter ici aussi ferait doublon avec le comportement
+// natif, qui sinon fermerait le <dialog> dans le DOM sans le dire à Vue.
 const handleKeydown = (event: KeyboardEvent) => {
-  if (event.key === "Escape") {
-    emit("cancel");
-    return;
-  }
   if (event.key !== "Tab" || !panelRef.value) return;
 
   const focusable = panelRef.value.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR);
@@ -84,6 +84,7 @@ const handleKeydown = (event: KeyboardEvent) => {
           aria-labelledby="confirm-dialog-title"
           aria-describedby="confirm-dialog-message"
           @keydown="handleKeydown"
+          @cancel.prevent="emit('cancel')"
         >
           <h2 id="confirm-dialog-title" class="c-confirm-dialog__title">{{ title }}</h2>
           <p id="confirm-dialog-message" class="c-confirm-dialog__message">{{ message }}</p>
