@@ -172,8 +172,8 @@ Pas de `vue-router` : une seule URL, une seule page HTML (`index.html`). La navi
 index.html
   └── #app (main.ts monte App.vue)
         └── App.vue (o-app-shell)
-              ├── AppHeader     — titre de la période, précédent/suivant, recherche, sélecteur de vue
-              ├── AppSidebar    — bouton Créer, raccourcis (aujourd'hui/semaine/mois), mini-calendrier, filtre catégories
+              ├── AppHeader     — titre de la période, précédent/suivant, recherche (repliable sous 900px), sélecteur de vue, bouton menu (sidebar mobile)
+              ├── AppSidebar    — bouton Créer, raccourcis (aujourd'hui/semaine/mois), mini-calendrier, filtre catégories ; drawer superposé sous 900px
               ├── <main>        — une seule vue rendue à la fois, selon calendarStore.currentView :
               │     ├── MonthView
               │     ├── WeekView   (grille horaire commune : TimeGrid)
@@ -219,18 +219,19 @@ npm run build         # frontend -> frontend/dist ; backend -> backend/dist (tsc
 
 Les deux packages sont en TypeScript strict, **code et tests** : `npm run typecheck` inclut les fichiers `*.test.ts`, et la CI l'exécute (voir [Flow CI/CD](#flow-cicd)).
 
-16 fichiers de tests Vitest au total :
+17 fichiers de tests Vitest au total :
 
 | Package | Fichier | Couvre |
 |---|---|---|
 | Backend (3) | `src/utils/validators.test.ts` | Validation des payloads événement (champs requis, formats, dates) |
 | | `src/services/eventsStore.test.ts` | CRUD + sérialisation des accès concurrents (mock de `node:fs/promises`) |
 | | `src/app.test.ts` | Intégration : cycle HTTP complet via `supertest` à travers `routes/` → `controllers/` → `services/` — CRUD, validations, 404, `/api/health`, `/api/categories`, fallback SPA |
-| Frontend — stores (2) | `src/stores/calendar.test.ts` | Navigation, filtres, recherche, modale |
+| Frontend — stores (2) | `src/stores/calendar.test.ts` | Navigation, filtres, recherche, modale, drawer sidebar mobile |
 | | `src/stores/events.test.ts` | Appels API mockés, mise à jour du state |
 | Frontend — composables (2) | `src/composables/useCalendarGrid.test.ts` | Découpage semaines/jours |
 | | `src/composables/useEventLayout.test.ts` | Positionnement des événements qui se chevauchent |
 | Frontend — components (9) | `AppHeader`, `AppSidebar`, `CategoryFilter`, `ConfirmDialog`, `EventModal`, `MiniCalendar`, `MonthView`, `ListView`, `TimeGrid` | Montage via `@vue/test-utils`, interactions utilisateur, intégration avec les stores |
+| Frontend — intégration (1) | `src/App.integration.test.ts` | Câblage réel entre composants distincts (bouton menu du header ↔ drawer sidebar ↔ backdrop, focus management) |
 
 `frontend/src/test-support/fixtures.ts` mutualise les fixtures d'événements/catégories volontairement partielles utilisées par plusieurs fichiers de tests (les stores ne valident pas leurs entrées : ces tests exercent leur mécanique, pas la conformité au schéma complet). `backend/src/app.ts` exporte l'app Express (routes, middlewares, gestion d'erreurs) séparément de `backend/server.ts` (qui ne fait plus que l'écoute réseau), pour que `app.test.ts` puisse la piloter avec `supertest` sans ouvrir de vrai port.
 
