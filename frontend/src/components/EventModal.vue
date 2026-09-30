@@ -7,12 +7,6 @@ import type { CategoryId, EventInput } from "../api/types.js";
 import Icon from "./ui/Icon.vue";
 import ConfirmDialog from "./ConfirmDialog.vue";
 
-// Doit rester synchro avec --transition-base (tools/_tokens.scss, 200ms) :
-// duree explicite plutot que de laisser <Transition> attendre l'evenement
-// transitionend natif, qui peut ne jamais se declencher (issue #61) et
-// laisser .c-modal__overlay bloquer tous les clics de l'app indefiniment.
-const MODAL_TRANSITION_DURATION = 200;
-
 const store = useCalendarStore();
 const eventsStore = useEventsStore();
 
@@ -182,7 +176,7 @@ const confirmDelete = async () => {
 
 <template>
   <Teleport to="body">
-    <Transition name="modal" :duration="MODAL_TRANSITION_DURATION">
+    <Transition name="modal">
       <div v-if="store.modalOpen" class="c-modal__overlay" @mousedown.self="store.closeModal">
         <form
           ref="panelRef"
@@ -190,7 +184,6 @@ const confirmDelete = async () => {
           role="dialog"
           aria-modal="true"
           aria-labelledby="event-modal-title"
-          :inert="deleteConfirmOpen"
           @submit.prevent="handleSubmit"
           @keydown="handleKeydown"
         >

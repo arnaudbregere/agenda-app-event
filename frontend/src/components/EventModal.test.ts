@@ -224,6 +224,10 @@ describe("EventModal", () => {
       end: "2026-08-28T10:00:00.000Z",
     };
 
+    // Le <dialog> de confirmation est piloté par showModal()/close() : il
+    // reste toujours présent dans le DOM, seul son état ouvert/fermé change.
+    const confirmDialogOpen = () => document.querySelector<HTMLDialogElement>(".c-confirm-dialog")?.open ?? false;
+
     it("cliquer sur Supprimer ouvre une confirmation sans supprimer immédiatement", async () => {
       const calendarStore = useCalendarStore();
       const eventsStore = useEventsStore();
@@ -235,7 +239,7 @@ describe("EventModal", () => {
       await body().find(".c-btn--danger").trigger("click");
 
       expect(deleteSpy).not.toHaveBeenCalled();
-      expect(body().find('[role="alertdialog"]').exists()).toBe(true);
+      expect(confirmDialogOpen()).toBe(true);
       expect(body().find('[role="alertdialog"]').text()).toContain("Réunion projet");
       expect(calendarStore.modalOpen).toBe(true);
     });
@@ -252,7 +256,7 @@ describe("EventModal", () => {
       await body().find('[role="alertdialog"] .c-btn--text').trigger("click");
 
       expect(deleteSpy).not.toHaveBeenCalled();
-      expect(body().find('[role="alertdialog"]').exists()).toBe(false);
+      expect(confirmDialogOpen()).toBe(false);
       expect(calendarStore.modalOpen).toBe(true);
     });
 
@@ -269,7 +273,7 @@ describe("EventModal", () => {
       await flushPromises();
 
       expect(deleteSpy).toHaveBeenCalledWith("1");
-      expect(body().find('[role="alertdialog"]').exists()).toBe(false);
+      expect(confirmDialogOpen()).toBe(false);
       expect(calendarStore.modalOpen).toBe(false);
     });
 
@@ -282,12 +286,12 @@ describe("EventModal", () => {
       await nextTick();
       await body().find(".c-btn--danger").trigger("click");
 
-      // Un <dialog> ouvert répond nativement à Échap en émettant "cancel",
+      // Un <dialog> modal répond nativement à Échap en émettant "cancel",
       // pas un keydown classique (voir ConfirmDialog.vue).
       await body().find('[role="alertdialog"]').trigger("cancel");
 
       expect(deleteSpy).not.toHaveBeenCalled();
-      expect(body().find('[role="alertdialog"]').exists()).toBe(false);
+      expect(confirmDialogOpen()).toBe(false);
       expect(calendarStore.modalOpen).toBe(true);
     });
 
@@ -301,11 +305,13 @@ describe("EventModal", () => {
       await body().find('[role="alertdialog"]').trigger("cancel");
       await nextTick();
 
-      // Avant fix : un <dialog> ouvert ferme sa boîte via son propre
-      // événement natif "cancel" sur Échap, sans passer par emit("cancel").
-      // Vue ne l'apprenait donc jamais, deleteConfirmOpen restait bloqué à
-      // true et le panneau d'édition restait inert indéfiniment.
-      expect(body().find('[role="alertdialog"]').exists()).toBe(false);
+      // Avant fix : un <dialog> fermait sa boîte via son propre événement
+      // natif "cancel" sur Échap sans passer par emit("cancel"). Vue ne
+      // l'apprenait donc jamais, deleteConfirmOpen restait bloqué à true.
+      // Avec :inert lié à cet état (retiré depuis : le <dialog> modal rend
+      // nativement le reste de la page inert), la modale d'édition restait
+      // bloquée indéfiniment.
+      expect(confirmDialogOpen()).toBe(false);
       await body().find(".c-modal__panel").trigger("keydown", { key: "Escape" });
       expect(calendarStore.modalOpen).toBe(false);
     });

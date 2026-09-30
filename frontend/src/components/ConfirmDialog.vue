@@ -1,11 +1,5 @@
 <script setup lang="ts">
-import { nextTick, ref, watch } from "vue";
-
-// Doit rester synchro avec --transition-base (tools/_tokens.scss, 200ms) :
-// duree explicite plutot que de laisser <Transition> attendre l'evenement
-// transitionend natif, qui peut ne jamais se declencher (issue #61) et
-// laisser l'overlay bloquer tous les clics de l'app indefiniment.
-const CONFIRM_DIALOG_TRANSITION_DURATION = 200;
+import { ref, watch } from "vue";
 
 const props = withDefaults(
   defineProps<{
@@ -25,84 +19,59 @@ const props = withDefaults(
 
 const emit = defineEmits<{ confirm: []; cancel: [] }>();
 
-const panelRef = ref<HTMLDialogElement | null>(null);
-const cancelRef = ref<HTMLButtonElement | null>(null);
-let lastFocusedEl: HTMLElement | null = null;
+const dialogRef = ref<HTMLDialogElement | null>(null);
 
+// showModal()/close() plutôt qu'un v-if + overlay + piège de focus/Échap
+// maison : un <dialog> ouvert en modal gère nativement tout ça (focus piégé,
+// reste de la page rendu inert, focus restitué au déclencheur à la
+// fermeture), sans code à maintenir ni bug de synchronisation à surveiller.
 watch(
   () => props.open,
-  (open) => {
-    if (open) {
-      lastFocusedEl = document.activeElement as HTMLElement | null;
-      nextTick(() => cancelRef.value?.focus());
-    } else {
-      lastFocusedEl?.focus?.();
-      lastFocusedEl = null;
-    }
-  },
-  { immediate: true },
+  (open) => (open ? dialogRef.value?.showModal() : dialogRef.value?.close()),
 );
 
-const FOCUSABLE_SELECTOR = 'button:not([disabled]), [tabindex]:not([tabindex="-1"])';
+// Empêche la fermeture native par défaut : on laisse le watch ci-dessus,
+// piloté par le parent via l'event cancel, être la seule source de vérité
+// sur l'état ouvert/fermé.
+const handleCancel = (event: Event) => {
+  event.preventDefault();
+  emit("cancel");
+};
 
-// Pas de gestion d'Échap ici : un <dialog> ouvert répond nativement à Échap
-// via son propre événement "cancel" (voir @cancel.prevent sur <dialog>
-// ci-dessous). L'intercepter ici aussi ferait doublon avec le comportement
-// natif, qui sinon fermerait le <dialog> dans le DOM sans le dire à Vue.
-const handleKeydown = (event: KeyboardEvent) => {
-  if (event.key !== "Tab" || !panelRef.value) return;
-
-  const focusable = panelRef.value.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR);
-  if (!focusable.length) return;
-  const first = focusable[0];
-  const last = focusable[focusable.length - 1];
-
-  if (event.shiftKey && document.activeElement === first) {
-    event.preventDefault();
-    last.focus();
-  } else if (!event.shiftKey && document.activeElement === last) {
-    event.preventDefault();
-    first.focus();
-  }
+// Un clic sur le ::backdrop cible le <dialog> lui-même (ce n'est pas un
+// élément DOM à part) : cliquer sur son contenu ne remonte pas jusqu'ici.
+const handleBackdropClick = (event: MouseEvent) => {
+  if (event.target === dialogRef.value) emit("cancel");
 };
 </script>
 
 <template>
   <Teleport to="body">
-    <Transition name="confirm-dialog" :duration="CONFIRM_DIALOG_TRANSITION_DURATION">
-      <div v-if="open" class="c-confirm-dialog__overlay" @mousedown.self="emit('cancel')">
-        <!-- <dialog> plutôt qu'un div : sémantique native de boîte de dialogue,
-             en plus de role="alertdialog" (comportement modal géré à la main,
-             cohérent avec le Teleport/Transition du reste de l'app — voir
-             EventModal — plutôt que l'API impérative showModal()/close()). -->
-        <dialog
-          ref="panelRef"
-          open
-          class="c-confirm-dialog__panel"
-          role="alertdialog"
-          aria-modal="true"
-          aria-labelledby="confirm-dialog-title"
-          aria-describedby="confirm-dialog-message"
-          @keydown="handleKeydown"
-          @cancel.prevent="emit('cancel')"
+    <dialog
+      ref="dialogRef"
+      class="c-confirm-dialog"
+      role="alertdialog"
+      aria-modal="true"
+      aria-labelledby="confirm-dialog-title"
+      aria-describedby="confirm-dialog-message"
+      @cancel="handleCancel"
+      @click="handleBackdropClick"
+    >
+      <h2 id="confirm-dialog-title" class="c-confirm-dialog__title">{{ title }}</h2>
+      <p id="confirm-dialog-message" class="c-confirm-dialog__message">{{ message }}</p>
+      <div class="c-confirm-dialog__actions">
+        <button autofocus type="button" class="c-btn c-btn--text" @click="emit('cancel')">
+          {{ cancelLabel }}
+        </button>
+        <button
+          type="button"
+          class="c-btn"
+          :class="danger ? 'c-btn--danger-solid' : 'c-btn--primary'"
+          @click="emit('confirm')"
         >
-          <h2 id="confirm-dialog-title" class="c-confirm-dialog__title">{{ title }}</h2>
-          <p id="confirm-dialog-message" class="c-confirm-dialog__message">{{ message }}</p>
-          <div class="c-confirm-dialog__actions">
-            <button ref="cancelRef" type="button" class="c-btn c-btn--text" @click="emit('cancel')">
-              {{ cancelLabel }}
-            </button>
-            <button
-              type="button"
-              class="c-btn"
-              :class="danger ? 'c-btn--danger-solid' : 'c-btn--primary'"
-              @click="emit('confirm')"
-            >
-              {{ confirmLabel }}
-            </button>
-          </div>
-        </dialog>
+          {{ confirmLabel }}
+        </button>
       </div>
-    </Transition>
+    </dialog>
   </Teleport>
 </template>
