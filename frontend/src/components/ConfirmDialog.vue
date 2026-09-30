@@ -1,5 +1,11 @@
 <script setup lang="ts">
 import { nextTick, ref, watch } from "vue";
+import { readCssDurationMs } from "../composables/useTransitionDuration.js";
+
+// Duree explicite plutot que de laisser <Transition> attendre l'evenement
+// transitionend natif, qui peut ne jamais se declencher (issue #61) et
+// laisser l'overlay bloquer tous les clics de l'app indefiniment.
+const CONFIRM_DIALOG_TRANSITION_DURATION = readCssDurationMs("--transition-base");
 
 const props = withDefaults(
   defineProps<{
@@ -63,7 +69,7 @@ const handleKeydown = (event: KeyboardEvent) => {
 
 <template>
   <Teleport to="body">
-    <Transition name="confirm-dialog">
+    <Transition name="confirm-dialog" :duration="CONFIRM_DIALOG_TRANSITION_DURATION">
       <div v-if="open" class="c-confirm-dialog__overlay" @mousedown.self="emit('cancel')">
         <!-- <dialog> plutôt qu'un div : sémantique native de boîte de dialogue,
              en plus de role="alertdialog" (comportement modal géré à la main,

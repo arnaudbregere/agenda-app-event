@@ -6,6 +6,12 @@ import { useEventsStore } from "../stores/events.js";
 import type { CategoryId, EventInput } from "../api/types.js";
 import Icon from "./ui/Icon.vue";
 import ConfirmDialog from "./ConfirmDialog.vue";
+import { readCssDurationMs } from "../composables/useTransitionDuration.js";
+
+// Duree explicite plutot que de laisser <Transition> attendre l'evenement
+// transitionend natif, qui peut ne jamais se declencher (issue #61) et
+// laisser .c-modal__overlay bloquer tous les clics de l'app indefiniment.
+const MODAL_TRANSITION_DURATION = readCssDurationMs("--transition-base");
 
 const store = useCalendarStore();
 const eventsStore = useEventsStore();
@@ -176,7 +182,7 @@ const confirmDelete = async () => {
 
 <template>
   <Teleport to="body">
-    <Transition name="modal">
+    <Transition name="modal" :duration="MODAL_TRANSITION_DURATION">
       <div v-if="store.modalOpen" class="c-modal__overlay" @mousedown.self="store.closeModal">
         <form
           ref="panelRef"
