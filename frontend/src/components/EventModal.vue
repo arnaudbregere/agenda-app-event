@@ -153,12 +153,12 @@ async function handleSubmit() {
 
 const deleteConfirmOpen = ref(false);
 
-function handleDelete() {
+const handleDelete = () => {
   if (!store.editingEvent) return;
   deleteConfirmOpen.value = true;
-}
+};
 
-async function confirmDelete() {
+const confirmDelete = async () => {
   const editing = store.editingEvent;
   deleteConfirmOpen.value = false;
   if (!editing) return;
@@ -171,7 +171,7 @@ async function confirmDelete() {
   } finally {
     submitting.value = false;
   }
-}
+};
 </script>
 
 <template>

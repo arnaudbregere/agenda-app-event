@@ -2,6 +2,16 @@
 
 - Vue 3, exclusivement en Composition API avec `<script setup>` — pas
   d'Options API dans le code nouveau.
+- Fonctions fléchées (`const f = () => {}`), pas de `function`/
+  `async function` déclarées, dans le code nouveau (`<script setup>`,
+  composables, stores).
+- HTML sémantique avant les `div` : `<button>`, `<dialog>`, `<nav>`,
+  `<h1>`-`<h6>`, `<p>`... un `div` seulement quand aucune balise
+  sémantique ne convient (ex. un simple conteneur de mise en page flex).
+  Rôles/attributs ARIA (`role`, `aria-*`) quand la sémantique native ne
+  suffit pas (ex. `role="alertdialog"` sur `<dialog>`) ; focus géré
+  (piège dans une modale, restitué à la fermeture) et navigable au
+  clavier pour tout composant interactif custom (modale, menu, etc.).
 - État partagé (événements, navigation calendrier) via **Pinia**
   (`frontend/src/stores`). Pas de prop-drilling profond ni de bus
   d'événements custom pour ce qui appartient à un store.

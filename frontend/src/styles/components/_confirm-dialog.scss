@@ -22,6 +22,14 @@
   }
 
   &__panel {
+    // Neutralise le style UA par défaut de <dialog> (position: absolute,
+    // margin: auto, border, couleurs) : le positionnement reste géré par
+    // le flex de __overlay, comme pour un div.
+    position: static;
+    margin: 0;
+    border: none;
+    color: inherit;
+
     width: 100%;
     max-width: 420px;
     background-color: var(--color-bg);

@@ -12,10 +12,17 @@ commencer si tu ne les as pas déjà en contexte.
 
 ## Points spécifiques à vérifier en priorité
 
-- **Frontend** : Composition API / `<script setup>` respecté, pas de
+- **Frontend** : Composition API / `<script setup>` respecté, fonctions
+  fléchées plutôt que `function`/`async function` déclarées, pas de
   manipulation manuelle de `Date` (doit passer par `date-fns`), respect de
   l'ordre ITCSS si du SCSS est touché, pas de nouveau framework CSS
   introduit, `VITE_API_URL` jamais codée en dur.
+- **Accessibilité / sémantique HTML** : signaler les `div` là où une
+  balise sémantique existe (`button`, `dialog`, `nav`, `h1`-`h6`...),
+  l'absence de rôle/attributs ARIA sur un composant interactif custom
+  (modale, menu, dialogue de confirmation), et une gestion de focus
+  manquante ou incomplète (piège dans une modale, restitution à la
+  fermeture, navigation clavier).
 - **Backend** : pas d'introduction implicite d'une dépendance à une base
   de données, `PORT` toujours lu depuis l'env, route `/api/health`
   préservée si `render.yaml` en dépend, cohérence du format

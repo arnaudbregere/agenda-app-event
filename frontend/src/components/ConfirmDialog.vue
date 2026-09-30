@@ -19,7 +19,7 @@ const props = withDefaults(
 
 const emit = defineEmits<{ confirm: []; cancel: [] }>();
 
-const panelRef = ref<HTMLElement | null>(null);
+const panelRef = ref<HTMLDialogElement | null>(null);
 const cancelRef = ref<HTMLButtonElement | null>(null);
 let lastFocusedEl: HTMLElement | null = null;
 
@@ -39,7 +39,7 @@ watch(
 
 const FOCUSABLE_SELECTOR = 'button:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
-function handleKeydown(event: KeyboardEvent) {
+const handleKeydown = (event: KeyboardEvent) => {
   if (event.key === "Escape") {
     emit("cancel");
     return;
@@ -58,15 +58,20 @@ function handleKeydown(event: KeyboardEvent) {
     event.preventDefault();
     first.focus();
   }
-}
+};
 </script>
 
 <template>
   <Teleport to="body">
     <Transition name="confirm-dialog">
       <div v-if="open" class="c-confirm-dialog__overlay" @mousedown.self="emit('cancel')">
-        <div
+        <!-- <dialog> plutôt qu'un div : sémantique native de boîte de dialogue,
+             en plus de role="alertdialog" (comportement modal géré à la main,
+             cohérent avec le Teleport/Transition du reste de l'app — voir
+             EventModal — plutôt que l'API impérative showModal()/close()). -->
+        <dialog
           ref="panelRef"
+          open
           class="c-confirm-dialog__panel"
           role="alertdialog"
           aria-modal="true"
@@ -89,7 +94,7 @@ function handleKeydown(event: KeyboardEvent) {
               {{ confirmLabel }}
             </button>
           </div>
-        </div>
+        </dialog>
       </div>
     </Transition>
   </Teleport>
