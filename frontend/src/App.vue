@@ -21,10 +21,15 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="o-app-shell">
+  <div class="o-app-shell" :class="{ 'is-sidebar-open': calendarStore.isSidebarOpen }">
     <div class="o-app-shell__header">
       <AppHeader />
     </div>
+    <div
+      v-if="calendarStore.isSidebarOpen"
+      class="o-app-shell__backdrop"
+      @click="calendarStore.closeSidebar()"
+    ></div>
     <div class="o-app-shell__sidebar">
       <AppSidebar />
     </div>
