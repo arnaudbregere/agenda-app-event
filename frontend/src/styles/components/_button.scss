@@ -43,6 +43,19 @@
     }
   }
 
+  // Variante pleine, pour l'action destructive d'une confirmation (ConfirmDialog)
+  // plutôt que le déclencheur texte (--danger) de la modale d'édition.
+  &--danger-solid {
+    background-color: var(--color-danger);
+    color: var(--color-text-inverse);
+    box-shadow: var(--shadow-sm);
+
+    &:hover {
+      background-color: var(--color-danger-dark);
+      box-shadow: var(--shadow-md);
+    }
+  }
+
   &--icon {
     position: relative;
     width: 40px;

@@ -8,5 +8,10 @@
   --z-dropdown: 20;
   --z-modal-overlay: 100;
   --z-modal: 101;
+  // Au-dessus de --z-modal : la modale de confirmation peut s'ouvrir
+  // par-dessus une autre modale (ex. confirmation de suppression depuis
+  // EventModal).
+  --z-confirm-overlay: 110;
+  --z-confirm: 111;
   --z-toast: 200;
 }

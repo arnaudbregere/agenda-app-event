@@ -211,4 +211,82 @@ describe("EventModal", () => {
       expect(calendarStore.modalOpen).toBe(true);
     });
   });
+
+  describe("suppression", () => {
+    const event = {
+      id: "1",
+      title: "Réunion projet",
+      description: "",
+      location: "",
+      allDay: false,
+      category: "travail",
+      start: "2026-08-28T09:00:00.000Z",
+      end: "2026-08-28T10:00:00.000Z",
+    };
+
+    it("cliquer sur Supprimer ouvre une confirmation sans supprimer immédiatement", async () => {
+      const calendarStore = useCalendarStore();
+      const eventsStore = useEventsStore();
+      const deleteSpy = vi.spyOn(eventsStore, "deleteEvent");
+      mountModal();
+      calendarStore.openEditModal(asEvent(event));
+      await nextTick();
+
+      await body().find(".c-btn--danger").trigger("click");
+
+      expect(deleteSpy).not.toHaveBeenCalled();
+      expect(body().find('[role="alertdialog"]').exists()).toBe(true);
+      expect(body().find('[role="alertdialog"]').text()).toContain("Réunion projet");
+      expect(calendarStore.modalOpen).toBe(true);
+    });
+
+    it("Annuler dans la confirmation ne supprime rien et garde la modale d'édition ouverte", async () => {
+      const calendarStore = useCalendarStore();
+      const eventsStore = useEventsStore();
+      const deleteSpy = vi.spyOn(eventsStore, "deleteEvent");
+      mountModal();
+      calendarStore.openEditModal(asEvent(event));
+      await nextTick();
+      await body().find(".c-btn--danger").trigger("click");
+
+      await body().find('[role="alertdialog"] .c-btn--text').trigger("click");
+
+      expect(deleteSpy).not.toHaveBeenCalled();
+      expect(body().find('[role="alertdialog"]').exists()).toBe(false);
+      expect(calendarStore.modalOpen).toBe(true);
+    });
+
+    it("confirmer la suppression appelle eventsStore.deleteEvent puis ferme tout", async () => {
+      const calendarStore = useCalendarStore();
+      const eventsStore = useEventsStore();
+      const deleteSpy = vi.spyOn(eventsStore, "deleteEvent").mockResolvedValue(undefined);
+      mountModal();
+      calendarStore.openEditModal(asEvent(event));
+      await nextTick();
+      await body().find(".c-btn--danger").trigger("click");
+
+      await body().find('[role="alertdialog"] .c-btn--danger-solid').trigger("click");
+      await flushPromises();
+
+      expect(deleteSpy).toHaveBeenCalledWith("1");
+      expect(body().find('[role="alertdialog"]').exists()).toBe(false);
+      expect(calendarStore.modalOpen).toBe(false);
+    });
+
+    it("Échap dans la confirmation annule sans supprimer", async () => {
+      const calendarStore = useCalendarStore();
+      const eventsStore = useEventsStore();
+      const deleteSpy = vi.spyOn(eventsStore, "deleteEvent");
+      mountModal();
+      calendarStore.openEditModal(asEvent(event));
+      await nextTick();
+      await body().find(".c-btn--danger").trigger("click");
+
+      await body().find('[role="alertdialog"]').trigger("keydown", { key: "Escape" });
+
+      expect(deleteSpy).not.toHaveBeenCalled();
+      expect(body().find('[role="alertdialog"]').exists()).toBe(false);
+      expect(calendarStore.modalOpen).toBe(true);
+    });
+  });
 });
