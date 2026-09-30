@@ -1,0 +1,99 @@
+/**
+ * COMPONENTS / Confirm dialog (confirmation d'action, ex. suppression)
+ * Écrit mobile-first (voir tools/_mixins.scss, respond-up) : base = panneau
+ * ancré en bas de l'écran (bottom sheet), enrichi pour les écrans larges.
+ */
+@use "../tools/mixins";
+
+.c-confirm-dialog {
+  &__overlay {
+    position: fixed;
+    inset: 0;
+    background-color: var(--color-overlay);
+    z-index: var(--z-confirm-overlay);
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+
+    @include mixins.respond-up(sm) {
+      align-items: center;
+      padding: var(--space-4);
+    }
+  }
+
+  &__panel {
+    // Neutralise le style UA par défaut de <dialog> (position: absolute,
+    // margin: auto, border, couleurs) : le positionnement reste géré par
+    // le flex de __overlay, comme pour un div.
+    position: static;
+    margin: 0;
+    border: none;
+    color: inherit;
+
+    width: 100%;
+    max-width: 420px;
+    background-color: var(--color-bg);
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    box-shadow: var(--shadow-lg);
+    z-index: var(--z-confirm);
+    padding: var(--space-5);
+    padding-bottom: max(var(--space-5), env(safe-area-inset-bottom));
+
+    @include mixins.respond-up(sm) {
+      border-radius: var(--radius-lg);
+    }
+  }
+
+  &__title {
+    font-size: var(--font-size-md);
+    margin-bottom: var(--space-2);
+  }
+
+  &__message {
+    color: var(--color-text-muted);
+    margin-bottom: var(--space-5);
+  }
+
+  &__actions {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+
+    .c-btn {
+      width: 100%;
+      min-height: 44px;
+    }
+
+    @include mixins.respond-up(sm) {
+      flex-direction: row;
+      justify-content: flex-end;
+
+      .c-btn {
+        width: auto;
+        min-height: 36px;
+      }
+    }
+  }
+}
+
+// Fondu + léger glissement à l'ouverture (cohérent avec .modal-enter-active
+// dans _modal.scss, mais propre à ce composant : le panneau part du bas sur
+// mobile, du centre sur desktop, pas un simple scale).
+.confirm-dialog-enter-active,
+.confirm-dialog-leave-active {
+  transition: opacity var(--transition-base);
+
+  .c-confirm-dialog__panel {
+    transition: transform var(--transition-base), opacity var(--transition-base);
+  }
+}
+
+.confirm-dialog-enter-from,
+.confirm-dialog-leave-to {
+  opacity: 0;
+
+  .c-confirm-dialog__panel {
+    transform: translateY(16px);
+    opacity: 0;
+  }
+}

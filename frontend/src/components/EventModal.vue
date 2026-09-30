@@ -5,6 +5,7 @@ import { useCalendarStore } from "../stores/calendar.js";
 import { useEventsStore } from "../stores/events.js";
 import type { CategoryId, EventInput } from "../api/types.js";
 import Icon from "./ui/Icon.vue";
+import ConfirmDialog from "./ConfirmDialog.vue";
 
 const store = useCalendarStore();
 const eventsStore = useEventsStore();
@@ -150,10 +151,17 @@ async function handleSubmit() {
   }
 }
 
-async function handleDelete() {
+const deleteConfirmOpen = ref(false);
+
+const handleDelete = () => {
+  if (!store.editingEvent) return;
+  deleteConfirmOpen.value = true;
+};
+
+const confirmDelete = async () => {
   const editing = store.editingEvent;
+  deleteConfirmOpen.value = false;
   if (!editing) return;
-  if (!window.confirm(`Supprimer l'événement « ${editing.title} » ?`)) return;
   submitting.value = true;
   try {
     await eventsStore.deleteEvent(editing.id);
@@ -163,7 +171,7 @@ async function handleDelete() {
   } finally {
     submitting.value = false;
   }
-}
+};
 </script>
 
 <template>
@@ -176,6 +184,7 @@ async function handleDelete() {
           role="dialog"
           aria-modal="true"
           aria-labelledby="event-modal-title"
+          :inert="deleteConfirmOpen"
           @submit.prevent="handleSubmit"
           @keydown="handleKeydown"
         >
@@ -277,4 +286,14 @@ async function handleDelete() {
       </div>
     </Transition>
   </Teleport>
+
+  <ConfirmDialog
+    :open="deleteConfirmOpen"
+    title="Supprimer l'événement"
+    :message="`Supprimer l'événement « ${store.editingEvent?.title ?? ''} » ? Cette action est définitive.`"
+    confirm-label="Supprimer"
+    danger
+    @confirm="confirmDelete"
+    @cancel="deleteConfirmOpen = false"
+  />
 </template>
