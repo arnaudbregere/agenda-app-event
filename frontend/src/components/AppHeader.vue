@@ -37,68 +37,60 @@ const periodLabel = computed(() => {
   return format(date, "MMMM yyyy", { locale: fr });
 });
 
-// Le panneau de résultats reste fermé tant que la recherche n'a pas le focus ;
-// il se referme à la sortie du champ, sur Échap ou après sélection.
+// Liste de résultats : reste fermée tant que la recherche n'a pas le
+// focus ; se referme à la sortie du champ, sur Échap ou après sélection.
 const searchOpen = ref(false);
 
-function onSearchFocusOut(e: FocusEvent) {
+const onSearchFocusOut = (e: FocusEvent) => {
   const container = e.currentTarget as HTMLElement;
   if (!container.contains(e.relatedTarget as Node | null)) searchOpen.value = false;
-}
+};
 
-// Sous 900px, le champ de recherche est masqué par défaut (place limitée
-// dans le header, voir _app-header.scss) et se déplie via un bouton dédié.
-// Le déclencheur est toujours ce même bouton (pas de document.activeElement
-// : Safari ne lui donne pas le focus au clic, cf. mousedown.prevent plus
-// bas).
+// Repli mobile de la recherche (masquée sous 900px, voir _app-header.scss) :
+// le champ se déplie via un bouton dédié plutôt que d'être toujours visible.
 const mobileSearchOpen = ref(false);
-const searchContainerRef = ref<HTMLElement | null>(null);
+const searchInputRef = ref<HTMLInputElement | null>(null);
 const searchToggleRef = ref<HTMLElement | null>(null);
 
 const toggleMobileSearch = async () => {
   mobileSearchOpen.value = !mobileSearchOpen.value;
   if (mobileSearchOpen.value) {
     await nextTick();
-    searchContainerRef.value?.querySelector("input")?.focus();
+    searchInputRef.value?.focus();
   } else {
     searchToggleRef.value?.focus();
   }
 };
 
-const closeMobileSearch = () => {
-  if (!mobileSearchOpen.value) return;
-  mobileSearchOpen.value = false;
-  // <input type="search"> retire nativement le focus sur Échap, après nos
-  // gestionnaires et malgré preventDefault() — setTimeout repousse le
-  // focus() après ce retrait plutôt que de se le faire écraser.
-  setTimeout(() => searchToggleRef.value?.focus(), 0);
-};
-
-// Un seul appui referme liste de résultats et champ mobile : le
-// comportement natif ci-dessus sur <input type="search"> rend peu fiable
-// un enchaînement en deux temps sur deux appuis successifs.
+// Échap referme liste de résultats et champ mobile en un appui.
+// preventDefault() : <input type="search"> vide nativement son contenu sur
+// Échap, ce qui effacerait la recherche par accident. setTimeout : ce même
+// comportement natif retire aussi le focus après nos gestionnaires (même
+// avec preventDefault()), donc on repousse notre focus() après coup plutôt
+// que de se le faire écraser.
 const onSearchKeydown = (e: KeyboardEvent) => {
   e.preventDefault();
   searchOpen.value = false;
-  closeMobileSearch();
+  if (!mobileSearchOpen.value) return;
+  mobileSearchOpen.value = false;
+  setTimeout(() => searchToggleRef.value?.focus(), 0);
 };
 
-// AppSidebar.vue restitue le focus au déclencheur en lisant
-// document.activeElement à l'ouverture : on le force explicitement ici
-// (même raison que pour la recherche mobile ci-dessus) plutôt que de
-// compter sur le focus-au-clic natif du bouton.
+const selectResult = (event: CalendarEvent) => {
+  searchOpen.value = false;
+  mobileSearchOpen.value = false;
+  store.openEditModal(event);
+};
+
+// Sidebar mobile : focus forcé au clic (Safari ne focus pas les boutons au
+// clic) pour que AppSidebar.vue, qui lit document.activeElement à
+// l'ouverture, restitue bien le focus à ce bouton en refermant.
 const onToggleSidebar = (e: MouseEvent) => {
   (e.currentTarget as HTMLElement).focus();
   store.toggleSidebar();
 };
 
-function selectResult(event: CalendarEvent) {
-  searchOpen.value = false;
-  mobileSearchOpen.value = false;
-  store.openEditModal(event);
-}
-
-function step(direction: 1 | -1) {
+const step = (direction: 1 | -1) => {
   const date = store.currentDate;
   switch (store.currentView) {
     case "week":
@@ -110,7 +102,7 @@ function step(direction: 1 | -1) {
     default:
       store.setCurrentDate(direction > 0 ? addMonths(date, 1) : subMonths(date, 1));
   }
-}
+};
 </script>
 
 <template>
@@ -145,7 +137,7 @@ function step(direction: 1 | -1) {
       <h1 class="c-app-header__title">{{ periodLabel }}</h1>
     </div>
 
-    <div id="mobile-search" ref="searchContainerRef" class="c-app-header__search">
+    <div id="mobile-search" class="c-app-header__search">
       <div
         class="c-search"
         @focusin="searchOpen = true"
@@ -154,6 +146,7 @@ function step(direction: 1 | -1) {
       >
         <Icon name="search" class="c-search__icon" />
         <input
+          ref="searchInputRef"
           v-model="store.searchQuery"
           type="search"
           class="c-search__input"
