@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { nextTick, ref, watch } from "vue";
-import { readCssDurationMs } from "../composables/useTransitionDuration.js";
 
-// Duree explicite plutot que de laisser <Transition> attendre l'evenement
+// Doit rester synchro avec --transition-base (tools/_tokens.scss, 200ms) :
+// duree explicite plutot que de laisser <Transition> attendre l'evenement
 // transitionend natif, qui peut ne jamais se declencher (issue #61) et
 // laisser l'overlay bloquer tous les clics de l'app indefiniment.
-const CONFIRM_DIALOG_TRANSITION_DURATION = readCssDurationMs("--transition-base");
+const CONFIRM_DIALOG_TRANSITION_DURATION = 200;
 
 const props = withDefaults(
   defineProps<{
