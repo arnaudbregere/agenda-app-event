@@ -19,12 +19,10 @@
 
   &__header {
     grid-area: header;
-    // min-width: 0 indispensable : un enfant de grille a min-width: auto
-    // par défaut (= son min-content), ce qui élargit la colonne 1fr
-    // au-delà du viewport tant que le header contient du texte non
-    // coupable (white-space: nowrap sur __title, voir _app-header.scss) —
-    // constaté en testant l'issue #40 à 320px (iframe, resize_window
-    // indisponible dans cet environnement).
+    // Un enfant de grille a min-width: auto par défaut (= son min-content) :
+    // sans ce reset, la colonne 1fr s'élargit au-delà du viewport tant que
+    // le header contient du texte non coupable (__title en white-space:
+    // nowrap, voir _app-header.scss).
     min-width: 0;
   }
 

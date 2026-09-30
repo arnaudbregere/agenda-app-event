@@ -62,7 +62,7 @@ describe("AppHeader", () => {
     expect(store.currentDate.toDateString()).toBe(new Date().toDateString());
   });
 
-  describe("bouton menu (drawer sidebar mobile, issue #40)", () => {
+  describe("bouton menu (drawer sidebar mobile)", () => {
     it("ouvre/ferme la sidebar et met à jour aria-expanded", async () => {
       const store = useCalendarStore();
       const wrapper = mount(AppHeader);
@@ -80,7 +80,7 @@ describe("AppHeader", () => {
     });
   });
 
-  describe("recherche mobile (issue #40)", () => {
+  describe("recherche mobile", () => {
     it("le bouton de recherche déplie le champ et lui donne le focus", async () => {
       const wrapper = mount(AppHeader, { attachTo: document.body });
       const toggle = wrapper.find(".c-app-header__search-toggle");

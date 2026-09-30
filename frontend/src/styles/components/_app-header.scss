@@ -82,18 +82,16 @@
     display: none;
   }
 
-  // Recherche dépliée par le bouton dédié (__search-toggle, issue #40) :
-  // prend sa propre ligne pleine largeur sous le reste du header. Le
-  // flex-wrap forcé prime sur le nowrap de respond-up(sm) — plus haute
-  // spécificité (2 classes), sans dépendre de l'ordre des règles.
-  // Sélecteur écrit à plat (pas de &__search imbriqué dans &.is-search-open)
-  // : à l'intérieur d'un bloc &.is-search-open, & désigne déjà le composé
-  // .c-app-header.is-search-open, donc &__search y concatènerait __search
-  // à la fin de ce composé au lieu de cibler .c-app-header__search (bug
-  // constaté en testant l'issue #40 : la recherche ne s'affichait jamais).
+  // flex-wrap forcé : prime sur le nowrap de respond-up(sm) (2 classes,
+  // plus spécifique, sans dépendre de l'ordre des règles).
   &.is-search-open {
     flex-wrap: wrap;
   }
+
+  // Sélecteur à plat plutôt que &__search imbriqué dans le bloc ci-dessus :
+  // dans ce bloc, & vaut déjà .c-app-header.is-search-open, donc &__search
+  // concatènerait __search à la fin de ce composé au lieu de cibler
+  // .c-app-header__search.
 
   &.is-search-open &__search {
     display: block;

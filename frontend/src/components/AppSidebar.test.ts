@@ -27,7 +27,7 @@ describe("AppSidebar — accès rapide", () => {
   });
 });
 
-describe("AppSidebar — drawer mobile (issue #40)", () => {
+describe("AppSidebar — drawer mobile", () => {
   it("Échap referme la sidebar quand elle est ouverte", async () => {
     const store = useCalendarStore();
     store.openSidebar();

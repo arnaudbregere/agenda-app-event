@@ -8,7 +8,7 @@ import { useCalendarStore } from "./stores/calendar.js";
 
 // AppHeader (bouton menu) et AppSidebar (focus management, Échap) sont deux
 // composants distincts qui communiquent via le store : ce test vérifie leur
-// câblage réel plutôt que chacun isolément (issue #40 — drawer mobile).
+// câblage réel plutôt que chacun isolément.
 const Shell = defineComponent({
   components: { AppHeader, AppSidebar },
   template: `
@@ -27,7 +27,7 @@ beforeEach(() => {
   setActivePinia(createPinia());
 });
 
-describe("Header + sidebar mobile — câblage (issue #40)", () => {
+describe("Header + sidebar mobile — câblage", () => {
   it("le bouton menu ouvre la sidebar, le clic sur le fond la referme et rend le focus au bouton", async () => {
     const store = useCalendarStore();
     const wrapper = mount(Shell, { attachTo: document.body });

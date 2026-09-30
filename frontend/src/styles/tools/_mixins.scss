@@ -7,9 +7,8 @@
 @use "sass:map";
 @use "../settings/breakpoints" as bp;
 
-/// Enrobe le contenu dans une media query `min-width`. Mixin standard du
-/// projet depuis l'issue #40 (mobile-first généralisé) : base = petit
-/// écran, styles plus larges ajoutés via respond-up().
+/// Enrobe le contenu dans une media query `min-width`. Mobile-first : base
+/// = petit écran, styles plus larges ajoutés via respond-up().
 @mixin respond-up($name) {
   @media (min-width: map.get(bp.$breakpoints, $name)) {
     @content;

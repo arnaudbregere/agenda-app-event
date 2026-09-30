@@ -13,11 +13,9 @@ const QUICK_ACCESS: { view: CalendarView; label: string }[] = [
   { view: "month", label: "Ce mois-ci" },
 ];
 
-// Focus management du drawer mobile (issue #40) : à l'ouverture, le focus
-// part vers le premier élément du panneau ; à la fermeture (Échap, clic sur
-// le fond, sélection d'une vue via goToCurrent), il revient sur l'élément
-// qui avait le focus au moment de l'ouverture (le bouton menu, en usage
-// normal) — pas de piège de focus complet, la sidebar n'est pas une modale.
+// À l'ouverture du drawer, le focus part vers son premier élément ; à la
+// fermeture, il revient sur l'élément qui avait le focus à l'ouverture. Pas
+// de piège de focus complet : la sidebar n'est pas une modale.
 const asideRef = ref<HTMLElement | null>(null);
 let triggerEl: HTMLElement | null = null;
 

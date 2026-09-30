@@ -21,8 +21,8 @@ export const useCalendarStore = defineStore("calendar", {
     modalOpen: false,
     editingEvent: null as CalendarEvent | null, // événement complet en édition, null en création
     modalDefaults: null as ModalDefaults | null, // pré-rempli à la création
-    // Drawer sidebar sous 900px (issue #40) : toujours false sur desktop, où
-    // le bouton qui le fait varier n'est pas affiché (voir _app-header.scss).
+    // Drawer sidebar sous 900px : toujours false sur desktop, où le bouton
+    // qui le fait varier n'est pas affiché (voir _app-header.scss).
     isSidebarOpen: false,
   }),
 
