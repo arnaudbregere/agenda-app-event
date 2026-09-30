@@ -166,7 +166,7 @@ describe("AppHeader", () => {
       expect(wrapper.find(".c-search-results").exists()).toBe(false);
     });
 
-    it("Échap referme d'abord la liste, puis le champ mobile sur un second appui", async () => {
+    it("Échap referme la liste de résultats et le champ mobile en un seul appui", async () => {
       seed();
       const wrapper = mount(AppHeader, { attachTo: document.body });
       await wrapper.find(".c-app-header__search-toggle").trigger("click");
@@ -174,11 +174,17 @@ describe("AppHeader", () => {
       await input.trigger("focusin");
       await input.setValue("réunion");
 
+      const toggle = wrapper.find(".c-app-header__search-toggle");
       await input.trigger("keydown", { key: "Escape" });
-      expect(wrapper.classes()).toContain("is-search-open");
 
-      await input.trigger("keydown", { key: "Escape" });
+      expect(wrapper.find(".c-search-results").exists()).toBe(false);
       expect(wrapper.classes()).not.toContain("is-search-open");
+
+      // Le focus est restitué après un setTimeout(0) (voir commentaire dans
+      // AppHeader.vue : le navigateur retire le focus après les
+      // gestionnaires d'évènements sur Échap pour un input type="search").
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      expect(document.activeElement).toBe(toggle.element);
       wrapper.unmount();
     });
 

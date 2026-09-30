@@ -56,13 +56,26 @@
     font-size: var(--font-size-md);
     font-weight: var(--font-weight-medium);
     min-width: 0;
+    flex: 1 1 auto;
+    // Tronque plutôt que déborder : à 320px, le titre de période (ex.
+    // « septembre 2026 ») associé aux boutons Aujourd'hui/précédent/suivant
+    // ne tient pas toujours sur une ligne (débordement constaté, testé via
+    // iframe 320px — resize_window indisponible dans cet environnement).
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   &__nav {
     display: flex;
     align-items: center;
     gap: var(--space-1);
-    flex-shrink: 0;
+    // min-width: 0 nécessaire pour que __title (flex: 1 1 auto) puisse se
+    // réduire sous sa taille de contenu au lieu de déborder (piège
+    // classique flexbox : un item ne rétrécit jamais sous son min-content
+    // implicite sans min-width: 0 explicite sur lui ou son parent flex).
+    min-width: 0;
+    flex: 1 1 auto;
   }
 
   &__search {
@@ -73,14 +86,19 @@
   // prend sa propre ligne pleine largeur sous le reste du header. Le
   // flex-wrap forcé prime sur le nowrap de respond-up(sm) — plus haute
   // spécificité (2 classes), sans dépendre de l'ordre des règles.
+  // Sélecteur écrit à plat (pas de &__search imbriqué dans &.is-search-open)
+  // : à l'intérieur d'un bloc &.is-search-open, & désigne déjà le composé
+  // .c-app-header.is-search-open, donc &__search y concatènerait __search
+  // à la fin de ce composé au lieu de cibler .c-app-header__search (bug
+  // constaté en testant l'issue #40 : la recherche ne s'affichait jamais).
   &.is-search-open {
     flex-wrap: wrap;
+  }
 
-    &__search {
-      display: block;
-      flex-basis: 100%;
-      order: 1;
-    }
+  &.is-search-open &__search {
+    display: block;
+    flex-basis: 100%;
+    order: 1;
   }
 
   &__search-toggle {
@@ -111,6 +129,13 @@
     &__menu-toggle,
     &__search-toggle {
       display: none;
+    }
+
+    // Assez de place à partir de 900px : nav retrouve une taille fixe (le
+    // titre n'a plus besoin de se réduire/tronquer, cf. base mobile-first
+    // ci-dessus) — comportement desktop identique à avant la migration.
+    &__nav {
+      flex: 0 0 auto;
     }
 
     &__title {

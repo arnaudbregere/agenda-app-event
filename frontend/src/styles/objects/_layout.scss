@@ -19,6 +19,13 @@
 
   &__header {
     grid-area: header;
+    // min-width: 0 indispensable : un enfant de grille a min-width: auto
+    // par défaut (= son min-content), ce qui élargit la colonne 1fr
+    // au-delà du viewport tant que le header contient du texte non
+    // coupable (white-space: nowrap sur __title, voir _app-header.scss) —
+    // constaté en testant l'issue #40 à 320px (iframe, resize_window
+    // indisponible dans cet environnement).
+    min-width: 0;
   }
 
   // Sous 900px, la sidebar n'est pas dans le flux (drawer hors-champ,

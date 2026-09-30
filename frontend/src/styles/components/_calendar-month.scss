@@ -46,6 +46,11 @@
     padding: var(--space-1);
     display: flex;
     flex-direction: column;
+    // min-width: 0 indispensable : par défaut un enfant de grille CSS a
+    // min-width: auto (= sa taille min-content), ce qui empêcherait les
+    // colonnes 1fr de rétrécir sous cette taille (voir la même remarque sur
+    // .o-app-shell__header, objects/_layout.scss, pour le bug réel que ça a
+    // causé à 320px).
     min-width: 0;
     min-height: 0;
     overflow: hidden;

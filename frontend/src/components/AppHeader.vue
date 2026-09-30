@@ -69,17 +69,28 @@ const toggleMobileSearch = async () => {
 const closeMobileSearch = () => {
   if (!mobileSearchOpen.value) return;
   mobileSearchOpen.value = false;
-  searchToggleRef.value?.focus();
+  // setTimeout plutôt qu'un focus() synchrone : sur Échap, le comportement
+  // natif du navigateur pour <input type="search"> retire le focus après
+  // les gestionnaires d'évènements, écrasant un focus() synchrone posé ici
+  // (constaté en testant l'issue #40 dans un vrai navigateur ;
+  // preventDefault() sur le keydown ne suffit pas à l'empêcher). Repousser
+  // l'appel après ce retrait natif restitue le focus au bon endroit.
+  setTimeout(() => searchToggleRef.value?.focus(), 0);
 };
 
-// Échap referme d'abord la liste de résultats si elle est ouverte, sinon le
-// champ mobile lui-même (même logique « la couche du dessus d'abord » que
-// la modale d'édition / la confirmation de suppression, issue #61).
-const onSearchKeydown = () => {
-  if (searchOpen.value) {
-    searchOpen.value = false;
-    return;
-  }
+// Échap referme la liste de résultats et le champ mobile en un seul appui.
+// Un enchaînement en deux temps (résultats d'abord, champ ensuite sur un
+// second Échap) a été essayé puis abandonné : `<input type="search">` a un
+// comportement natif sur Échap (le navigateur peut lui retirer le focus)
+// qui entre en conflit avec un second appui attendu par notre code —
+// constaté en testant l'issue #40 dans un vrai navigateur (le second Échap
+// ne fermait pas le champ). Un seul niveau de fermeture évite le problème.
+// preventDefault() neutralise ce même comportement natif, qui sinon
+// re-retire le focus après notre closeMobileSearch() (constaté aussi : le
+// focus ne revenait pas sur le bouton malgré le focus() explicite).
+const onSearchKeydown = (e: KeyboardEvent) => {
+  e.preventDefault();
+  searchOpen.value = false;
   closeMobileSearch();
 };
 
