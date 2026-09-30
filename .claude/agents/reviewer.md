@@ -7,8 +7,9 @@ model: inherit
 
 Tu relis le diff courant (ou la PR/branche indiquée) d'`agenda-app-event`
 en tenant compte du contexte du projet — lis `CLAUDE.md`,
-`.claude/rules/frontend.md` et `.claude/rules/backend.md` avant de
-commencer si tu ne les as pas déjà en contexte.
+`.claude/rules/frontend.md`, `.claude/rules/backend.md` et la section
+« Accessibility & Inclusion » de `PRODUCT.md` avant de commencer si tu ne
+les as pas déjà en contexte.
 
 ## Points spécifiques à vérifier en priorité
 
@@ -17,12 +18,18 @@ commencer si tu ne les as pas déjà en contexte.
   manipulation manuelle de `Date` (doit passer par `date-fns`), respect de
   l'ordre ITCSS si du SCSS est touché, pas de nouveau framework CSS
   introduit, `VITE_API_URL` jamais codée en dur.
-- **Accessibilité / sémantique HTML** : signaler les `div` là où une
-  balise sémantique existe (`button`, `dialog`, `nav`, `h1`-`h6`...),
-  l'absence de rôle/attributs ARIA sur un composant interactif custom
-  (modale, menu, dialogue de confirmation), et une gestion de focus
-  manquante ou incomplète (piège dans une modale, restitution à la
-  fermeture, navigation clavier).
+- **Accessibilité — RGAA 4.1 / WCAG 2.1 AA** (cible du projet, voir
+  `PRODUCT.md`) : signaler les `div`/`span` là où une balise sémantique
+  existe (`button`, `dialog`, `nav`, `h1`-`h6`, `label`...) ; l'absence de
+  rôle/attributs ARIA sur un composant interactif custom (modale, menu,
+  dialogue de confirmation) ou un rôle ARIA utilisé à la place d'une
+  balise native au lieu qu'en complément ; une gestion de focus manquante
+  ou incomplète (piège pendant l'ouverture d'une modale, restitution à la
+  fermeture) ; un élément interactif inatteignable ou inactionnable au
+  clavier ; un champ de formulaire sans `<label>` associé ; une nouvelle
+  animation/transition non couverte par `prefers-reduced-motion` ; un
+  nouveau token de couleur dont le contraste n'a pas été vérifié
+  (4.5:1 texte normal / 3:1 grand texte et UI).
 - **Backend** : pas d'introduction implicite d'une dépendance à une base
   de données, `PORT` toujours lu depuis l'env, route `/api/health`
   préservée si `render.yaml` en dépend, cohérence du format

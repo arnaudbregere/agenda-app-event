@@ -75,5 +75,40 @@ au-delà de ça.
 
 ## Accessibility & Inclusion
 
-Bonnes pratiques WCAG de base à respecter (navigation clavier, contraste
-suffisant, compatibilité lecteur d'écran), sans norme formelle imposée.
+Cible : **RGAA 4.1** (référentiel français, dernière version en vigueur —
+DINUM), lui-même aligné sur **WCAG 2.1 niveau AA**. Pas d'audit RGAA
+formel prévu (projet solo, hors obligation légale), mais les critères
+s'appliquent comme guide de qualité par défaut sur tout composant
+interactif nouveau ou modifié :
+
+- **Navigation clavier** : tout ce qui est cliquable est atteignable et
+  actionnable au clavier (Tab/Maj+Tab, Entrée/Espace, Échap pour fermer).
+  Aucun piège au clavier, sauf le piège de focus volontaire d'une modale
+  ouverte (RGAA 12.8/12.11).
+- **Contrastes** : au moins 4.5:1 texte normal, 3:1 grand texte et
+  éléments d'interface (RGAA 3.2/3.3 — WCAG 1.4.3/1.4.11). Vérifier les
+  nouvelles couleurs de tokens (`settings/_colors.scss`) avant de les
+  ajouter, pas seulement en s'appuyant sur l'existant.
+- **Sémantique HTML** avant ARIA : balises natives (`button`, `dialog`,
+  `nav`, `h1`-`h6`, `label`...) plutôt que des `div`/`span` recréées à la
+  main ; ARIA seulement en complément (rôle, `aria-*`) quand le HTML
+  natif ne suffit pas (RGAA 7, 9).
+- **Formulaires** : chaque champ a un `<label>` associé (pas un simple
+  `placeholder`), erreurs de validation annoncées et associées au champ
+  concerné (RGAA 11).
+- **Focus** : visible (`:focus-visible`, jamais `outline: none` sans
+  remplacement), géré explicitement dans tout composant custom qui
+  ouvre/ferme (piégé pendant l'ouverture, restitué à l'élément
+  déclencheur à la fermeture — RGAA 12.8/12.9).
+- **Mouvement** : respecter `prefers-reduced-motion` pour toute animation
+  ou transition ajoutée (RGAA 13.3 — WCAG 2.3.3).
+- **Alternatives textuelles** : icônes décoratives masquées aux
+  technologies d'assistance (`aria-hidden="true"`), icônes porteuses de
+  sens avec un texte alternatif (`aria-label`, texte visible ou
+  équivalent) — RGAA 1.
+- **Zoom / réflow** : le contenu reste utilisable à 200% de zoom, sans
+  perte d'information ni défilement horizontal (RGAA 10.5 — WCAG 1.4.10).
+
+Détails d'implémentation (conventions de code) dans
+`.claude/rules/frontend.md` ; points vérifiés en revue dans
+`.claude/agents/reviewer.md`.
