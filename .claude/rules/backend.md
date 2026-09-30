@@ -15,6 +15,11 @@
   ce serveur Express (service unique Render) — pas de config CORS à
   maintenir pour cet usage ; `cors` (dépendance présente) sert au dev
   local (frontend sur un port différent).
+- `src/app.ts` exporte l'app Express (routes, middlewares, erreurs) sans
+  appeler `.listen()` — `server.ts` à la racine s'en charge seul.
+  Séparation nécessaire pour `src/app.test.ts`, qui pilote l'app avec
+  `supertest` sans ouvrir de port réseau. Toute route/middleware ajouté
+  doit vivre dans `app.ts`, jamais dans `server.ts`.
 
 ## ⚠️ Limite connue — stockage non persistant sur Render free
 
@@ -28,3 +33,9 @@ n'est pas ajouté.
 
 - Vitest (`npm test` = `vitest run`, `npm run test:watch` pour le mode
   watch).
+- Deux niveaux : tests unitaires (`eventsStore.test.ts`,
+  `validators.test.ts` — chaque couche isolée) et tests d'intégration
+  (`app.test.ts` — cycle HTTP complet via `supertest`, `routes/` →
+  `controllers/` → `services/`). Les deux mockent `node:fs/promises` en
+  mémoire (même pattern `fsState`) pour ne jamais toucher
+  `backend/data/events.json` pendant les tests.

@@ -12,6 +12,12 @@ Tu écris et diagnostiques des tests **Vitest** pour `agenda-app-event`.
 - Deux suites indépendantes : `backend/` (API Express, pas de BDD —
   `backend/data/events.json`) et `frontend/` (Vue 3 + Pinia). Chacune a
   son propre `npm test` (`vitest run`) et `npm run test:watch`.
+- Backend : deux niveaux. Unitaire (`eventsStore.test.ts`,
+  `validators.test.ts`) et intégration (`app.test.ts`, via `supertest`
+  contre `src/app.ts` — l'app Express exportée sans `.listen()`, montée
+  par `server.ts`). Les deux mockent `node:fs/promises` en mémoire (même
+  pattern `fsState`, à réutiliser plutôt que réinventé) pour ne jamais
+  toucher `backend/data/events.json`.
 - CI GitHub Actions (`.github/workflows/`) lance les deux suites sur
   chaque push/PR vers `main` — un test qui casse en CI bloque le merge.
 - Backend : `PORT` est configurable par env, ne jamais supposer `4000` en
