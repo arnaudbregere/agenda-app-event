@@ -32,8 +32,14 @@
   display: none !important;
 }
 
-@include respond-down(sm) {
+// Masqué en base (mobile), affiché à partir de sm — mobile-first, voir
+// tools/_mixins.scss.
+.u-hidden-mobile {
+  display: none !important;
+}
+
+@include respond-up(sm) {
   .u-hidden-mobile {
-    display: none !important;
+    display: initial !important;
   }
 }

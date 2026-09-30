@@ -4,15 +4,38 @@
 @use "../tools/mixins" as *;
 
 .c-app-header {
+  // Base mobile-first : le bloc nav (Aujourd'hui + précédent/suivant +
+  // titre de période) et le sélecteur de vue ne tiennent pas sur une seule
+  // ligne à côté de la marque sous 900px — on autorise le passage à la
+  // ligne plutôt que de risquer un débordement horizontal (WCAG 1.4.10
+  // Reflow). Hauteur fixe et ligne unique ajoutées par respond-up(md), une
+  // fois la place disponible.
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: var(--space-4);
-  height: 100%;
-  padding: 0 var(--space-4);
+  gap: var(--space-2) var(--space-4);
+  height: auto;
+  padding: var(--space-2) var(--space-3);
   background-color: var(--color-bg);
   border-bottom: 1px solid var(--color-border);
   position: relative;
   z-index: var(--z-app-header);
+
+  &__menu-toggle {
+    flex-shrink: 0;
+
+    // Zone de tap 44x44 sans agrandir le bouton visuellement (même
+    // technique que .c-btn--icon.c-btn--sm, voir _button.scss).
+    @media (pointer: coarse) {
+      position: relative;
+
+      &::after {
+        content: "";
+        position: absolute;
+        inset: -2px;
+      }
+    }
+  }
 
   &__brand {
     display: flex;
@@ -30,9 +53,9 @@
   }
 
   &__title {
-    font-size: var(--font-size-lg);
+    font-size: var(--font-size-md);
     font-weight: var(--font-weight-medium);
-    min-width: 180px;
+    min-width: 0;
   }
 
   &__nav {
@@ -43,9 +66,7 @@
   }
 
   &__search {
-    flex: 1;
-    max-width: 480px;
-    margin: 0 auto;
+    display: none;
   }
 
   &__actions {
@@ -53,31 +74,38 @@
     align-items: center;
     gap: var(--space-3);
     flex-shrink: 0;
+    flex-basis: 100%;
   }
+}
 
-  @include respond-down(md) {
+@include respond-up(md) {
+  .c-app-header {
+    &__menu-toggle {
+      display: none;
+    }
+
     &__title {
-      min-width: 0;
-      font-size: var(--font-size-md);
+      font-size: var(--font-size-lg);
+      min-width: 180px;
     }
 
     &__search {
-      display: none;
+      display: block;
+      flex: 1;
+      max-width: 480px;
+      margin: 0 auto;
     }
   }
+}
 
-  // En dessous de 600px, le bloc nav (Aujourd'hui + précédent/suivant +
-  // titre de période) et le sélecteur de vue ne tiennent plus sur une seule
-  // ligne à côté de la marque : on autorise le passage à la ligne plutôt que
-  // de risquer un débordement horizontal (WCAG 1.4.10 Reflow).
-  @include respond-down(sm) {
-    height: auto;
-    flex-wrap: wrap;
-    row-gap: var(--space-2);
-    padding: var(--space-2) var(--space-3);
+@include respond-up(sm) {
+  .c-app-header {
+    height: var(--header-height);
+    flex-wrap: nowrap;
+    padding: 0 var(--space-4);
 
     &__actions {
-      flex-basis: 100%;
+      flex-basis: auto;
     }
   }
 }

@@ -62,6 +62,24 @@ describe("AppHeader", () => {
     expect(store.currentDate.toDateString()).toBe(new Date().toDateString());
   });
 
+  describe("bouton menu (drawer sidebar mobile, issue #40)", () => {
+    it("ouvre/ferme la sidebar et met à jour aria-expanded", async () => {
+      const store = useCalendarStore();
+      const wrapper = mount(AppHeader);
+      const toggle = wrapper.find(".c-app-header__menu-toggle");
+
+      expect(toggle.attributes("aria-expanded")).toBe("false");
+      expect(toggle.attributes("aria-controls")).toBe("app-sidebar");
+
+      await toggle.trigger("click");
+      expect(store.isSidebarOpen).toBe(true);
+      expect(wrapper.find(".c-app-header__menu-toggle").attributes("aria-expanded")).toBe("true");
+
+      await wrapper.find(".c-app-header__menu-toggle").trigger("click");
+      expect(store.isSidebarOpen).toBe(false);
+    });
+  });
+
   describe("résultats de recherche", () => {
     function seed() {
       useEventsStore().events = asEvents([

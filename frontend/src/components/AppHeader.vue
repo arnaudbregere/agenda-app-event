@@ -68,6 +68,17 @@ function step(direction: 1 | -1) {
 
 <template>
   <header class="c-app-header">
+    <button
+      type="button"
+      class="c-btn c-btn--icon c-app-header__menu-toggle"
+      :aria-expanded="store.isSidebarOpen"
+      aria-controls="app-sidebar"
+      :aria-label="store.isSidebarOpen ? 'Fermer le menu' : 'Ouvrir le menu'"
+      @click="store.toggleSidebar()"
+    >
+      <Icon :name="store.isSidebarOpen ? 'x' : 'menu'" class="c-btn__icon" />
+    </button>
+
     <div class="c-app-header__brand">
       <svg class="c-app-header__logo" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <rect x="3" y="4" width="18" height="17" rx="2" />
