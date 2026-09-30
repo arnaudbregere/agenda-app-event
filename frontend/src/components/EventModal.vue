@@ -184,7 +184,6 @@ const confirmDelete = async () => {
           role="dialog"
           aria-modal="true"
           aria-labelledby="event-modal-title"
-          :inert="deleteConfirmOpen"
           @submit.prevent="handleSubmit"
           @keydown="handleKeydown"
         >

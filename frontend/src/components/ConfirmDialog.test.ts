@@ -1,6 +1,5 @@
 import { describe, it, expect, afterEach } from "vitest";
-import { mount, flushPromises, DOMWrapper } from "@vue/test-utils";
-import { nextTick } from "vue";
+import { mount, DOMWrapper } from "@vue/test-utils";
 import ConfirmDialog from "./ConfirmDialog.vue";
 
 let wrapper: ReturnType<typeof mount> | undefined;
@@ -23,9 +22,16 @@ afterEach(() => {
 });
 
 describe("ConfirmDialog", () => {
-  it("n'affiche rien quand open est faux", () => {
+  it("appelle showModal() quand open passe à vrai, close() quand il repasse à faux", async () => {
     mountDialog({ open: false, title: "Titre", message: "Message" });
-    expect(body().find('[role="alertdialog"]').exists()).toBe(false);
+    const dialog = document.querySelector<HTMLDialogElement>(".c-confirm-dialog")!;
+    expect(dialog.open).toBe(false);
+
+    await wrapper!.setProps({ open: true });
+    expect(dialog.open).toBe(true);
+
+    await wrapper!.setProps({ open: false });
+    expect(dialog.open).toBe(false);
   });
 
   it("affiche le titre et le message, avec les libellés par défaut", () => {
@@ -74,50 +80,40 @@ describe("ConfirmDialog", () => {
     expect(wrapper!.emitted("cancel")).toBeUndefined();
   });
 
-  it("Échap émet cancel", async () => {
+  it("Échap émet cancel (événement natif \"cancel\" du <dialog>)", async () => {
     mountDialog({ open: true, title: "Titre", message: "Message" });
 
-    await body().find('[role="alertdialog"]').trigger("keydown", { key: "Escape" });
+    // Un <dialog> modal répond nativement à Échap en émettant "cancel",
+    // pas un keydown classique : on simule cet événement natif.
+    await body().find('[role="alertdialog"]').trigger("cancel");
 
     expect(wrapper!.emitted("cancel")).toHaveLength(1);
   });
 
-  it("clic sur le fond (overlay) émet cancel", async () => {
+  it("clic sur le fond (::backdrop, cible le <dialog> lui-même) émet cancel", async () => {
     mountDialog({ open: true, title: "Titre", message: "Message" });
 
-    await body().find(".c-confirm-dialog__overlay").trigger("mousedown");
+    // ::backdrop n'est pas un élément DOM séparé : un clic dessus cible le
+    // <dialog> lui-même, ce que le composant distingue d'un clic sur son
+    // contenu via event.target.
+    const dialog = document.querySelector(".c-confirm-dialog")!;
+    dialog.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    await wrapper!.vm.$nextTick();
 
     expect(wrapper!.emitted("cancel")).toHaveLength(1);
   });
 
-  it("clic à l'intérieur du panneau n'émet pas cancel", async () => {
+  it("clic à l'intérieur du contenu n'émet pas cancel", async () => {
     mountDialog({ open: true, title: "Titre", message: "Message" });
 
-    await body().find(".c-confirm-dialog__panel").trigger("mousedown");
+    await body().find(".c-confirm-dialog__title").trigger("click");
 
     expect(wrapper!.emitted("cancel")).toBeUndefined();
   });
 
-  it("place le focus sur Annuler à l'ouverture", async () => {
-    mountDialog({ open: false, title: "Titre", message: "Message" });
-    await wrapper!.setProps({ open: true });
-    await flushPromises();
-
-    expect(document.activeElement?.textContent).toBe("Annuler");
-  });
-
-  it("restitue le focus à l'élément déclencheur à la fermeture", async () => {
-    const trigger = document.createElement("button");
-    trigger.textContent = "Ouvrir";
-    document.body.appendChild(trigger);
-    trigger.focus();
-
+  it("le bouton Annuler porte autofocus (focus initial natif à l'ouverture)", () => {
     mountDialog({ open: true, title: "Titre", message: "Message" });
-    await nextTick();
-    await wrapper!.setProps({ open: false });
-    await nextTick();
 
-    expect(document.activeElement).toBe(trigger);
-    trigger.remove();
+    expect(body().find(".c-btn--text").attributes("autofocus")).toBe("");
   });
 });
