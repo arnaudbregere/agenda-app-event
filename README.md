@@ -107,8 +107,19 @@ agenda-app-event/
 │   ├── package.json, package-lock.json
 │   └── .gitignore
 │
+├── e2e/                                    — suite e2e Playwright (frontend+backend réels, voir Tests)
+│   ├── playwright.config.ts               — build frontend + lance le backend réel (comme en prod), 1 seul worker
+│   ├── tests/
+│   │   ├── crud.spec.ts                   — cycle CRUD événement (créer/éditer/supprimer + confirmation)
+│   │   ├── views.spec.ts                  — 4 vues (Mois/Semaine/Jour/Liste)
+│   │   ├── mobile-sidebar.spec.ts         — drawer sidebar à 320px (bouton, backdrop, Échap)
+│   │   ├── search.spec.ts                 — recherche desktop + mobile (repli/dépli)
+│   │   └── support/                       — reset du stockage events.json entre tests, chemins partagés
+│   ├── tsconfig.json
+│   └── package.json, package-lock.json
+│
 ├── .github/
-│   └── workflows/tests.yml                — CI : jobs backend / frontend / deploy (voir Flow CI/CD)
+│   └── workflows/tests.yml                — CI : jobs backend / frontend / e2e / deploy (voir Flow CI/CD)
 │
 └── .claude/                               — outillage Claude Code (voir Outillage Claude Code ci-dessous)
 ```
@@ -235,18 +246,41 @@ Les deux packages sont en TypeScript strict, **code et tests** : `npm run typech
 
 `frontend/src/test-support/fixtures.ts` mutualise les fixtures d'événements/catégories volontairement partielles utilisées par plusieurs fichiers de tests (les stores ne valident pas leurs entrées : ces tests exercent leur mécanique, pas la conformité au schéma complet). `backend/src/app.ts` exporte l'app Express (routes, middlewares, gestion d'erreurs) séparément de `backend/server.ts` (qui ne fait plus que l'écoute réseau), pour que `app.test.ts` puisse la piloter avec `supertest` sans ouvrir de vrai port.
 
+### Tests e2e (Playwright)
+
+En complément des trois niveaux ci-dessus (unitaire, composant, intégration API), `e2e/` fait tourner l'app **réelle** dans un vrai navigateur (Chromium) : build du frontend servi par le vrai serveur Express backend, exactement comme en prod (un seul serveur, pas de `vite preview` séparé), sur un port dédié (4310) et un fichier de données isolé (`e2e/.tmp/events.e2e.json`, jamais `backend/data/events.json`).
+
+`e2e/` lance le build frontend et le serveur backend directement (`npm run build --prefix`, `npx tsx`) : `backend/` et `frontend/` doivent donc déjà avoir leurs dépendances installées (`npm install` dans chacun, voir [Démarrage local](#démarrage-local)) avant de lancer la suite e2e.
+
+```bash
+cd e2e
+npm install
+npx playwright install chromium   # une seule fois, télécharge le navigateur
+npm test                          # build frontend + lance le backend + joue les specs
+```
+
+`playwright.config.ts` démarre et arrête le serveur automatiquement (`webServer`) ; inutile de lancer `npm run dev` au préalable. 4 fichiers de specs, 1 seul worker (un seul fichier `events.json` partagé, pas de parallélisation) :
+
+| Fichier | Couvre |
+|---|---|
+| `crud.spec.ts` | Cycle CRUD événement : créer, éditer, supprimer avec confirmation (et annulation) |
+| `views.spec.ts` | Les 4 vues (Mois/Semaine/Jour/Liste) |
+| `mobile-sidebar.spec.ts` | Drawer sidebar à 320px : ouverture/fermeture par bouton, clic sur le fond, Échap + restitution du focus |
+| `search.spec.ts` | Recherche desktop (toujours visible) et mobile (repli/dépli par bouton dédié), résultats, sélection |
+
 ## Flow CI/CD
 
 `main` est **protégée** : aucun push direct, tout changement passe par une branche puis une pull request. Du commit local à la prod :
 
 1. **Branche** depuis `main`, nommée par préfixe conventionnel : `feat/...`, `fix/...`, `chore/...`, `docs/...`.
 2. **Pull request** (`gh pr create`) — même pour un changement mineur.
-3. **CI sur la PR** : le workflow `.github/workflows/tests.yml` se déclenche (`pull_request` vers `main`), jobs `backend` et `frontend` uniquement (pas `deploy` à ce stade, voir plus bas) :
+3. **CI sur la PR** : le workflow `.github/workflows/tests.yml` se déclenche (`pull_request` vers `main`), jobs `backend`, `frontend` et `e2e` (pas `deploy` à ce stade, voir plus bas) :
    - **Job `backend`** : `npm ci`, `npm run typecheck`, `npm run build`, `npm test`.
    - **Job `frontend`** : `npm ci`, `npm run typecheck`, `npm test`.
-   - Les deux doivent passer avant merge.
+   - **Job `e2e`** (après `backend`/`frontend`) : `npm ci` dans les trois packages, `npx playwright install --with-deps chromium`, `npm test` dans `e2e/`.
+   - Les trois doivent passer avant merge.
 4. **Merge en squash** une fois la CI verte, avec suppression de la branche (`gh pr merge --squash --delete-branch`).
-5. **Push sur `main`** (généré par le merge) : le même workflow se redéclenche (`push` vers `main`), cette fois avec le job **`deploy`** en plus des deux précédents :
+5. **Push sur `main`** (généré par le merge) : le même workflow se redéclenche (`push` vers `main`), cette fois avec le job **`deploy`** en plus des précédents :
    - Appelle l'API Render (`POST /v1/services/{id}/deploys`, secrets GitHub `RENDER_API_KEY` / `RENDER_SERVICE_ID`) pour déclencher le déploiement.
    - Poll le statut jusqu'à `live` (échec du job si `build_failed`/`update_failed`/`canceled`, ou timeout).
    - Vérifie `GET /api/health` en dernière étape.
