@@ -7,9 +7,9 @@ model: inherit
 
 Tu relis le diff courant (ou la PR/branche indiquée) d'`agenda-app-event`
 en tenant compte du contexte du projet — lis `CLAUDE.md`,
-`.claude/rules/frontend.md`, `.claude/rules/backend.md` et la section
-« Accessibility & Inclusion » de `PRODUCT.md` avant de commencer si tu ne
-les as pas déjà en contexte.
+`.claude/rules/frontend.md`, `.claude/rules/backend.md`,
+`.claude/rules/e2e.md` et la section « Accessibility & Inclusion » de
+`PRODUCT.md` avant de commencer si tu ne les as pas déjà en contexte.
 
 ## Points spécifiques à vérifier en priorité
 
@@ -34,6 +34,13 @@ les as pas déjà en contexte.
   de données, `PORT` toujours lu depuis l'env, route `/api/health`
   préservée si `render.yaml` en dépend, cohérence du format
   `backend/data/events.json`.
+- **E2E** (si `e2e/` est touché) : pas de `vite preview` réintroduit (le
+  `webServer` doit builder le frontend puis lancer le vrai serveur
+  Express backend), stockage isolé via `EVENTS_DATA_FILE` jamais
+  `backend/data/events.json`, `workers: 1`/`fullyParallel: false`
+  préservés (un seul backend + un seul fichier JSON partagés), nouveau
+  paquet/script avec `typecheck` (`typescript` + `@types/node` en
+  devDependencies) comme `backend/`/`frontend/`.
 - **Process** : si le diff touche `main` directement (pas de branche/PR),
   le signaler — `main` est protégée sur ce repo.
 

@@ -9,8 +9,8 @@
   puis le **vrai** serveur Express backend (`npx tsx
   ../backend/server.ts`) qui sert ce build statiquement — exactement le
   setup de prod (voir `backend/src/app.ts`, bloc `FRONTEND_DIST`). Jamais
-  de `vite preview`
-  séparé : ça réintroduirait une divergence avec la prod (CORS, origine).
+  de `vite preview` séparé : ça réintroduirait une divergence avec la
+  prod (CORS, origine).
 - Port dédié (`E2E_PORT`, 4310 par défaut) et fichier de données isolé
   (`EVENTS_DATA_FILE`, voir `backend/src/utils/paths.ts`) — jamais
   `backend/data/events.json`. `resetEvents()` (dans `tests/support/`) vide
