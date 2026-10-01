@@ -1,13 +1,15 @@
 # Règles e2e (`e2e/`)
 
-- **Playwright**, package indépendant (pas dans `frontend/`) : il
-  orchestre à la fois le build frontend et le vrai serveur backend, donc
-  ne dépend d'aucun des deux au runtime npm (pas de dépendance croisée
-  dans `package.json`).
-- Mode de lancement : `playwright.config.ts` build `frontend/dist` puis
-  lance le **vrai** serveur Express backend (`npx tsx ../backend/server.ts`)
-  qui le sert statiquement — exactement le setup de prod (voir
-  `backend/src/app.ts`, bloc `FRONTEND_DIST`). Jamais de `vite preview`
+- **Playwright**, package indépendant (pas dans `frontend/`) : ne dépend
+  d'aucun des deux autres packages au runtime npm (pas de dépendance
+  croisée dans `package.json`), mais déclenche leurs commandes en
+  sous-processus via `webServer.command` dans `playwright.config.ts`.
+- Mode de lancement : ce `webServer.command` lance `npm run build
+  --prefix ../frontend` (Vite, pas Playwright, qui produit `frontend/dist`),
+  puis le **vrai** serveur Express backend (`npx tsx
+  ../backend/server.ts`) qui sert ce build statiquement — exactement le
+  setup de prod (voir `backend/src/app.ts`, bloc `FRONTEND_DIST`). Jamais
+  de `vite preview`
   séparé : ça réintroduirait une divergence avec la prod (CORS, origine).
 - Port dédié (`E2E_PORT`, 4310 par défaut) et fichier de données isolé
   (`EVENTS_DATA_FILE`, voir `backend/src/utils/paths.ts`) — jamais
