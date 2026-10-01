@@ -38,3 +38,13 @@
   une fois (`npx playwright install chromium`).
 - `npm run typecheck` (`tsc --noEmit`) — Playwright exécute les specs via
   `tsx`/esbuild, qui ne vérifie pas les types : seul `typecheck` le fait.
+
+### CI lente (~8 min) : normal, ce n'est pas les tests
+
+Les 14 specs tournent en ~15s en CI (identique au local). Le job `e2e`
+dure ~8 min à cause du step `npx playwright install --with-deps chromium` :
+télécharge Chromium **et** installe les libs système via `apt-get` à
+chaque run, sans cache. Si ça devient gênant : cacher
+`~/.cache/ms-playwright` (clé sur la version de `@playwright/test`) ou
+lancer le job dans un conteneur `mcr.microsoft.com/playwright` déjà
+préinstallé — pas fait pour l'instant, pas demandé.
