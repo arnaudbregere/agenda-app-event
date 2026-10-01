@@ -55,6 +55,8 @@ jobs:
         working-directory: frontend
       - run: npm ci
         working-directory: e2e
+      - run: npm run typecheck
+        working-directory: e2e
       - run: npx playwright install --with-deps chromium
         working-directory: e2e
       - run: npm test
