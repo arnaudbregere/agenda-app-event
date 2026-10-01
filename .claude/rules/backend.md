@@ -8,6 +8,9 @@
   documenté).
 - Port configurable via la variable d'env `PORT` (défaut `4000`) — ne
   jamais coder `4000` en dur dans une route ou un test.
+- Fichier de stockage surchargeable via `EVENTS_DATA_FILE` (défaut
+  `backend/data/events.json`, voir `src/utils/paths.ts`) — utilisé par la
+  suite e2e (`e2e/`) pour isoler ses données sans toucher au fichier réel.
 - Route de santé `GET /api/health` — utilisée par Render
   (`healthCheckPath` dans `render.yaml`) : ne pas la supprimer/renommer
   sans mettre à jour `render.yaml` en même temps.

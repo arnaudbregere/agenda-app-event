@@ -1,5 +1,5 @@
 import { existsSync } from "node:fs";
-import { dirname, join } from "node:path";
+import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 // Racine du package backend (dossier contenant package.json). Remontée
@@ -16,5 +16,10 @@ function findBackendRoot(): string {
 }
 
 export const BACKEND_ROOT = findBackendRoot();
-export const DATA_FILE = join(BACKEND_ROOT, "data", "events.json");
+// EVENTS_DATA_FILE : surcharge du chemin de stockage, utilisée par la suite
+// e2e pour isoler ses données de backend/data/events.json (jamais touché
+// par les tests, comme pour les mocks fs des tests unitaires/intégration).
+export const DATA_FILE = process.env.EVENTS_DATA_FILE
+  ? resolve(process.env.EVENTS_DATA_FILE)
+  : join(BACKEND_ROOT, "data", "events.json");
 export const FRONTEND_DIST = join(BACKEND_ROOT, "..", "frontend", "dist");
