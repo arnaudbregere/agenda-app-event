@@ -14,7 +14,3 @@ export type Category = (typeof CATEGORIES)[number];
 export type CategoryId = Category["id"];
 
 export const CATEGORY_IDS: readonly CategoryId[] = CATEGORIES.map((c) => c.id);
-
-export function getCategoryColor(id?: string): string {
-  return CATEGORIES.find((c) => c.id === id)?.color ?? "#616161";
-}
