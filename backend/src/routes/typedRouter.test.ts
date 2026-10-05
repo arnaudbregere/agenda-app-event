@@ -54,6 +54,16 @@ describe("createTypedRouter", () => {
     expect(api).toBeDefined();
   });
 
+  it("rejette au typecheck un handler à corps typé branché sans withBody", () => {
+    const api = createTypedRouter();
+    const needsBody = (req: Request<{}, unknown, { title: string }>, res: Response): void => {
+      res.json(req.body.title);
+    };
+    // @ts-expect-error : le corps doit être validé (withBody) avant d'atteindre ce handler
+    api.post("/", needsBody);
+    expect(api).toBeDefined();
+  });
+
   it("rejette au typecheck un paramètre renommé dans le chemin", () => {
     const api = createTypedRouter();
     // @ts-expect-error : le chemin déclare :foo, withId attend :id

@@ -7,7 +7,7 @@ export const withBody =
   <P, B>(
     parse: (body: unknown) => ParseResult<B>,
     handler: (req: Request<P, unknown, B>, res: Response) => Promise<void>
-  ): RequestHandler<P> =>
+  ): RequestHandler<P, unknown, unknown> =>
   (req, res) => {
     const result = parse(req.body);
     if (!result.ok) {

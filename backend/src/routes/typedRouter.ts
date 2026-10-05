@@ -5,7 +5,7 @@ import type { RouteParameters } from "express-serve-static-core";
 // impose que `h` accepte `{ id: string }`, et `get("/", h)` refuse un handler
 // qui attend `req.params.id`. Sans ce helper, Express déduit les paramètres
 // depuis le handler et ne vérifie rien contre le chemin.
-export type PathHandler<Path extends string> = RequestHandler<RouteParameters<Path>>;
+export type PathHandler<Path extends string> = RequestHandler<RouteParameters<Path>, unknown, unknown>;
 
 export const createTypedRouter = () => {
   const router = Router();

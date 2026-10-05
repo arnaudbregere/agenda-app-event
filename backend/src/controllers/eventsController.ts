@@ -6,12 +6,12 @@ import { parseEventPatch } from "../utils/validators.js";
 
 type IdParams = { id: string };
 
-export async function getEvents(req: Request, res: Response): Promise<void> {
+export async function getEvents(req: Request<{}, unknown, unknown>, res: Response): Promise<void> {
   const events = await store.listEvents();
   res.json(events);
 }
 
-export async function getEventById(req: Request<IdParams>, res: Response): Promise<void> {
+export async function getEventById(req: Request<IdParams, unknown, unknown>, res: Response): Promise<void> {
   const event = await store.getEvent(req.params.id);
   if (!event) {
     res.status(404).json({ error: "Événement introuvable." });
@@ -70,7 +70,7 @@ export async function putEvent(req: Request<IdParams, unknown, unknown>, res: Re
   res.json(updated);
 }
 
-export async function deleteEventById(req: Request<IdParams>, res: Response): Promise<void> {
+export async function deleteEventById(req: Request<IdParams, unknown, unknown>, res: Response): Promise<void> {
   const deleted = await store.deleteEvent(req.params.id);
   if (!deleted) {
     res.status(404).json({ error: "Événement introuvable." });
