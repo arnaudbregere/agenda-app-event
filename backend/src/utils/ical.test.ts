@@ -122,3 +122,102 @@ describe("parseIcs", () => {
     expect(result).toEqual({ ok: false, errors: ["Aucun événement (VEVENT) trouvé dans le fichier .ics."] });
   });
 });
+
+describe("parseIcs — cas limites", () => {
+  const wrap = (...lines: string[]) => ["BEGIN:VCALENDAR", "VERSION:2.0", ...lines, "END:VCALENDAR"].join("\r\n");
+  const vevent = (...lines: string[]) =>
+    ["BEGIN:VEVENT", "UID:u", "DTSTAMP:20260101T000000Z", ...lines, "END:VEVENT"];
+
+  it("utilise DTSTART comme fin quand DTEND est absent (horaire)", () => {
+    const result = parseIcs(wrap(...vevent("DTSTART:20260828T080000Z", "SUMMARY:Sans fin")), TZ);
+    expect(result).toEqual({
+      ok: true,
+      value: [
+        { title: "Sans fin", start: "2026-08-28T08:00:00.000Z", end: "2026-08-28T08:00:00.000Z", allDay: false },
+      ],
+    });
+  });
+
+  it("une journée entière sans DTEND dure le jour de DTSTART", () => {
+    const result = parseIcs(wrap(...vevent("DTSTART;VALUE=DATE:20260828", "SUMMARY:Un jour")), TZ);
+    expect(result).toEqual({
+      ok: true,
+      value: [
+        { title: "Un jour", start: "2026-08-27T22:00:00.000Z", end: "2026-08-28T21:59:59.000Z", allDay: true },
+      ],
+    });
+  });
+
+  it("rejette un événement sans DTSTART", () => {
+    const result = parseIcs(wrap(...vevent("SUMMARY:Sans début")), TZ);
+    expect(result).toEqual({
+      ok: false,
+      errors: ['Événement 1 (« Sans début ») : Le champ "start" est requis. Le champ "end" est requis.'],
+    });
+  });
+
+  it("ignore les événements annulés", () => {
+    const result = parseIcs(
+      wrap(
+        ...vevent("DTSTART:20260828T080000Z", "DTEND:20260828T090000Z", "SUMMARY:Annulé", "STATUS:CANCELLED"),
+        ...vevent("DTSTART:20260829T080000Z", "DTEND:20260829T090000Z", "SUMMARY:Gardé")
+      ),
+      TZ
+    );
+    expect(result.ok && result.value.map((e) => e.title)).toEqual(["Gardé"]);
+  });
+
+  it("refuse un texte qui n'est pas du iCalendar", () => {
+    expect(parseIcs("ceci n'est pas un calendrier", TZ)).toEqual({
+      ok: false,
+      errors: ["Aucun événement (VEVENT) trouvé dans le fichier .ics."],
+    });
+  });
+
+  it("aller-retour avec caractères à échapper (virgule, point-virgule, retour ligne)", () => {
+    const tricky: CalendarEvent = {
+      ...timed,
+      title: "Café, thé; infusion",
+      description: "Ligne 1\nLigne 2, avec virgule; et point-virgule",
+    };
+    const result = parseIcs(eventsToIcs([tricky], TZ), TZ);
+    expect(result.ok && result.value[0]).toMatchObject({
+      title: "Café, thé; infusion",
+      description: "Ligne 1\nLigne 2, avec virgule; et point-virgule",
+    });
+  });
+
+  it("aller-retour d'une journée entière qui traverse un changement d'heure (Paris, 29/03/2026)", () => {
+    const dst: CalendarEvent = {
+      ...allDay,
+      start: "2026-03-27T23:00:00.000Z", // 28/03 00:00 CET
+      end: "2026-03-29T21:59:59.000Z", // 29/03 23:59:59 CEST
+    };
+    const result = parseIcs(eventsToIcs([dst], TZ), TZ);
+    expect(result.ok && result.value[0]).toMatchObject({
+      start: "2026-03-27T23:00:00.000Z",
+      end: "2026-03-29T21:59:59.000Z",
+      allDay: true,
+    });
+  });
+});
+
+describe("eventsToIcs — cas limites", () => {
+  it("produit un calendrier valide sans événement", () => {
+    const ics = eventsToIcs([], TZ);
+    expect(ics).toContain("BEGIN:VCALENDAR");
+    expect(ics).toContain("END:VCALENDAR");
+    expect(ics).not.toContain("BEGIN:VEVENT");
+  });
+
+  it("une journée entière d'un seul jour a DTEND = lendemain", () => {
+    const oneDay: CalendarEvent = {
+      ...allDay,
+      start: "2026-08-27T22:00:00.000Z", // 28/08 00:00 Paris
+      end: "2026-08-28T21:59:59.000Z", // 28/08 23:59:59 Paris
+    };
+    const ics = eventsToIcs([oneDay], TZ);
+    expect(ics).toContain("DTSTART;VALUE=DATE:20260828");
+    expect(ics).toContain("DTEND;VALUE=DATE:20260829");
+  });
+});

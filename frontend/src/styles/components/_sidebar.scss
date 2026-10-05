@@ -41,3 +41,13 @@
     margin-bottom: var(--space-3);
   }
 }
+
+// Export / import .ics : messages de résultat sous les boutons.
+.c-ics-transfer__message {
+  margin: var(--space-2) 0 0;
+  font-size: 0.875rem;
+}
+
+.c-ics-transfer__message--error {
+  color: var(--color-danger-dark);
+}

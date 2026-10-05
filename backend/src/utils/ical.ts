@@ -90,8 +90,8 @@ const rawFieldsOf = (event: VEvent, timeZone: string): Record<string, unknown> =
 };
 
 // Import RFC 5545 en tout-ou-rien : un seul événement invalide renvoie les erreurs
-// sans rien créer. Les récurrences (RRULE) ne sont pas développées : seule
-// l'occurrence de DTSTART est importée.
+// sans rien créer. Les événements annulés sont ignorés. Les récurrences (RRULE)
+// ne sont pas développées : seule l'occurrence de DTSTART est importée.
 export const parseIcs = (text: string, timeZone: string = APP_TIMEZONE): ParseResult<EventBody[]> => {
   let components: ReturnType<typeof parseICS>;
   try {
@@ -100,7 +100,10 @@ export const parseIcs = (text: string, timeZone: string = APP_TIMEZONE): ParseRe
     return { ok: false, errors: ["Fichier .ics invalide : lecture impossible."] };
   }
 
-  const events = Object.values(components).filter((c): c is VEvent => c?.type === "VEVENT");
+  // Un événement annulé (STATUS:CANCELLED) n'est pas importé.
+  const events = Object.values(components).filter(
+    (c): c is VEvent => c?.type === "VEVENT" && c.status !== "CANCELLED"
+  );
   if (events.length === 0) {
     return { ok: false, errors: ["Aucun événement (VEVENT) trouvé dans le fichier .ics."] };
   }

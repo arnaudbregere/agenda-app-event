@@ -3,6 +3,7 @@ import { ref, watch, nextTick, onMounted, onUnmounted } from "vue";
 import { useCalendarStore, type CalendarView } from "../stores/calendar.js";
 import MiniCalendar from "./MiniCalendar.vue";
 import CategoryFilter from "./CategoryFilter.vue";
+import IcsTransfer from "./IcsTransfer.vue";
 import Icon from "./ui/Icon.vue";
 
 const store = useCalendarStore();
@@ -60,5 +61,6 @@ onUnmounted(() => window.removeEventListener("keydown", onKeydown));
     </nav>
     <MiniCalendar />
     <CategoryFilter />
+    <IcsTransfer />
   </aside>
 </template>

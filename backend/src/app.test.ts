@@ -231,4 +231,17 @@ describe("export / import iCal (routes events)", () => {
     expect(res.status).toBe(400);
     expect(res.body.errors).toEqual(["Content-Type attendu : text/calendar."]);
   });
+
+  it("GET /api/events/export sans événement renvoie un calendrier vide", async () => {
+    const res = await request(app).get("/api/events/export");
+    expect(res.status).toBe(200);
+    expect(res.text).toContain("END:VCALENDAR");
+    expect(res.text).not.toContain("BEGIN:VEVENT");
+  });
+
+  it("POST /api/events/import refuse un fichier au-delà de 1 Mo", async () => {
+    const big = "X".repeat(1024 * 1024 + 1);
+    const res = await request(app).post("/api/events/import").set("Content-Type", "text/calendar").send(big);
+    expect(res.status).toBe(413);
+  });
 });
