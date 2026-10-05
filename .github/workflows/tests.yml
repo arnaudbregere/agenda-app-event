@@ -44,6 +44,9 @@ jobs:
   e2e:
     needs: [backend, frontend]
     runs-on: ubuntu-latest
+    # Image officielle Playwright : navigateurs et libs système déjà installés.
+    # Le tag doit suivre la version de @playwright/test (e2e/package-lock.json).
+    container: mcr.microsoft.com/playwright:v1.63.0-noble
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -60,9 +63,6 @@ jobs:
         working-directory: e2e
       - name: Typecheck e2e
         run: npm run typecheck
-        working-directory: e2e
-      - name: Install Playwright browser
-        run: npx playwright install --with-deps chromium
         working-directory: e2e
       - name: Run e2e tests
         run: npm test
