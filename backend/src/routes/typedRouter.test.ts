@@ -11,11 +11,11 @@ import { createTypedRouter } from "./typedRouter.js";
 
 type IdParams = { id: string };
 
-const withId = (req: Request<IdParams>, res: Response): void => {
+const withId = (req: Request<IdParams, unknown, unknown>, res: Response<{ id: string }>): void => {
   res.json({ id: req.params.id });
 };
 
-const noParams = (_req: Request, res: Response): void => {
+const noParams = (_req: Request<{}, unknown, unknown>, res: Response<{ ok: boolean }>): void => {
   res.json({ ok: true });
 };
 
@@ -51,6 +51,16 @@ describe("createTypedRouter", () => {
     const api = createTypedRouter();
     // @ts-expect-error : withId attend req.params.id, la route "/" n'a pas de :id
     api.get("/", withId);
+    expect(api).toBeDefined();
+  });
+
+  it("rejette au typecheck un handler à corps typé branché sans withBody", () => {
+    const api = createTypedRouter();
+    const needsBody = (req: Request<{}, unknown, { title: string }>, res: Response<string>): void => {
+      res.json(req.body.title);
+    };
+    // @ts-expect-error : le corps doit être validé (withBody) avant d'atteindre ce handler
+    api.post("/", needsBody);
     expect(api).toBeDefined();
   });
 

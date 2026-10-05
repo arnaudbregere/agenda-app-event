@@ -146,3 +146,24 @@ describe("fallback SPA", () => {
     expect(res.body).toEqual({ error: "Route introuvable." });
   });
 });
+
+describe("validation des corps (routes events)", () => {
+  it("PUT sur un id inconnu renvoie 404 même si le corps est invalide", async () => {
+    const res = await request(app).put("/api/events/inconnu").send({ title: "" });
+    expect(res.status).toBe(404);
+  });
+
+  it("POST avec un tableau comme corps renvoie 400 avec une erreur explicite", async () => {
+    const res = await request(app).post("/api/events").send([{ title: "x" }]);
+    expect(res.status).toBe(400);
+    expect(res.body.errors).toEqual(["Le corps de la requête doit être un objet JSON."]);
+  });
+
+  it("POST avec start numérique renvoie 400", async () => {
+    const res = await request(app)
+      .post("/api/events")
+      .send({ title: "x", start: 0, end: "2030-01-01T11:00:00" });
+    expect(res.status).toBe(400);
+    expect(res.body.errors).toEqual(['Le champ "start" doit être une date ISO valide.']);
+  });
+});
