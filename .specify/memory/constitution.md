@@ -1,14 +1,3 @@
-<!--
-SYNC IMPACT REPORT (scratch, à retirer avant commit)
-Version : 0.0.0 (template) → 1.0.0
-Principes ajoutés : I à VI (tous nouveaux, dérivés de CLAUDE.md, .claude/rules/*.md, DESIGN.md, PRODUCT.md)
-Sections ajoutées : Stack et contraintes d'exploitation, Workflow git et livraison, Governance
-Sections supprimées : aucune (gabarit remplacé)
-Bump MAJOR→1.0.0 : première ratification d'une constitution, pas d'amendement.
-Reporté (TODO) : aucun placeholder laissé ouvert.
-Date de ratification : première commit du dépôt (2026-08-26), date d'adoption des règles la plus proche disponible.
--->
-
 # agenda-app-event Constitution
 
 ## Core Principles
@@ -57,4 +46,4 @@ Politique de version : MAJOR pour suppression ou redéfinition incompatible d'un
 
 Conformité : la revue de PR MUST vérifier le respect des principes. L'agent `reviewer` (`.claude/agents/reviewer.md`) contrôle les conventions du repo, y compris `DESIGN.md` pour le frontend. Toute complexité ajoutée MUST être justifiée dans la PR.
 
-**Version**: 1.0.0 | **Ratified**: 2026-08-26 | **Last Amended**: 2026-10-05
+**Version**: 1.0.0 | **Ratified**: 2026-09-03 | **Last Amended**: 2026-10-05
