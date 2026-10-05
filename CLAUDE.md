@@ -61,8 +61,7 @@ ailleurs, pointer vers eux.
 Règles de passage :
 - spec-kit (`.specify/`, skills `speckit-*`) gère le cycle de vie des features. `/impeccable shape` tranche le visuel. Pour une feature UI, les deux se suivent : design d'abord, spécification ensuite.
 - Un agent qui trouve une règle contradictoire dans ces fichiers le signale au
-  lieu de choisir. Exemple actuel : `DESIGN.md` interdit l'ombre au repos sur le
-  bouton « Créer » dans un passage et l'autorise dans un autre.
+  lieu de choisir.
 - Les décisions de design se prennent dans `DESIGN.md`, pas dans le code.
   Un écart volontaire se documente dans `DESIGN.md` avant le commit.
 
