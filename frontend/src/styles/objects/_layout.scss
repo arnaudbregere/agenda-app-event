@@ -31,7 +31,7 @@
   // classe .is-sidebar-open posée sur .o-app-shell et le focus management.
   &__sidebar {
     position: fixed;
-    inset: var(--header-height) auto 0 0;
+    inset: var(--header-live-height, var(--header-height)) auto 0 0;
     width: min(var(--sidebar-width), 85vw);
     // Le contenu de la sidebar peut dépasser la hauteur d'un petit écran : défilement vertical.
     overflow-x: hidden;
@@ -56,7 +56,7 @@
 
   &__backdrop {
     position: fixed;
-    inset: var(--header-height) 0 0 0;
+    inset: var(--header-live-height, var(--header-height)) 0 0 0;
     background-color: var(--color-overlay);
     z-index: var(--z-sidebar-backdrop);
   }
