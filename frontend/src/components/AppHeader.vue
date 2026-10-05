@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, nextTick, onMounted, onUnmounted, ref } from "vue";
+import { computed, nextTick, ref } from "vue";
 import {
   addMonths,
   subMonths,
@@ -17,23 +17,6 @@ import Icon from "./ui/Icon.vue";
 import SearchResults from "./SearchResults.vue";
 
 const store = useCalendarStore();
-
-// Hauteur réelle du header : sous 600px il passe sur deux lignes (voir
-// _app-header.scss), donc plus haut que --header-height. Le drawer mobile
-// s'y cale via --header-live-height (repli : --header-height).
-const headerRef = ref<HTMLElement | null>(null);
-let headerObserver: ResizeObserver | null = null;
-
-onMounted(() => {
-  const header = headerRef.value;
-  if (!header || typeof ResizeObserver === "undefined") return;
-  headerObserver = new ResizeObserver(() => {
-    document.documentElement.style.setProperty("--header-live-height", `${header.offsetHeight}px`);
-  });
-  headerObserver.observe(header);
-});
-
-onUnmounted(() => headerObserver?.disconnect());
 
 const VIEW_LABELS: Record<CalendarView, string> = { month: "Mois", week: "Semaine", day: "Jour", list: "Liste" };
 
@@ -123,7 +106,7 @@ const step = (direction: 1 | -1) => {
 </script>
 
 <template>
-  <header ref="headerRef" class="c-app-header" :class="{ 'is-search-open': mobileSearchOpen }">
+  <header class="c-app-header" :class="{ 'is-search-open': mobileSearchOpen }">
     <button
       type="button"
       class="c-btn c-btn--icon c-app-header__menu-toggle"
