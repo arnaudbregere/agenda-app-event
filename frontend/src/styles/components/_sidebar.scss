@@ -2,31 +2,43 @@
  * COMPONENTS / Sidebar
  */
 .c-sidebar {
-  height: 100%;
+  // Hauteur pilotée par la mise en page : en drawer mobile, top/bottom de
+  // .o-app-shell__sidebar fixent la hauteur (un height:100% la dépasserait).
+  height: auto;
   padding: var(--space-4) var(--space-5);
   background-color: var(--color-bg-subtle);
   display: flex;
   flex-direction: column;
   gap: var(--space-6);
 
+  // Les blocs ne se compriment pas : sur petit écran, le conteneur défile (voir _layout.scss).
+  > * {
+    flex-shrink: 0;
+  }
+
+  // Action primaire de la sidebar : pilule google-blue (c-btn--primary), pleine largeur.
   &__create {
     width: 100%;
     justify-content: flex-start;
-    height: 48px;
-    border-radius: var(--radius-md);
-    background-color: var(--color-bg);
-    color: var(--color-text);
-    box-shadow: var(--shadow-md);
-
-    &:hover {
-      box-shadow: var(--shadow-lg);
-    }
   }
 
   &__quick-access {
     display: flex;
     flex-direction: column;
     gap: var(--space-1);
+  }
+
+  // Actions de la sidebar (accès rapide, export/import .ics) : même traitement.
+  // Le texte et l'icône s'alignent sur les titres de section (bord = padding du
+  // conteneur) ; la zone de survol déborde dans la marge de --space-3 de chaque côté.
+  &__action {
+    justify-content: flex-start;
+    margin-inline: calc(var(--space-3) * -1);
+    padding-inline: var(--space-3);
+    width: calc(100% + var(--space-3) * 2);
+    color: var(--color-text);
+    font-weight: var(--font-weight-medium);
+    text-decoration: none;
   }
 
   &__quick-btn {
@@ -40,4 +52,14 @@
     color: var(--color-text-muted);
     margin-bottom: var(--space-3);
   }
+}
+
+// Export / import .ics : messages de résultat sous les boutons.
+.c-ics-transfer__message {
+  margin: var(--space-2) 0 0;
+  font-size: var(--font-size-base);
+}
+
+.c-ics-transfer__message--error {
+  color: var(--color-danger-dark);
 }

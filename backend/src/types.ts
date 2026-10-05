@@ -5,6 +5,8 @@ import type { CategoryId } from "./utils/categories.js";
 // optionnels car des événements plus anciens peuvent ne pas les avoir.
 export interface CalendarEvent {
   id: string;
+  // UID RFC 5545 de l'événement importé : sert à ne pas importer deux fois le même.
+  uid?: string;
   title: string;
   description?: string;
   location?: string;

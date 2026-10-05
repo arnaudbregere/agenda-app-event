@@ -29,7 +29,7 @@ function isSelected(day: Date) {
 <template>
   <div class="c-mini-cal">
     <div class="c-mini-cal__header">
-      <h3 class="c-mini-cal__title">{{ title }}</h3>
+      <h2 class="c-mini-cal__title">{{ title }}</h2>
       <div class="c-mini-cal__nav">
         <button type="button" class="c-btn c-btn--icon c-btn--sm" aria-label="Mois précédent" @click="prevMonth">
           <Icon name="chevron-left" class="c-btn__icon" />
@@ -52,6 +52,8 @@ function isSelected(day: Date) {
             'is-today': isToday(day),
             'is-selected': isSelected(day),
           }"
+          :aria-label="format(day, 'd MMMM yyyy', { locale: fr })"
+          :aria-current="isToday(day) ? 'date' : undefined"
           @click="selectDay(day)"
         >
           {{ day.getDate() }}

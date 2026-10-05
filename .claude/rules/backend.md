@@ -11,6 +11,13 @@
 - Fichier de stockage surchargeable via `EVENTS_DATA_FILE` (défaut
   `backend/data/events.json`, voir `src/utils/paths.ts`) — utilisé par la
   suite e2e (`e2e/`) pour isoler ses données sans toucher au fichier réel.
+- Export / import iCal (RFC 5545) : `GET /api/events/export` (fichier
+  `agenda.ics`) et `POST /api/events/import` (`Content-Type: text/calendar`,
+  tout-ou-rien). Bibliothèques : `ical-generator` (export), `node-ical`
+  (import). Récurrences (RRULE) non développées à l'import.
+- Fuseau de l'agenda : variable `APP_TIMEZONE` (défaut `Europe/Paris`),
+  indépendant du fuseau du serveur (Render est en UTC). Sert aux événements
+  journée entière à l'export et à l'import.
 - Route de santé `GET /api/health` — utilisée par Render
   (`healthCheckPath` dans `render.yaml`) : ne pas la supprimer/renommer
   sans mettre à jour `render.yaml` en même temps.

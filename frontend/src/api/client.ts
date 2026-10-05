@@ -1,7 +1,7 @@
 // En dev, .env.development pointe vers l'API locale (port 4000).
 // En production (build), pas de variable définie : on utilise un chemin
 // relatif "/api" car le build est servi par le même serveur Express que l'API.
-const BASE_URL = import.meta.env.VITE_API_URL || "/api"
+export const BASE_URL = import.meta.env.VITE_API_URL || "/api"
 
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   const res = await fetch(`${BASE_URL}${path}`, {
@@ -25,6 +25,9 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
 export const apiClient = {
   get: <T>(path: string) => request<T>(path),
   post: <T>(path: string, body: unknown) => request<T>(path, { method: "POST", body: JSON.stringify(body) }),
+  // Corps brut (ex. fichier .ics) : pas de JSON.stringify, Content-Type fourni par l'appelant.
+  postText: <T>(path: string, body: string, contentType: string) =>
+    request<T>(path, { method: "POST", body, headers: { "Content-Type": contentType } }),
   put: <T>(path: string, body: unknown) => request<T>(path, { method: "PUT", body: JSON.stringify(body) }),
   delete: <T = void>(path: string) => request<T>(path, { method: "DELETE" }),
 }

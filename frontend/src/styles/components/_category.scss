@@ -19,6 +19,11 @@
     cursor: pointer;
   }
 
+  // La checkbox est masquée : l'anneau de focus est porté par la pastille visible.
+  &__item:has(input:focus-visible) &__checkbox {
+    box-shadow: var(--focus-ring);
+  }
+
   &__checkbox {
     width: 16px;
     height: 16px;

@@ -44,6 +44,26 @@ n'ouvrait le fichier dans un éditeur, `npm test` ne typecheckant pas).
 - Render redéploie automatiquement à chaque push sur `main` (pas d'action
   manuelle nécessaire côté déploiement). Détails : @.claude/skills/deploy/SKILL.md
 
+## Design et agents
+
+Les fichiers de contexte sont la source unique : ne pas recopier leur contenu
+ailleurs, pointer vers eux.
+
+| Tâche | Lire d'abord | Faire ensuite |
+|---|---|---|
+| Toute modif UI (`frontend/**/*.vue`, `*.scss`) | `DESIGN.md` (tokens, boutons, règles), `PRODUCT.md` (accessibilité) | `/impeccable detect` sur les fichiers touchés ; `/impeccable critique` si composition ou hiérarchie change |
+| Relecture de PR | `.claude/rules/*.md` selon le package | agent `reviewer` (vérifie aussi `DESIGN.md` si `frontend/` est touché) |
+| Nouvelle feature frontend | `PRODUCT.md` (périmètre), `DESIGN.md` | `/impeccable shape` avant de coder |
+| Tests | `.claude/rules/backend.md`, `frontend.md`, `e2e.md` | agent `tester` |
+| Déploiement | `.claude/skills/deploy/SKILL.md` | job `deploy` de `tests.yml` |
+
+Règles de passage :
+- Un agent qui trouve une règle contradictoire dans ces fichiers le signale au
+  lieu de choisir. Exemple actuel : `DESIGN.md` interdit l'ombre au repos sur le
+  bouton « Créer » dans un passage et l'autorise dans un autre.
+- Les décisions de design se prennent dans `DESIGN.md`, pas dans le code.
+  Un écart volontaire se documente dans `DESIGN.md` avant le commit.
+
 ## Tests
 
 - `npm test` dans `backend/`, `frontend/` et `e2e/` (Vitest pour les deux

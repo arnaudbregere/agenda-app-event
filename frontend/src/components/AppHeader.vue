@@ -23,14 +23,14 @@ const VIEW_LABELS: Record<CalendarView, string> = { month: "Mois", week: "Semain
 const periodLabel = computed(() => {
   const date = store.currentDate;
   if (store.currentView === "day") {
-    return format(date, "EEEE d MMMM yyyy", { locale: fr });
+    return format(date, "EEE d MMM yyyy", { locale: fr });
   }
   if (store.currentView === "week") {
     const [first, ...rest] = getWeekDays(date);
     const last = rest[rest.length - 1];
     const sameMonth = first.getMonth() === last.getMonth();
     const start = format(first, sameMonth ? "d" : "d MMM", { locale: fr });
-    const end = format(last, "d MMMM yyyy", { locale: fr });
+    const end = format(last, "d MMM yyyy", { locale: fr });
     return `${start} – ${end}`;
   }
   // month & list
@@ -127,7 +127,11 @@ const step = (direction: 1 | -1) => {
     </div>
 
     <div class="c-app-header__nav">
-      <button type="button" class="c-btn c-btn--text" @click="store.goToday">Aujourd'hui</button>
+      <!-- Sous 600px : icône seule pour que le titre de période tienne sur la même ligne qu'en mois. -->
+      <button type="button" class="c-btn c-btn--text" aria-label="Aujourd'hui" @click="store.goToday">
+        <Icon name="calendar" class="c-btn__icon" />
+        <span class="u-hidden-mobile">Aujourd'hui</span>
+      </button>
       <button type="button" class="c-btn c-btn--icon" aria-label="Précédent" @click="step(-1)">
         <Icon name="chevron-left" class="c-btn__icon" />
       </button>

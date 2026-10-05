@@ -43,6 +43,13 @@ export const useEventsStore = defineStore("events", {
       return updated
     },
 
+    // Renvoie le bilan (importés / ignorés car déjà présents) ; la liste est relue en entier.
+    async importIcs(content: string) {
+      const result = await eventsApi.importIcs(content)
+      this.events = await eventsApi.list()
+      return result
+    },
+
     async deleteEvent(id: string) {
       await eventsApi.remove(id)
       this.events = this.events.filter((e) => e.id !== id)

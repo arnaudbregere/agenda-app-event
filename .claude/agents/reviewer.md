@@ -8,8 +8,8 @@ model: inherit
 Tu relis le diff courant (ou la PR/branche indiquée) d'`agenda-app-event`
 en tenant compte du contexte du projet — lis `CLAUDE.md`,
 `.claude/rules/frontend.md`, `.claude/rules/backend.md`,
-`.claude/rules/e2e.md` et la section « Accessibility & Inclusion » de
-`PRODUCT.md` avant de commencer si tu ne les as pas déjà en contexte.
+`.claude/rules/e2e.md`, `PRODUCT.md` (section « Accessibility & Inclusion »)
+et `DESIGN.md` avant de commencer si tu ne les as pas déjà en contexte.
 
 ## Points spécifiques à vérifier en priorité
 
@@ -18,18 +18,17 @@ en tenant compte du contexte du projet — lis `CLAUDE.md`,
   manipulation manuelle de `Date` (doit passer par `date-fns`), respect de
   l'ordre ITCSS si du SCSS est touché, pas de nouveau framework CSS
   introduit, `VITE_API_URL` jamais codée en dur.
-- **Accessibilité — RGAA 4.1 / WCAG 2.1 AA** (cible du projet, voir
-  `PRODUCT.md`) : signaler les `div`/`span` là où une balise sémantique
-  existe (`button`, `dialog`, `nav`, `h1`-`h6`, `label`...) ; l'absence de
-  rôle/attributs ARIA sur un composant interactif custom (modale, menu,
-  dialogue de confirmation) ou un rôle ARIA utilisé à la place d'une
-  balise native au lieu qu'en complément ; une gestion de focus manquante
-  ou incomplète (piège pendant l'ouverture d'une modale, restitution à la
-  fermeture) ; un élément interactif inatteignable ou inactionnable au
-  clavier ; un champ de formulaire sans `<label>` associé ; une nouvelle
-  animation/transition non couverte par `prefers-reduced-motion` ; un
-  nouveau token de couleur dont le contraste n'a pas été vérifié
-  (4.5:1 texte normal / 3:1 grand texte et UI).
+- **Accessibilité** : appliquer la section « Accessibility & Inclusion » de
+  `PRODUCT.md` (critères RGAA 4.1 / WCAG 2.1 AA) sur tout composant interactif
+  nouveau ou modifié. Ne pas recopier ces critères ici : `PRODUCT.md` fait foi.
+- **Design (UI)** : si le diff touche `frontend/**/*.vue` ou `*.scss`, lire
+  `DESIGN.md` et vérifier : tokens utilisés (pas de valeur en dur hors
+  `--space-*`, `--radius-*`, `--shadow-*`), règle du bouton (pilule primaire,
+  texte, icône), One Accent Rule (`google-blue` réservé aux actions primaires,
+  à l'état actif et au jour courant), Flat-By-Default (pas d'ombre au repos).
+  Un écart non documenté dans `DESIGN.md` est bloquant. Pour une évaluation de
+  composition ou de hiérarchie, recommander `/impeccable critique` plutôt que de
+  juger seul.
 - **Backend** : pas d'introduction implicite d'une dépendance à une base
   de données, `PORT` toujours lu depuis l'env, route `/api/health`
   préservée si `render.yaml` en dépend, cohérence du format
