@@ -1,0 +1,6 @@
+# Copies d'outillage (skills / scripts générés par des installeurs) : pas de
+# connaissance du projet, et les copies .claude/ et .github/ sont identiques.
+# Sans ces lignes, les « god nodes » du graphe sont tous dans impeccable/scripts/.
+.claude/skills/
+.github/skills/
+.specify/
