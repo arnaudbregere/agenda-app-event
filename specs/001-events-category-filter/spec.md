@@ -8,6 +8,12 @@
 
 **Input**: User description: "Filtre par catégorie sur la liste des événements : GET /api/events?category=<id> renvoie uniquement les événements de cette catégorie (id parmi personnel, travail, important, famille, loisirs, autre). Sans paramètre, comportement inchangé. Valeur inconnue : 400 avec un message d'erreur. Périmètre backend uniquement (route, contrôleur, validation). Pas d'UI."
 
+## Clarifications
+
+### Session 2026-10-05
+
+- Q: Quelle forme pour l'erreur 400 quand la catégorie est inconnue : `{ "errors": [...] }` ou `{ "error": "..." }` ? → A: `{ "errors": ["..."] }`, comme la validation des corps existante.
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Lister les événements d'une catégorie (Priority: P1)
@@ -66,7 +72,7 @@ Un client qui demande une catégorie qui n'existe pas reçoit une erreur explici
 
 - **FR-001**: Le système MUST permettre de filtrer la liste des événements par une catégorie unique, passée en paramètre de requête.
 - **FR-002**: Le système MUST accepter uniquement les six identifiants de catégorie existants (`personnel`, `travail`, `important`, `famille`, `loisirs`, `autre`).
-- **FR-003**: Le système MUST renvoyer une erreur 400 avec un message explicite pour toute autre valeur, y compris une valeur vide, une casse différente ou un paramètre répété.
+- **FR-003**: Le système MUST renvoyer une erreur 400 au format `{ "errors": ["..."] }` (même format que la validation des corps) avec un message explicite pour toute autre valeur, y compris une valeur vide, une casse différente ou un paramètre répété.
 - **FR-004**: Sans paramètre de filtre, le système MUST renvoyer tous les événements, avec le même contenu et le même ordre qu'avant cette fonctionnalité.
 - **FR-005**: Le filtre MUST ne renvoyer que les événements dont la catégorie correspond exactement, sans inclure de sous-catégorie ni de correspondance partielle.
 
