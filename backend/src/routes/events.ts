@@ -1,4 +1,4 @@
-import { Router } from "express";
+import { createTypedRouter } from "./typedRouter.js";
 import {
   getEvents,
   getEventById,
@@ -7,12 +7,12 @@ import {
   deleteEventById,
 } from "../controllers/eventsController.js";
 
-const router = Router();
+const api = createTypedRouter();
 
-router.get("/", getEvents);
-router.get("/:id", getEventById);
-router.post("/", postEvent);
-router.put("/:id", putEvent);
-router.delete("/:id", deleteEventById);
+api.get("/", getEvents);
+api.get("/:id", getEventById);
+api.post("/", postEvent);
+api.put("/:id", putEvent);
+api.delete("/:id", deleteEventById);
 
-export default router;
+export default api.router;
