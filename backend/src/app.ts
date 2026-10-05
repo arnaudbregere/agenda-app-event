@@ -6,6 +6,7 @@ import { join } from "node:path";
 import eventsRouter from "./routes/events.js";
 import categoriesRouter from "./routes/categories.js";
 import { BACKEND_ROOT, FRONTEND_DIST } from "./utils/paths.js";
+import type { ErrorBody, HealthBody } from "./types.js";
 
 export const app = express();
 
@@ -28,7 +29,9 @@ const COMMIT = resolveCommit();
 app.use(cors());
 app.use(express.json());
 
-app.get("/api/health", (req: Request, res: Response) => res.json({ status: "ok", commit: COMMIT }));
+app.get("/api/health", (req: Request<{}, unknown, unknown>, res: Response<HealthBody>) =>
+  res.json({ status: "ok", commit: COMMIT })
+);
 app.use("/api/events", eventsRouter);
 app.use("/api/categories", categoriesRouter);
 
@@ -38,18 +41,18 @@ app.use("/api/categories", categoriesRouter);
 // dossier n'existe pas encore, donc ce bloc est simplement ignoré.
 if (existsSync(FRONTEND_DIST)) {
   app.use(express.static(FRONTEND_DIST));
-  app.get(/^(?!\/api\/).*/, (req: Request, res: Response) => {
+  app.get(/^(?!\/api\/).*/, (req: Request<{}, unknown, unknown>, res: Response<void>) => {
     res.sendFile(join(FRONTEND_DIST, "index.html"));
   });
 }
 
 // Gestion d'erreurs centralisée (ex: JSON.parse invalide dans express.json())
 // Les 4 paramètres sont requis : c'est ainsi qu'Express reconnaît un gestionnaire d'erreurs.
-app.use((err: HttpError, req: Request, res: Response, next: NextFunction) => {
+app.use((err: HttpError, req: Request<{}, unknown, unknown>, res: Response<ErrorBody>, next: NextFunction) => {
   console.error(err);
   res.status(err.status || 500).json({ error: err.message || "Erreur serveur." });
 });
 
-app.use((req: Request, res: Response) => {
+app.use((req: Request<{}, unknown, unknown>, res: Response<ErrorBody>) => {
   res.status(404).json({ error: "Route introuvable." });
 });

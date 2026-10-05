@@ -28,3 +28,9 @@ export type EventBody = {
 };
 
 export type EventPatch = Partial<Omit<CalendarEvent, "id" | "createdAt" | "updatedAt">>;
+
+// Formes des réponses d'erreur renvoyées par l'API.
+export type ErrorBody = { error: string };
+export type ValidationErrorBody = { errors: string[] };
+
+export type HealthBody = { status: "ok"; commit: string | null };

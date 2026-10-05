@@ -12,17 +12,17 @@ export const createTypedRouter = () => {
 
   return {
     router,
-    get: <Path extends string>(path: Path, handler: PathHandler<Path>): void => {
-      router.get(path, handler);
+    get: <Path extends string>(path: Path, ...handlers: PathHandler<Path>[]): void => {
+      router.get(path, ...handlers);
     },
-    post: <Path extends string>(path: Path, handler: PathHandler<Path>): void => {
-      router.post(path, handler);
+    post: <Path extends string>(path: Path, ...handlers: PathHandler<Path>[]): void => {
+      router.post(path, ...handlers);
     },
-    put: <Path extends string>(path: Path, handler: PathHandler<Path>): void => {
-      router.put(path, handler);
+    put: <Path extends string>(path: Path, ...handlers: PathHandler<Path>[]): void => {
+      router.put(path, ...handlers);
     },
-    delete: <Path extends string>(path: Path, handler: PathHandler<Path>): void => {
-      router.delete(path, handler);
+    delete: <Path extends string>(path: Path, ...handlers: PathHandler<Path>[]): void => {
+      router.delete(path, ...handlers);
     },
   };
 };
