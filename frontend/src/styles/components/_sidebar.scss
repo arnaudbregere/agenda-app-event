@@ -42,6 +42,17 @@
   }
 }
 
+// Export / import .ics : actions pleine largeur, même format que les items
+// d'accès rapide, avec icône et texte en couleur principale pour se lire comme
+// des actions (et non comme une légende grise).
+.c-ics-transfer__action {
+  justify-content: flex-start;
+  width: 100%;
+  color: var(--color-text);
+  font-weight: var(--font-weight-medium);
+  text-decoration: none;
+}
+
 // Export / import .ics : messages de résultat sous les boutons.
 .c-ics-transfer__message {
   margin: var(--space-2) 0 0;

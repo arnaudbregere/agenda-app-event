@@ -2,6 +2,7 @@
 import { ref } from "vue";
 import { useEventsStore } from "../stores/events.js";
 import { eventsApi } from "../api/events.js";
+import Icon from "./ui/Icon.vue";
 
 const eventsStore = useEventsStore();
 
@@ -34,8 +35,14 @@ const onFileChange = async (event: Event) => {
 <template>
   <section class="c-ics-transfer" aria-labelledby="ics-transfer-title">
     <h3 id="ics-transfer-title" class="c-sidebar__section-title">Calendrier (.ics)</h3>
-    <a class="c-btn c-btn--text" :href="eventsApi.exportUrl()" download="agenda.ics">Exporter</a>
-    <button type="button" class="c-btn c-btn--text" @click="openFilePicker">Importer</button>
+    <a class="c-btn c-btn--text c-ics-transfer__action" :href="eventsApi.exportUrl()" download="agenda.ics">
+      <Icon name="download" class="c-btn__icon" />
+      Exporter
+    </a>
+    <button type="button" class="c-btn c-btn--text c-ics-transfer__action" @click="openFilePicker">
+      <Icon name="upload" class="c-btn__icon" />
+      Importer
+    </button>
     <input
       ref="fileInput"
       type="file"
