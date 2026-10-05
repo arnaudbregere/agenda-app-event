@@ -1,7 +1,9 @@
 # Règles backend (`backend/`)
 
 - API REST Express classique : `GET/POST/PUT/DELETE /api/events`,
-  `GET /api/categories`.
+  `GET /api/categories`. `GET /api/events?category=<id>` filtre sur une
+  catégorie (valeurs = `CATEGORY_IDS`) ; valeur inconnue, vide, casse
+  différente ou répétée : `400 { errors: [...] }`.
 - **Pas de base de données** — persistance dans
   `backend/data/events.json`. Toute modification doit rester
   lisible/écrivable en JSON simple (pas de schéma implicite non

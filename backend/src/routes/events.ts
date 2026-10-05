@@ -1,6 +1,7 @@
 import { createTypedRouter } from "./typedRouter.js";
 import { withBody } from "../middleware/validateBody.js";
-import { parseEventBody, parseEventPatch } from "../utils/validators.js";
+import { withQuery } from "../middleware/validateQuery.js";
+import { parseCategoryQuery, parseEventBody, parseEventPatch } from "../utils/validators.js";
 import { parseIcsBody } from "../utils/ical.js";
 import { requireEvent } from "../middleware/requireEvent.js";
 import {
@@ -15,7 +16,7 @@ import {
 
 const api = createTypedRouter();
 
-api.get("/", getEvents);
+api.get("/", withQuery(parseCategoryQuery, getEvents));
 // Avant /:id : sinon "export" serait lu comme un identifiant.
 api.get("/export", exportEvents);
 api.get("/:id", getEventById);
