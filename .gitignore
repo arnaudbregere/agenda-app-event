@@ -18,3 +18,6 @@ e2e/.tmp/
 .claude/skills/impeccable/scripts/data/
 .github/skills/impeccable/scripts/bin/
 .github/skills/impeccable/scripts/data/
+
+# Sortie du skill graphify (graph, cache, rapport) : générée localement, non versionnée
+graphify-out/
