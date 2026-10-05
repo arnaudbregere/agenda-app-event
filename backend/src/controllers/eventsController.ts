@@ -2,10 +2,10 @@ import type { Request, Response } from "express";
 import { v4 as uuidv4 } from "uuid";
 import * as store from "../services/eventsStore.js";
 import type { CalendarEvent, EventBody, EventPatch } from "../types.js";
+import { parseEventPatch } from "../utils/validators.js";
 
 type IdParams = { id: string };
 
-// Le corps est déjà validé et typé par le middleware withBody (routes/events.ts).
 export async function getEvents(req: Request, res: Response): Promise<void> {
   const events = await store.listEvents();
   res.json(events);
@@ -40,16 +40,23 @@ export async function postEvent(req: Request<{}, unknown, EventBody>, res: Respo
   res.status(201).json(created);
 }
 
-export async function putEvent(req: Request<IdParams, unknown, EventPatch>, res: Response): Promise<void> {
+export async function putEvent(req: Request<IdParams, unknown, unknown>, res: Response): Promise<void> {
   const existing = await store.getEvent(req.params.id);
   if (!existing) {
     res.status(404).json({ error: "Événement introuvable." });
     return;
   }
 
+  // Validation après la recherche : un id inconnu renvoie 404 même si le corps est invalide.
+  const parsed = parseEventPatch(req.body);
+  if (!parsed.ok) {
+    res.status(400).json({ errors: parsed.errors });
+    return;
+  }
+
   // Seuls les champs présents dans le corps sont mis à jour : une clé à
   // `undefined` écraserait la valeur existante dans updateEvent (spread).
-  const body = req.body;
+  const body = parsed.value;
   const patch: EventPatch = {};
   if (body.title !== undefined) patch.title = body.title.trim();
   if (body.description !== undefined) patch.description = body.description.trim();
