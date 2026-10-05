@@ -15,6 +15,7 @@ colors:
   ink-subtle: "#6a6f73"
   alert-red: "#d93025"
   alert-red-bg: "#fce8e6"
+  alert-red-dark: "#b3261e"  # texte d'erreur : 6.15:1 sur cloud-subtle (alert-red seul = 4.49:1, sous AA)
   confirm-green: "#188038"
   today-blue-bg: "#e8f0fe"
   weekend-bg: "#fafafa"

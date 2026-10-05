@@ -34,7 +34,7 @@ const onFileChange = async (event: Event) => {
 
 <template>
   <section class="c-ics-transfer" aria-labelledby="ics-transfer-title">
-    <h3 id="ics-transfer-title" class="c-sidebar__section-title">Calendrier (.ics)</h3>
+    <h2 id="ics-transfer-title" class="c-sidebar__section-title">Calendrier (.ics)</h2>
     <a class="c-btn c-btn--text c-ics-transfer__action" :href="eventsApi.exportUrl()" download="agenda.ics">
       <Icon name="download" class="c-btn__icon" />
       Exporter

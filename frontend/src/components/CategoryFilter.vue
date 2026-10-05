@@ -9,7 +9,7 @@ const calendarStore = useCalendarStore();
 
 <template>
   <div class="c-category-filter">
-    <h3 class="c-sidebar__section-title">Mes catégories</h3>
+    <h2 class="c-sidebar__section-title">Mes catégories</h2>
     <label
       v-for="category in eventsStore.categories"
       :key="category.id"
