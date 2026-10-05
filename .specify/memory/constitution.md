@@ -1,50 +1,60 @@
-# [PROJECT_NAME] Constitution
-<!-- Example: Spec Constitution, TaskFlow Constitution, etc. -->
+<!--
+SYNC IMPACT REPORT (scratch, à retirer avant commit)
+Version : 0.0.0 (template) → 1.0.0
+Principes ajoutés : I à VI (tous nouveaux, dérivés de CLAUDE.md, .claude/rules/*.md, DESIGN.md, PRODUCT.md)
+Sections ajoutées : Stack et contraintes d'exploitation, Workflow git et livraison, Governance
+Sections supprimées : aucune (gabarit remplacé)
+Bump MAJOR→1.0.0 : première ratification d'une constitution, pas d'amendement.
+Reporté (TODO) : aucun placeholder laissé ouvert.
+Date de ratification : première commit du dépôt (2026-08-26), date d'adoption des règles la plus proche disponible.
+-->
+
+# agenda-app-event Constitution
 
 ## Core Principles
 
-### [PRINCIPLE_1_NAME]
-<!-- Example: I. Library-First -->
-[PRINCIPLE_1_DESCRIPTION]
-<!-- Example: Every feature starts as a standalone library; Libraries must be self-contained, independently testable, documented; Clear purpose required - no organizational-only libraries -->
+### I. Persistance simple, sans base de données
+Les événements sont stockés dans `backend/data/events.json`. Le format MUST rester du JSON lisible, sans schéma implicite non documenté. Aucune base de données n'est introduite sans décision explicite consignée dans `CLAUDE.md`. Les suites de tests MUST isoler leurs données via `EVENTS_DATA_FILE` et ne JAMAIS toucher `backend/data/events.json`.
 
-### [PRINCIPLE_2_NAME]
-<!-- Example: II. CLI Interface -->
-[PRINCIPLE_2_DESCRIPTION]
-<!-- Example: Every library exposes functionality via CLI; Text in/out protocol: stdin/args → stdout, errors → stderr; Support JSON + human-readable formats -->
+### II. Backend en couches, validation à la frontière
+Le backend suit `routes/` → `controllers/` → `services/`. `src/app.ts` exporte l'app Express sans appeler `listen()` ; `server.ts` seul ouvre le port. Toute donnée HTTP non fiable MUST être validée à la frontière (`parseEventBody` / `parseEventPatch`, middleware `withBody`) avant d'atteindre un handler. Les routes sont déclarées via le routeur typé (`createTypedRouter`), qui impose le typage des paramètres et du corps.
 
-### [PRINCIPLE_3_NAME]
-<!-- Example: III. Test-First (NON-NEGOTIABLE) -->
-[PRINCIPLE_3_DESCRIPTION]
-<!-- Example: TDD mandatory: Tests written → User approved → Tests fail → Then implement; Red-Green-Refactor cycle strictly enforced -->
+### III. Typage strict, `any` interdit
+Backend et frontend MUST compiler en `strict: true`. `any` est interdit dans le code nouveau. `unknown` n'est admis qu'à la frontière d'entrée (corps brut) et MUST être narrowé avant usage. Chaque package (`backend/`, `frontend/`, `e2e/`) MUST avoir `typescript`, `@types/node` si nécessaire, et un script `typecheck` exécuté en CI.
 
-### [PRINCIPLE_4_NAME]
-<!-- Example: IV. Integration Testing -->
-[PRINCIPLE_4_DESCRIPTION]
-<!-- Example: Focus areas requiring integration tests: New library contract tests, Contract changes, Inter-service communication, Shared schemas -->
+### IV. Frontend Vue 3 : Composition API et conventions du repo
+Les composants utilisent exclusivement `<script setup>`, sans Options API dans le code nouveau. Les fonctions sont fléchées (`const f = () => {}`), sans `function` ni `async function` déclarées dans le code nouveau. L'état partagé passe par Pinia (`frontend/src/stores`). Les dates passent par `date-fns`, jamais par manipulation manuelle de `Date`. L'URL de l'API vient de `VITE_API_URL`, jamais codée en dur.
 
-### [PRINCIPLE_5_NAME]
-<!-- Example: V. Observability, VI. Versioning & Breaking Changes, VII. Simplicity -->
-[PRINCIPLE_5_DESCRIPTION]
-<!-- Example: Text I/O ensures debuggability; Structured logging required; Or: MAJOR.MINOR.BUILD format; Or: Start simple, YAGNI principles -->
+### V. Design et accessibilité sont des critères de revue
+Toute modification UI (`frontend/**/*.vue`, `*.scss`) MUST respecter `DESIGN.md` : tokens CSS (pas de valeur hors `--space-*`, `--radius-*`, `--shadow-*`), One Accent Rule (`google-blue` réservé aux actions primaires, à l'état actif et au jour courant), Flat-By-Default (pas d'ombre au repos hors panneau flottant). Les critères d'accessibilité RGAA 4.1 / WCAG 2.1 AA de `PRODUCT.md` s'appliquent à tout composant interactif nouveau ou modifié. Un écart documenté dans `DESIGN.md` est la seule dérogation admise.
 
-## [SECTION_2_NAME]
-<!-- Example: Additional Constraints, Security Requirements, Performance Standards, etc. -->
+### VI. Tests et CI avant tout merge
+Avant chaque commit, les tests ET le typecheck des packages touchés MUST passer. Le backend utilise Vitest (tests unitaires et d'intégration supertest). Le frontend utilise Vitest. La suite `e2e/` utilise Playwright, avec `workers: 1` et `fullyParallel: false`, sur un seul backend réel et un seul fichier de données. Les jobs `backend`, `frontend` et `e2e` MUST être verts avant merge.
 
-[SECTION_2_CONTENT]
-<!-- Example: Technology stack requirements, compliance standards, deployment policies, etc. -->
+## Stack et contraintes d'exploitation
 
-## [SECTION_3_NAME]
-<!-- Example: Development Workflow, Review Process, Quality Gates, etc. -->
+- Un seul service Render : le build frontend (`frontend/dist`) est servi par Express. Pas de CORS en production.
+- `PORT` est lu depuis l'environnement, défaut `4000`. Ne jamais coder le port en dur.
+- `GET /api/health` est utilisée par Render (`healthCheckPath`). Ne pas la renommer sans mettre à jour `render.yaml`.
+- Le disque du plan gratuit Render n'est pas persistant : les données de prod ne sont pas durables tant qu'un Disk n'est pas ajouté.
+- Le fuseau de l'agenda est `APP_TIMEZONE` (défaut `Europe/Paris`), indépendant du fuseau du serveur.
 
-[SECTION_3_CONTENT]
-<!-- Example: Code review requirements, testing gates, deployment approval process, etc. -->
+## Workflow git et livraison
+
+- `main` est protégée : jamais de push direct. Chaque changement passe par une branche (`chore/`, `docs/`, `fix/`, `feat/`) et une PR.
+- Avant tout `git push` et tout merge, présenter le contenu et attendre l'accord explicite de l'auteur.
+- Merge en squash avec suppression de la branche : `gh pr merge --squash --delete-branch`.
+- Le merge sur `main` déclenche le job `deploy` de `tests.yml` (Render), après succès des jobs `backend`, `frontend` et `e2e`. Vérifier ensuite `/api/health`.
+- Les décisions de design se prennent dans `DESIGN.md`. Un écart volontaire s'y documente avant le commit.
 
 ## Governance
-<!-- Example: Constitution supersedes all other practices; Amendments require documentation, approval, migration plan -->
 
-[GOVERNANCE_RULES]
-<!-- Example: All PRs/reviews must verify compliance; Complexity must be justified; Use [GUIDANCE_FILE] for runtime development guidance -->
+Cette constitution prévaut sur les autres pratiques écrites dans le dépôt. En cas de contradiction entre `CLAUDE.md`, `.claude/rules/*.md`, `DESIGN.md` ou `PRODUCT.md`, l'agent MUST le signaler au lieu de trancher (voir `CLAUDE.md`, section « Design et agents »).
 
-**Version**: [CONSTITUTION_VERSION] | **Ratified**: [RATIFICATION_DATE] | **Last Amended**: [LAST_AMENDED_DATE]
-<!-- Example: Version: 2.1.1 | Ratified: 2025-06-13 | Last Amended: 2025-07-16 -->
+Procédure d'amendement : modification de ce fichier via une PR dédiée, avec justification dans la description. Les amendements MUST être approuvés par l'auteur du projet avant merge.
+
+Politique de version : MAJOR pour suppression ou redéfinition incompatible d'un principe ; MINOR pour un principe ou une section ajoutée ; PATCH pour clarifications et corrections de forme.
+
+Conformité : la revue de PR MUST vérifier le respect des principes. L'agent `reviewer` (`.claude/agents/reviewer.md`) contrôle les conventions du repo, y compris `DESIGN.md` pour le frontend. Toute complexité ajoutée MUST être justifiée dans la PR.
+
+**Version**: 1.0.0 | **Ratified**: 2026-08-26 | **Last Amended**: 2026-10-05
