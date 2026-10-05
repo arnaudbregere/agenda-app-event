@@ -1,16 +1,16 @@
 import type { Request, Response } from "express";
 import { v4 as uuidv4 } from "uuid";
 import * as store from "../services/eventsStore.js";
-import type { CalendarEvent, ErrorBody, EventBody, EventPatch } from "../types.js";
+import type { CalendarEvent, EventBody, EventPatch } from "../types.js";
 
 type IdParams = { id: string };
 
-export async function getEvents(req: Request<{}, unknown, unknown>, res: Response<CalendarEvent[]>): Promise<void> {
+export async function getEvents(req: Request<{}, unknown, unknown>, res: Response<unknown>): Promise<void> {
   const events = await store.listEvents();
   res.json(events);
 }
 
-export async function getEventById(req: Request<IdParams, unknown, unknown>, res: Response<CalendarEvent | ErrorBody>): Promise<void> {
+export async function getEventById(req: Request<IdParams, unknown, unknown>, res: Response<unknown>): Promise<void> {
   const event = await store.getEvent(req.params.id);
   if (!event) {
     res.status(404).json({ error: "Événement introuvable." });
@@ -19,7 +19,7 @@ export async function getEventById(req: Request<IdParams, unknown, unknown>, res
   res.json(event);
 }
 
-export async function postEvent(req: Request<{}, unknown, EventBody>, res: Response<CalendarEvent>): Promise<void> {
+export async function postEvent(req: Request<{}, unknown, EventBody>, res: Response<unknown>): Promise<void> {
   const body = req.body;
   const now = new Date().toISOString();
   const event: CalendarEvent = {
@@ -40,7 +40,7 @@ export async function postEvent(req: Request<{}, unknown, EventBody>, res: Respo
 }
 
 // Précédé par requireEvent (404) puis withBody (validation) dans routes/events.ts.
-export async function putEvent(req: Request<IdParams, unknown, EventPatch>, res: Response<CalendarEvent | ErrorBody>): Promise<void> {
+export async function putEvent(req: Request<IdParams, unknown, EventPatch>, res: Response<unknown>): Promise<void> {
   // Seuls les champs présents dans le corps sont mis à jour : une clé à
   // `undefined` écraserait la valeur existante dans updateEvent (spread).
   const body = req.body;
@@ -62,7 +62,7 @@ export async function putEvent(req: Request<IdParams, unknown, EventPatch>, res:
   res.json(updated);
 }
 
-export async function deleteEventById(req: Request<IdParams, unknown, unknown>, res: Response<ErrorBody>): Promise<void> {
+export async function deleteEventById(req: Request<IdParams, unknown, unknown>, res: Response<unknown>): Promise<void> {
   const deleted = await store.deleteEvent(req.params.id);
   if (!deleted) {
     res.status(404).json({ error: "Événement introuvable." });
