@@ -98,6 +98,28 @@ const readFields = (body: unknown, partial: boolean): { errors: string[]; fields
   return { errors, fields };
 };
 
+// Paramètre de filtre de GET /api/events : `?category=<id>` ou absent.
+export type CategoryQuery = { category?: CategoryId };
+
+// Valeurs admises : exactement CATEGORY_IDS, sans normalisation (casse et vide refusés).
+export const parseCategoryQuery = (query: unknown): ParseResult<CategoryQuery> => {
+  const raw = isRecord(query) ? query.category : undefined;
+  if (raw === undefined) {
+    return { ok: true, value: {} };
+  }
+  if (Array.isArray(raw)) {
+    return { ok: false, errors: ['Le paramètre "category" ne peut être fourni qu\'une seule fois.'] };
+  }
+  const category = CATEGORY_IDS.find((id) => id === raw);
+  if (category === undefined) {
+    return {
+      ok: false,
+      errors: [`Le paramètre "category" doit être l'une des valeurs suivantes : ${CATEGORY_IDS.join(", ")}.`],
+    };
+  }
+  return { ok: true, value: { category } };
+};
+
 // Corps d'une création : title, start et end doivent être présents et valides.
 export const parseEventBody = (body: unknown): ParseResult<EventBody> => {
   const { errors, fields } = readFields(body, false);

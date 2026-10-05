@@ -3,14 +3,18 @@ import { v4 as uuidv4 } from "uuid";
 import * as store from "../services/eventsStore.js";
 import type { CalendarEvent, EventBody, EventPatch } from "../types.js";
 import type { IcsEvent } from "../utils/ical.js";
+import type { CategoryQuery } from "../utils/validators.js";
 import { eventsToIcs } from "../utils/ical.js";
 import { APP_TIMEZONE } from "../utils/timezone.js";
 
 type IdParams = { id: string };
 
-export async function getEvents(req: Request<{}, unknown, unknown>, res: Response<unknown>): Promise<void> {
+// Sans filtre : liste complète, inchangée. Avec `?category=` : seuls les événements de cette catégorie
+// (un événement sans catégorie stockée est rattaché à `autre`).
+export async function getEvents(req: Request<{}, unknown, unknown, CategoryQuery>, res: Response<unknown>): Promise<void> {
   const events = await store.listEvents();
-  res.json(events);
+  const { category } = req.query;
+  res.json(category ? events.filter((e) => (e.category ?? "autre") === category) : events);
 }
 
 export async function getEventById(req: Request<IdParams, unknown, unknown>, res: Response<unknown>): Promise<void> {

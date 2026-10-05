@@ -275,4 +275,50 @@ describe("export / import iCal (routes events)", () => {
     expect(res.body).toEqual({ imported: 0, skipped: 1 });
     expect((await request(app).get("/api/events")).body).toHaveLength(1);
   });
+
+  describe("filtre par catégorie : GET /api/events?category=", () => {
+    const seed = async () => {
+      await request(app).post("/api/events").send({ title: "Travail A", start: "2030-01-01T10:00:00.000Z", end: "2030-01-01T11:00:00.000Z", category: "travail" });
+      await request(app).post("/api/events").send({ title: "Famille B", start: "2030-01-02T10:00:00.000Z", end: "2030-01-02T11:00:00.000Z", category: "famille" });
+      await request(app).post("/api/events").send({ title: "Sans catégorie", start: "2030-01-03T10:00:00.000Z", end: "2030-01-03T11:00:00.000Z" });
+    };
+
+    it("ne renvoie que les événements de la catégorie demandée", async () => {
+      await seed();
+      const res = await request(app).get("/api/events?category=travail");
+      expect(res.status).toBe(200);
+      expect(res.body.map((e: { title: string }) => e.title)).toEqual(["Travail A"]);
+    });
+
+    it("renvoie une liste vide, sans erreur, pour une catégorie sans événement", async () => {
+      await seed();
+      const res = await request(app).get("/api/events?category=loisirs");
+      expect(res.status).toBe(200);
+      expect(res.body).toEqual([]);
+    });
+
+    it("rattache un événement sans catégorie à autre", async () => {
+      await seed();
+      const res = await request(app).get("/api/events?category=autre");
+      expect(res.body.map((e: { title: string }) => e.title)).toEqual(["Sans catégorie"]);
+    });
+
+    it("sans paramètre, renvoie tous les événements dans l'ordre de stockage", async () => {
+      await seed();
+      const res = await request(app).get("/api/events");
+      expect(res.body.map((e: { title: string }) => e.title)).toEqual(["Travail A", "Famille B", "Sans catégorie"]);
+    });
+
+    it.each([
+      ["une valeur inconnue", "/api/events?category=inconnu"],
+      ["une casse différente", "/api/events?category=Travail"],
+      ["une chaîne vide", "/api/events?category="],
+      ["un paramètre répété", "/api/events?category=travail&category=famille"],
+    ])("refuse %s avec 400 et errors[]", async (_label, url) => {
+      const res = await request(app).get(url);
+      expect(res.status).toBe(400);
+      expect(Array.isArray(res.body.errors)).toBe(true);
+      expect(res.body.errors.length).toBeGreaterThan(0);
+    });
+  });
 });

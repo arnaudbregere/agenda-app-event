@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { parseEventBody, parseEventPatch } from "./validators.js";
+import { parseCategoryQuery, parseEventBody, parseEventPatch } from "./validators.js";
 
 // Erreurs de validation d'un corps de création (ou de mise à jour si partial).
 const errorsOf = (body: unknown, { partial = false }: { partial?: boolean } = {}): string[] => {
@@ -177,6 +177,34 @@ describe("validateEvent", () => {
 
     it("renvoie seulement les champs présents pour une mise à jour", () => {
       expect(parseEventPatch({ title: "Nouveau" })).toEqual({ ok: true, value: { title: "Nouveau" } });
+    });
+  });
+});
+
+describe("parseCategoryQuery (filtre GET /api/events)", () => {
+  it("renvoie {} sans paramètre category", () => {
+    expect(parseCategoryQuery({})).toEqual({ ok: true, value: {} });
+  });
+
+  it("renvoie la catégorie typée pour une valeur valide", () => {
+    expect(parseCategoryQuery({ category: "travail" })).toEqual({ ok: true, value: { category: "travail" } });
+  });
+
+  it.each([
+    ["une valeur inconnue", "inconnu"],
+    ["une chaîne vide", ""],
+    ["une casse différente", "Travail"],
+  ])("refuse %s avec un message qui liste les valeurs admises", (_label, value) => {
+    const result = parseCategoryQuery({ category: value });
+    expect(result.ok).toBe(false);
+    expect(result.ok ? [] : result.errors[0]).toContain("personnel, travail, important, famille, loisirs, autre");
+  });
+
+  it("refuse un paramètre répété", () => {
+    const result = parseCategoryQuery({ category: ["travail", "famille"] });
+    expect(result).toEqual({
+      ok: false,
+      errors: ['Le paramètre "category" ne peut être fourni qu\'une seule fois.'],
     });
   });
 });
