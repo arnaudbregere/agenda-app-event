@@ -16,4 +16,15 @@ export interface CalendarEvent {
   updatedAt: string;
 }
 
+// Corps d'une création (POST) une fois validé : title, start et end sont requis.
+export type EventBody = {
+  title: string;
+  description?: string;
+  location?: string;
+  start: string;
+  end: string;
+  allDay?: boolean;
+  category?: CategoryId;
+};
+
 export type EventPatch = Partial<Omit<CalendarEvent, "id" | "createdAt" | "updatedAt">>;

@@ -1,25 +1,11 @@
 import type { Request, Response } from "express";
 import { v4 as uuidv4 } from "uuid";
 import * as store from "../services/eventsStore.js";
-import { validateEvent } from "../utils/validators.js";
-import type { CategoryId } from "../utils/categories.js";
-import type { CalendarEvent, EventPatch } from "../types.js";
+import type { CalendarEvent, EventBody, EventPatch } from "../types.js";
 
 type IdParams = { id: string };
 
-// Forme du corps d'une requête POST une fois validateEvent() passé sans erreur.
-// validateEvent ne sert pas de type guard : ce cast est la frontière entre le
-// JSON non fiable reçu et les types internes.
-type ValidatedBody = {
-  title: string;
-  description?: string;
-  location?: string;
-  start: string;
-  end: string;
-  allDay?: boolean;
-  category?: CategoryId;
-};
-
+// Le corps est déjà validé et typé par le middleware withBody (routes/events.ts).
 export async function getEvents(req: Request, res: Response): Promise<void> {
   const events = await store.listEvents();
   res.json(events);
@@ -34,14 +20,8 @@ export async function getEventById(req: Request<IdParams>, res: Response): Promi
   res.json(event);
 }
 
-export async function postEvent(req: Request, res: Response): Promise<void> {
-  const errors = validateEvent(req.body);
-  if (errors.length) {
-    res.status(400).json({ errors });
-    return;
-  }
-
-  const body = req.body as ValidatedBody;
+export async function postEvent(req: Request<{}, unknown, EventBody>, res: Response): Promise<void> {
+  const body = req.body;
   const now = new Date().toISOString();
   const event: CalendarEvent = {
     id: uuidv4(),
@@ -60,29 +40,26 @@ export async function postEvent(req: Request, res: Response): Promise<void> {
   res.status(201).json(created);
 }
 
-const PATCH_FIELDS = ["title", "description", "location", "start", "end", "allDay", "category"] as const;
-
-export async function putEvent(req: Request<IdParams>, res: Response): Promise<void> {
+export async function putEvent(req: Request<IdParams, unknown, EventPatch>, res: Response): Promise<void> {
   const existing = await store.getEvent(req.params.id);
   if (!existing) {
     res.status(404).json({ error: "Événement introuvable." });
     return;
   }
 
-  const errors = validateEvent(req.body, { partial: true });
-  if (errors.length) {
-    res.status(400).json({ errors });
-    return;
-  }
+  // Seuls les champs présents dans le corps sont mis à jour : une clé à
+  // `undefined` écraserait la valeur existante dans updateEvent (spread).
+  const body = req.body;
+  const patch: EventPatch = {};
+  if (body.title !== undefined) patch.title = body.title.trim();
+  if (body.description !== undefined) patch.description = body.description.trim();
+  if (body.location !== undefined) patch.location = body.location.trim();
+  if (body.start !== undefined) patch.start = body.start.trim();
+  if (body.end !== undefined) patch.end = body.end.trim();
+  if (body.allDay !== undefined) patch.allDay = body.allDay;
+  if (body.category !== undefined) patch.category = body.category;
 
-  const patch: Record<string, unknown> = {};
-  for (const field of PATCH_FIELDS) {
-    if (req.body[field] !== undefined) {
-      patch[field] = typeof req.body[field] === "string" ? req.body[field].trim() : req.body[field];
-    }
-  }
-
-  const updated = await store.updateEvent(req.params.id, patch as EventPatch);
+  const updated = await store.updateEvent(req.params.id, patch);
   res.json(updated);
 }
 
