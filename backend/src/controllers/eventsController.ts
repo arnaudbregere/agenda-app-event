@@ -2,6 +2,8 @@ import type { Request, Response } from "express";
 import { v4 as uuidv4 } from "uuid";
 import * as store from "../services/eventsStore.js";
 import type { CalendarEvent, EventBody, EventPatch } from "../types.js";
+import { eventsToIcs } from "../utils/ical.js";
+import { APP_TIMEZONE } from "../utils/timezone.js";
 
 type IdParams = { id: string };
 
@@ -19,24 +21,35 @@ export async function getEventById(req: Request<IdParams, unknown, unknown>, res
   res.json(event);
 }
 
-export async function postEvent(req: Request<{}, unknown, EventBody>, res: Response<unknown>): Promise<void> {
-  const body = req.body;
-  const now = new Date().toISOString();
-  const event: CalendarEvent = {
-    id: uuidv4(),
-    title: body.title.trim(),
-    description: body.description?.trim() ?? "",
-    location: body.location?.trim() ?? "",
-    start: body.start,
-    end: body.end,
-    allDay: body.allDay ?? false,
-    category: body.category ?? "autre",
-    createdAt: now,
-    updatedAt: now,
-  };
+// Corps validé -> événement persisté (id et horodatage générés ici).
+const toCalendarEvent = (body: EventBody, now: string): CalendarEvent => ({
+  id: uuidv4(),
+  title: body.title.trim(),
+  description: body.description?.trim() ?? "",
+  location: body.location?.trim() ?? "",
+  start: body.start,
+  end: body.end,
+  allDay: body.allDay ?? false,
+  category: body.category ?? "autre",
+  createdAt: now,
+  updatedAt: now,
+});
 
-  const created = await store.createEvent(event);
+export async function postEvent(req: Request<{}, unknown, EventBody>, res: Response<unknown>): Promise<void> {
+  const created = await store.createEvent(toCalendarEvent(req.body, new Date().toISOString()));
   res.status(201).json(created);
+}
+
+export async function exportEvents(req: Request<{}, unknown, unknown>, res: Response<unknown>): Promise<void> {
+  const events = await store.listEvents();
+  res.attachment("agenda.ics").send(eventsToIcs(events, APP_TIMEZONE));
+}
+
+// Tout-ou-rien : le corps est déjà validé par withBody (parseIcsBody).
+export async function importEvents(req: Request<{}, unknown, EventBody[]>, res: Response<unknown>): Promise<void> {
+  const now = new Date().toISOString();
+  const created = await store.createEvents(req.body.map((body) => toCalendarEvent(body, now)));
+  res.status(201).json({ imported: created.length });
 }
 
 // Précédé par requireEvent (404) puis withBody (validation) dans routes/events.ts.

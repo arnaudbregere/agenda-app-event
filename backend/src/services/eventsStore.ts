@@ -50,6 +50,16 @@ export function createEvent(event: CalendarEvent): Promise<CalendarEvent> {
   });
 }
 
+// Écriture groupée : une seule lecture/écriture du fichier pour tout le lot.
+export function createEvents(newEvents: CalendarEvent[]): Promise<CalendarEvent[]> {
+  return enqueue(async () => {
+    const events = await readAll();
+    events.push(...newEvents);
+    await writeAll(events);
+    return newEvents;
+  });
+}
+
 export function updateEvent(id: string, patch: EventPatch): Promise<CalendarEvent | null> {
   return enqueue(async () => {
     const events = await readAll();

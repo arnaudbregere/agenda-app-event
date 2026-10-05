@@ -27,6 +27,8 @@ const COMMIT = resolveCommit();
 
 app.use(cors());
 app.use(express.json());
+// Import .ics : corps brut en texte, uniquement pour text/calendar.
+app.use(express.text({ type: "text/calendar", limit: "1mb" }));
 
 app.get("/api/health", (req: Request<{}, unknown, unknown>, res: Response<unknown>) =>
   res.json({ status: "ok", commit: COMMIT })

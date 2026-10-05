@@ -167,3 +167,68 @@ describe("validation des corps (routes events)", () => {
     expect(res.body.errors).toEqual(['Le champ "start" doit être une date ISO valide.']);
   });
 });
+
+describe("export / import iCal (routes events)", () => {
+  const ICS_TWO_EVENTS = [
+    "BEGIN:VCALENDAR",
+    "VERSION:2.0",
+    "BEGIN:VEVENT",
+    "UID:a",
+    "DTSTAMP:20260101T000000Z",
+    "DTSTART:20300101T100000Z",
+    "DTEND:20300101T110000Z",
+    "SUMMARY:Importé A",
+    "END:VEVENT",
+    "BEGIN:VEVENT",
+    "UID:b",
+    "DTSTAMP:20260101T000000Z",
+    "DTSTART;VALUE=DATE:20300102",
+    "DTEND;VALUE=DATE:20300103",
+    "SUMMARY:Importé B",
+    "END:VEVENT",
+    "END:VCALENDAR",
+  ].join("\r\n");
+
+  it("GET /api/events/export renvoie un fichier .ics téléchargeable", async () => {
+    await request(app)
+      .post("/api/events")
+      .send({ title: "Exporté", start: "2030-01-01T10:00:00.000Z", end: "2030-01-01T11:00:00.000Z" });
+
+    const res = await request(app).get("/api/events/export");
+
+    expect(res.status).toBe(200);
+    expect(res.headers["content-type"]).toMatch(/^text\/calendar/);
+    expect(res.headers["content-disposition"]).toBe('attachment; filename="agenda.ics"');
+    expect(res.text).toContain("BEGIN:VCALENDAR");
+    expect(res.text).toContain("SUMMARY:Exporté");
+  });
+
+  it("POST /api/events/import crée tous les événements d'un fichier valide", async () => {
+    const res = await request(app)
+      .post("/api/events/import")
+      .set("Content-Type", "text/calendar")
+      .send(ICS_TWO_EVENTS);
+
+    expect(res.status).toBe(201);
+    expect(res.body).toEqual({ imported: 2 });
+    const titles = (await request(app).get("/api/events")).body.map((e: { title: string }) => e.title);
+    expect(titles).toEqual(expect.arrayContaining(["Importé A", "Importé B"]));
+  });
+
+  it("POST /api/events/import refuse tout le fichier si un événement est invalide", async () => {
+    const invalid = ICS_TWO_EVENTS.replace("SUMMARY:Importé B", "DESCRIPTION:Sans titre");
+
+    const res = await request(app).post("/api/events/import").set("Content-Type", "text/calendar").send(invalid);
+
+    expect(res.status).toBe(400);
+    expect(res.body.errors).toEqual(['Événement 2 : Le champ "title" est requis.']);
+    expect((await request(app).get("/api/events")).body).toEqual([]);
+  });
+
+  it("POST /api/events/import exige Content-Type text/calendar", async () => {
+    const res = await request(app).post("/api/events/import").send({ title: "x" });
+
+    expect(res.status).toBe(400);
+    expect(res.body.errors).toEqual(["Content-Type attendu : text/calendar."]);
+  });
+});
