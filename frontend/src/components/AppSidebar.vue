@@ -44,7 +44,7 @@ onUnmounted(() => window.removeEventListener("keydown", onKeydown));
 
 <template>
   <aside id="app-sidebar" ref="asideRef" class="c-sidebar">
-    <button type="button" class="c-btn c-sidebar__create" @click="store.openCreateModal()">
+    <button type="button" class="c-btn c-btn--primary c-sidebar__create" @click="store.openCreateModal()">
       <Icon name="plus" class="c-btn__icon" />
       Créer
     </button>
@@ -53,9 +53,10 @@ onUnmounted(() => window.removeEventListener("keydown", onKeydown));
         v-for="item in QUICK_ACCESS"
         :key="item.view"
         type="button"
-        class="c-btn c-btn--text c-sidebar__quick-btn"
+        class="c-btn c-btn--text c-sidebar__action c-sidebar__quick-btn"
         @click="store.goToCurrent(item.view)"
       >
+        <Icon name="calendar" class="c-btn__icon" />
         {{ item.label }}
       </button>
     </nav>

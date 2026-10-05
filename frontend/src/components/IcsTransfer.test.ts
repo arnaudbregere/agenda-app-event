@@ -34,7 +34,7 @@ describe("IcsTransfer — export", () => {
 
 describe("IcsTransfer — import", () => {
   it("affiche le nombre d'événements importés", async () => {
-    vi.spyOn(eventsApi, "importIcs").mockResolvedValue({ imported: 3 });
+    vi.spyOn(eventsApi, "importIcs").mockResolvedValue({ imported: 3, skipped: 0 });
     vi.spyOn(eventsApi, "list").mockResolvedValue([]);
     const wrapper = mount(IcsTransfer);
 
@@ -44,8 +44,20 @@ describe("IcsTransfer — import", () => {
     expect(wrapper.find('[role="alert"]').exists()).toBe(false);
   });
 
+  it("précise le nombre d'événements déjà présents et ignorés", async () => {
+    vi.spyOn(eventsApi, "importIcs").mockResolvedValue({ imported: 1, skipped: 2 });
+    vi.spyOn(eventsApi, "list").mockResolvedValue([]);
+    const wrapper = mount(IcsTransfer);
+
+    await chooseFile(wrapper, "BEGIN:VCALENDAR");
+
+    expect(wrapper.find('[role="status"]').text()).toBe(
+      "1 événement(s) importé(s), 2 déjà présent(s) ignoré(s)."
+    );
+  });
+
   it("relit la liste des événements après l'import", async () => {
-    vi.spyOn(eventsApi, "importIcs").mockResolvedValue({ imported: 1 });
+    vi.spyOn(eventsApi, "importIcs").mockResolvedValue({ imported: 1, skipped: 0 });
     const list = vi.spyOn(eventsApi, "list").mockResolvedValue([]);
     const wrapper = mount(IcsTransfer);
 
@@ -68,7 +80,7 @@ describe("IcsTransfer — import", () => {
   });
 
   it("envoie le contenu brut du fichier", async () => {
-    const importIcs = vi.spyOn(eventsApi, "importIcs").mockResolvedValue({ imported: 0 });
+    const importIcs = vi.spyOn(eventsApi, "importIcs").mockResolvedValue({ imported: 0, skipped: 0 });
     vi.spyOn(eventsApi, "list").mockResolvedValue([]);
     const wrapper = mount(IcsTransfer);
 

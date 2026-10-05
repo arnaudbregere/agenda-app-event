@@ -11,6 +11,7 @@ const PATHS: Record<string, string> = {
   check: "M20 6 9 17l-5-5",
   "map-pin": "M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z M12 13a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z",
   "align-left": "M4 6h16M4 12h10M4 18h13",
+  calendar: "M3 4h18v18H3zM16 2v4M8 2v4M3 10h18",
   download: "M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3",
   upload: "M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12",
 };

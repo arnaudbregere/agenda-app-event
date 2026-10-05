@@ -199,19 +199,19 @@ Rythme d'espacement sur une échelle à 9 crans, base 4px (`--space-1` à `--spa
 
 ## Elevation & Depth
 
-Élévation Material stricte confirmée : trois niveaux d'ombre douce, tonale et fixe, exactement calqués sur les tokens d'élévation Material (`0 1px 2px`, `0 1px 3px 1px`, `0 4px 8px 3px`, teinte neutre `rgba(60,64,67,…)`). Les surfaces sont plates au repos ; l'ombre n'apparaît qu'en réponse à un état (hover du bouton primaire, hover d'une carte d'événement, hover du bouton "Créer" de la sidebar) ou pour détacher durablement un panneau flottant (modale).
+Élévation Material stricte confirmée : trois niveaux d'ombre douce, tonale et fixe, exactement calqués sur les tokens d'élévation Material (`0 1px 2px`, `0 1px 3px 1px`, `0 4px 8px 3px`, teinte neutre `rgba(60,64,67,…)`). Les surfaces sont plates au repos ; l'ombre n'apparaît qu'en réponse à un état (hover du bouton primaire, dont "Créer" de la sidebar, hover d'un bloc d'événement) ou pour détacher durablement un panneau flottant (modale).
 
 ### Shadow Vocabulary
 - **shadow-sm** (`0 1px 2px 0 rgba(60,64,67,0.3)`): repos du bouton primaire, blocs d'événement dans la grille horaire.
-- **shadow-md** (`0 1px 3px 1px rgba(60,64,67,0.3)`): hover du bouton primaire et des blocs d'événement, repos du bouton "Créer".
-- **shadow-lg** (`0 4px 8px 3px rgba(60,64,67,0.3), 0 1px 3px rgba(60,64,67,0.3)`): modale, hover du bouton "Créer".
+- **shadow-md** (`0 1px 3px 1px rgba(60,64,67,0.3)`): hover du bouton primaire et des blocs d'événement.
+- **shadow-lg** (`0 4px 8px 3px rgba(60,64,67,0.3), 0 1px 3px rgba(60,64,67,0.3)`): modale uniquement.
 
 ### Named Rules
 **The Flat-By-Default Rule.** Aucune surface ne porte d'ombre à l'état de repos, sauf les panneaux flottants (modale). L'ombre est toujours une réponse à l'interaction, jamais une décoration statique.
 
 ## Shapes
 
-Deux familles de rayon selon l'échelle de l'élément : `radius-sm` (4px) pour les éléments denses (event pill, input, sélecteur de vue), `radius-md` (8px) pour la carte "Créer" de la sidebar, `radius-lg` (16px) pour le panneau de la modale. Les éléments strictement circulaires (bouton icône, checkbox de catégorie, pastille de couleur, swatch) utilisent `50%` ou `radius-full` (999px pour les boutons pilule). Pas de bordure décorative : les seules bordures visibles séparent des zones fonctionnelles (header/modale, inputs, sélecteur de vue) en `border-neutral` 1px.
+Deux familles de rayon selon l'échelle de l'élément : `radius-sm` (4px) pour les éléments denses (event pill, input, sélecteur de vue), `radius-md` (8px) pour les cartes, `radius-lg` (16px) pour le panneau de la modale. Les éléments strictement circulaires (bouton icône, checkbox de catégorie, pastille de couleur, swatch) utilisent `50%` ou `radius-full` (999px pour les boutons pilule). Pas de bordure décorative : les seules bordures visibles séparent des zones fonctionnelles (header/modale, inputs, sélecteur de vue) en `border-neutral` 1px.
 
 ### Named Rules
 **The Invisible Target Rule.** Les petits contrôles circulaires (bouton icône `sm` 28px, jour du mini-calendrier ~30px) gardent leur taille visuelle sur desktop ; sous `@media (pointer: coarse)`, un pseudo-élément `::after` en `inset` négatif agrandit la zone de tap sans changer le rendu. On ne fait jamais grossir visuellement un contrôle juste pour le tactile.
@@ -231,7 +231,7 @@ Deux familles de rayon selon l'échelle de l'élément : `radius-sm` (4px) pour 
 - **Journée entière:** bandeau plein compact au-dessus de la grille horaire, même traitement de couleur que le block.
 
 ### Cards / Containers
-- **Corner Style:** `radius-lg` (modale), `radius-md` (carte "Créer" sidebar).
+- **Corner Style:** `radius-lg` (modale), `radius-md` (cartes).
 - **Background:** `paper-white`.
 - **Shadow Strategy:** voir Elevation & Depth — jamais de shadow au repos sauf la modale.
 - **Border:** aucune sur les cartes ; la modale sépare header/footer par un trait `border-neutral` 1px interne, pas de bordure externe.

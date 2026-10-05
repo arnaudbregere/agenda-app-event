@@ -22,7 +22,7 @@ export const eventsToIcs = (events: CalendarEvent[], timeZone: string = APP_TIME
       const first = localDateOf(new Date(event.start), timeZone);
       const last = localDateOf(new Date(event.end), timeZone);
       calendar.createEvent({
-        id: event.id,
+        id: event.uid ?? event.id,
         summary: event.title,
         description: event.description,
         location: event.location,
@@ -33,7 +33,7 @@ export const eventsToIcs = (events: CalendarEvent[], timeZone: string = APP_TIME
       });
     } else {
       calendar.createEvent({
-        id: event.id,
+        id: event.uid ?? event.id,
         summary: event.title,
         description: event.description,
         location: event.location,
@@ -92,7 +92,10 @@ const rawFieldsOf = (event: VEvent, timeZone: string): Record<string, unknown> =
 // Import RFC 5545 en tout-ou-rien : un seul événement invalide renvoie les erreurs
 // sans rien créer. Les événements annulés sont ignorés. Les récurrences (RRULE)
 // ne sont pas développées : seule l'occurrence de DTSTART est importée.
-export const parseIcs = (text: string, timeZone: string = APP_TIMEZONE): ParseResult<EventBody[]> => {
+// Événement importé : corps validé + UID RFC 5545 (pour le dédoublonnage).
+export type IcsEvent = EventBody & { uid: string };
+
+export const parseIcs = (text: string, timeZone: string = APP_TIMEZONE): ParseResult<IcsEvent[]> => {
   let components: ReturnType<typeof parseICS>;
   try {
     components = parseICS(text);
@@ -108,13 +111,13 @@ export const parseIcs = (text: string, timeZone: string = APP_TIMEZONE): ParseRe
     return { ok: false, errors: ["Aucun événement (VEVENT) trouvé dans le fichier .ics."] };
   }
 
-  const bodies: EventBody[] = [];
+  const bodies: IcsEvent[] = [];
   const errors: string[] = [];
   events.forEach((event, index) => {
     const raw = rawFieldsOf(event, timeZone);
     const result = parseEventBody(raw);
     if (result.ok) {
-      bodies.push(result.value);
+      bodies.push({ ...result.value, uid: event.uid });
     } else {
       const label = typeof raw.title === "string" ? ` (« ${raw.title} »)` : "";
       errors.push(`Événement ${index + 1}${label} : ${result.errors.join(" ")}`);
@@ -126,7 +129,7 @@ export const parseIcs = (text: string, timeZone: string = APP_TIMEZONE): ParseRe
 
 // Corps de la requête d'import : le parser texte d'Express ne fournit une chaîne
 // que pour `text/calendar`.
-export const parseIcsBody = (body: unknown): ParseResult<EventBody[]> => {
+export const parseIcsBody = (body: unknown): ParseResult<IcsEvent[]> => {
   if (typeof body !== "string") {
     return { ok: false, errors: ["Content-Type attendu : text/calendar."] };
   }

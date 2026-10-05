@@ -9,7 +9,7 @@ export const eventsApi = {
   // Lien de téléchargement direct (navigation, pas un appel fetch).
   exportUrl: () => `${BASE_URL}/events/export`,
   importIcs: (content: string) =>
-    apiClient.postText<{ imported: number }>("/events/import", content, "text/calendar"),
+    apiClient.postText<{ imported: number; skipped: number }>("/events/import", content, "text/calendar"),
 }
 
 export const categoriesApi = {

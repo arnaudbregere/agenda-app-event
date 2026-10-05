@@ -2,6 +2,7 @@ import type { Request, Response } from "express";
 import { v4 as uuidv4 } from "uuid";
 import * as store from "../services/eventsStore.js";
 import type { CalendarEvent, EventBody, EventPatch } from "../types.js";
+import type { IcsEvent } from "../utils/ical.js";
 import { eventsToIcs } from "../utils/ical.js";
 import { APP_TIMEZONE } from "../utils/timezone.js";
 
@@ -45,11 +46,21 @@ export async function exportEvents(req: Request<{}, unknown, unknown>, res: Resp
   res.attachment("agenda.ics").send(eventsToIcs(events, APP_TIMEZONE));
 }
 
-// Tout-ou-rien : le corps est déjà validé par withBody (parseIcsBody).
-export async function importEvents(req: Request<{}, unknown, EventBody[]>, res: Response<unknown>): Promise<void> {
+// Tout-ou-rien pour la validation (withBody). Dédoublonnage par UID : un événement
+// dont l'UID existe déjà (ou répété dans le fichier) est ignoré, pas dupliqué.
+export async function importEvents(req: Request<{}, unknown, IcsEvent[]>, res: Response<unknown>): Promise<void> {
   const now = new Date().toISOString();
-  const created = await store.createEvents(req.body.map((body) => toCalendarEvent(body, now)));
-  res.status(201).json({ imported: created.length });
+  // L'export utilise l'id comme UID : un événement créé dans l'app est donc reconnu par son id.
+  const known = new Set((await store.listEvents()).map((e) => e.uid ?? e.id));
+  const fresh = req.body.filter((event) => {
+    if (known.has(event.uid)) return false;
+    known.add(event.uid);
+    return true;
+  });
+  const created = await store.createEvents(
+    fresh.map(({ uid, ...body }) => ({ ...toCalendarEvent(body, now), uid }))
+  );
+  res.status(201).json({ imported: created.length, skipped: req.body.length - created.length });
 }
 
 // Précédé par requireEvent (404) puis withBody (validation) dans routes/events.ts.

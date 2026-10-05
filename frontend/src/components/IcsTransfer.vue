@@ -24,8 +24,10 @@ const onFileChange = async (event: Event) => {
   successMessage.value = "";
   errorMessage.value = "";
   try {
-    const imported = await eventsStore.importIcs(await file.text());
-    successMessage.value = `${imported} événement(s) importé(s).`;
+    const { imported, skipped } = await eventsStore.importIcs(await file.text());
+    successMessage.value = skipped
+      ? `${imported} événement(s) importé(s), ${skipped} déjà présent(s) ignoré(s).`
+      : `${imported} événement(s) importé(s).`;
   } catch (err) {
     errorMessage.value = err instanceof Error ? err.message : String(err);
   }
@@ -35,11 +37,11 @@ const onFileChange = async (event: Event) => {
 <template>
   <section class="c-ics-transfer" aria-labelledby="ics-transfer-title">
     <h2 id="ics-transfer-title" class="c-sidebar__section-title">Calendrier (.ics)</h2>
-    <a class="c-btn c-btn--text c-ics-transfer__action" :href="eventsApi.exportUrl()" download="agenda.ics">
+    <a class="c-btn c-btn--text c-sidebar__action" :href="eventsApi.exportUrl()" download="agenda.ics">
       <Icon name="download" class="c-btn__icon" />
       Exporter
     </a>
-    <button type="button" class="c-btn c-btn--text c-ics-transfer__action" @click="openFilePicker">
+    <button type="button" class="c-btn c-btn--text c-sidebar__action" @click="openFilePicker">
       <Icon name="upload" class="c-btn__icon" />
       Importer
     </button>

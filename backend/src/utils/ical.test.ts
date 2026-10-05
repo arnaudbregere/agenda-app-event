@@ -67,6 +67,7 @@ describe("parseIcs", () => {
     if (!result.ok) return;
     expect(result.value).toEqual([
       {
+        uid: timed.id,
         title: "Réunion",
         description: "Point hebdo",
         location: "Salle B",
@@ -75,6 +76,7 @@ describe("parseIcs", () => {
         allDay: false,
       },
       {
+        uid: allDay.id,
         title: "Congés",
         start: "2026-08-27T22:00:00.000Z",
         end: "2026-08-29T21:59:59.000Z",
@@ -133,7 +135,7 @@ describe("parseIcs — cas limites", () => {
     expect(result).toEqual({
       ok: true,
       value: [
-        { title: "Sans fin", start: "2026-08-28T08:00:00.000Z", end: "2026-08-28T08:00:00.000Z", allDay: false },
+        { uid: "u", title: "Sans fin", start: "2026-08-28T08:00:00.000Z", end: "2026-08-28T08:00:00.000Z", allDay: false },
       ],
     });
   });
@@ -143,7 +145,7 @@ describe("parseIcs — cas limites", () => {
     expect(result).toEqual({
       ok: true,
       value: [
-        { title: "Un jour", start: "2026-08-27T22:00:00.000Z", end: "2026-08-28T21:59:59.000Z", allDay: true },
+        { uid: "u", title: "Un jour", start: "2026-08-27T22:00:00.000Z", end: "2026-08-28T21:59:59.000Z", allDay: true },
       ],
     });
   });
@@ -165,6 +167,14 @@ describe("parseIcs — cas limites", () => {
       TZ
     );
     expect(result.ok && result.value.map((e) => e.title)).toEqual(["Gardé"]);
+  });
+
+  it("garde l'UID RFC 5545 de chaque événement importé", () => {
+    const result = parseIcs(
+      wrap("BEGIN:VEVENT", "UID:externe-1", "DTSTAMP:20260101T000000Z", "DTSTART:20260828T080000Z", "SUMMARY:Un", "END:VEVENT"),
+      TZ
+    );
+    expect(result.ok && result.value[0].uid).toBe("externe-1");
   });
 
   it("refuse un texte qui n'est pas du iCalendar", () => {

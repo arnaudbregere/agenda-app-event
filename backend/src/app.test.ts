@@ -210,7 +210,7 @@ describe("export / import iCal (routes events)", () => {
       .send(ICS_TWO_EVENTS);
 
     expect(res.status).toBe(201);
-    expect(res.body).toEqual({ imported: 2 });
+    expect(res.body).toEqual({ imported: 2, skipped: 0 });
     const titles = (await request(app).get("/api/events")).body.map((e: { title: string }) => e.title);
     expect(titles).toEqual(expect.arrayContaining(["Importé A", "Importé B"]));
   });
@@ -243,5 +243,36 @@ describe("export / import iCal (routes events)", () => {
     const big = "X".repeat(1024 * 1024 + 1);
     const res = await request(app).post("/api/events/import").set("Content-Type", "text/calendar").send(big);
     expect(res.status).toBe(413);
+  });
+
+  it("POST /api/events/import ignore les événements dont l'UID existe déjà", async () => {
+    await request(app).post("/api/events/import").set("Content-Type", "text/calendar").send(ICS_TWO_EVENTS);
+
+    const again = await request(app).post("/api/events/import").set("Content-Type", "text/calendar").send(ICS_TWO_EVENTS);
+
+    expect(again.status).toBe(201);
+    expect(again.body).toEqual({ imported: 0, skipped: 2 });
+    expect((await request(app).get("/api/events")).body).toHaveLength(2);
+  });
+
+  it("POST /api/events/import fond un UID répété dans le même fichier", async () => {
+    const doubled = ICS_TWO_EVENTS.replace("UID:b", "UID:a");
+
+    // node-ical ne garde qu'un VEVENT par UID : le doublon est déjà fondu au parsing.
+    const res = await request(app).post("/api/events/import").set("Content-Type", "text/calendar").send(doubled);
+
+    expect(res.body).toEqual({ imported: 1, skipped: 0 });
+  });
+
+  it("un événement exporté puis réimporté n'est pas dupliqué", async () => {
+    await request(app)
+      .post("/api/events")
+      .send({ title: "Aller-retour", start: "2030-01-01T10:00:00.000Z", end: "2030-01-01T11:00:00.000Z" });
+    const exported = (await request(app).get("/api/events/export")).text;
+
+    const res = await request(app).post("/api/events/import").set("Content-Type", "text/calendar").send(exported);
+
+    expect(res.body).toEqual({ imported: 0, skipped: 1 });
+    expect((await request(app).get("/api/events")).body).toHaveLength(1);
   });
 });
