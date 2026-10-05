@@ -1,10 +1,11 @@
-import { Router, type Request, type Response } from "express";
+import { type Request, type Response } from "express";
 import { CATEGORIES } from "../utils/categories.js";
+import { createTypedRouter } from "./typedRouter.js";
 
-const router = Router();
+const api = createTypedRouter();
 
-router.get("/", (req: Request, res: Response): void => {
+api.get("/", (req: Request, res: Response): void => {
   res.json(CATEGORIES);
 });
 
-export default router;
+export default api.router;
