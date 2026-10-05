@@ -33,7 +33,9 @@
     position: fixed;
     inset: var(--header-height) auto 0 0;
     width: min(var(--sidebar-width), 85vw);
-    overflow: hidden;
+    // Le contenu de la sidebar peut dépasser la hauteur d'un petit écran : défilement vertical.
+    overflow-x: hidden;
+    overflow-y: auto;
     transform: translateX(-100%);
     // Le drawer fermé est visibility:hidden pour sortir du flux de
     // tabulation, mais seulement une fois la transition de sortie
