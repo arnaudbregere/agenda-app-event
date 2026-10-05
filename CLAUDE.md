@@ -53,14 +53,15 @@ ailleurs, pointer vers eux.
 |---|---|---|
 | Toute modif UI (`frontend/**/*.vue`, `*.scss`) | `DESIGN.md` (tokens, boutons, règles), `PRODUCT.md` (accessibilité) | `/impeccable detect` sur les fichiers touchés ; `/impeccable critique` si composition ou hiérarchie change |
 | Relecture de PR | `.claude/rules/*.md` selon le package | agent `reviewer` (vérifie aussi `DESIGN.md` si `frontend/` est touché) |
-| Nouvelle feature frontend | `PRODUCT.md` (périmètre), `DESIGN.md` | `/impeccable shape` avant de coder |
+| Nouvelle feature backend ou transverse | `.specify/memory/constitution.md`, `PRODUCT.md` (périmètre) | spec-kit : `/speckit-specify` → `/speckit-clarify` → `/speckit-plan` → `/speckit-tasks` → `/speckit-implement` |
+| Nouvelle feature avec UI | `PRODUCT.md`, `DESIGN.md`, `.specify/memory/constitution.md` | `/impeccable shape` pour la composition et la hiérarchie, puis spec-kit (`/speckit-specify`) pour le périmètre |
 | Tests | `.claude/rules/backend.md`, `frontend.md`, `e2e.md` | agent `tester` |
 | Déploiement | `.claude/skills/deploy/SKILL.md` | job `deploy` de `tests.yml` |
 
 Règles de passage :
+- spec-kit (`.specify/`, skills `speckit-*`) gère le cycle de vie des features. `/impeccable shape` tranche le visuel. Pour une feature UI, les deux se suivent : design d'abord, spécification ensuite.
 - Un agent qui trouve une règle contradictoire dans ces fichiers le signale au
-  lieu de choisir. Exemple actuel : `DESIGN.md` interdit l'ombre au repos sur le
-  bouton « Créer » dans un passage et l'autorise dans un autre.
+  lieu de choisir.
 - Les décisions de design se prennent dans `DESIGN.md`, pas dans le code.
   Un écart volontaire se documente dans `DESIGN.md` avant le commit.
 
