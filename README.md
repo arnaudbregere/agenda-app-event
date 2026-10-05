@@ -17,7 +17,7 @@ C'est un projet portfolio/démo — la démonstration technique (Vue 3 Compositi
 
 ## Architecture
 
-Diagrammes Mermaid : [architecture et CI/CD](docs/architecture.md), [séquence du filtre par catégorie](docs/category-filter-sequence.md), [workflow spec-kit](docs/spec-kit-workflow.md).
+Diagrammes Mermaid : [architecture et CI/CD](docs/architecture.md), [séquence du filtre par catégorie](specs/diagrams/category-filter-sequence.md), [workflow spec-kit](specs/diagrams/spec-kit-workflow.md).
 
 Monorepo à deux packages indépendants, sans dépendance croisée au runtime :
 

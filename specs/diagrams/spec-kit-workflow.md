@@ -1,5 +1,7 @@
 # Workflow spec-kit
 
+Export PDF : [spec-kit-workflow.pdf](spec-kit-workflow.pdf).
+
 Cycle de vie d'une feature avec spec-kit (`.specify/`, skills `speckit-*`). Chaque étape produit un artefact dans `specs/<NNN>-<nom>/`.
 
 ```mermaid

@@ -1,5 +1,7 @@
 # Architecture
 
+Exports PDF : [vue d'ensemble](architecture-overview.pdf), [couches backend](architecture-layers.pdf), [CI/CD](architecture-ci.pdf).
+
 Vue d'ensemble du système : frontend Vue 3, API Express, stockage JSON, et déploiement Render (un seul service).
 
 ## Vue d'ensemble

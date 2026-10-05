@@ -1,5 +1,7 @@
 # Séquence : filtre par catégorie
 
+Export PDF : [category-filter-sequence.pdf](category-filter-sequence.pdf).
+
 Requête `GET /api/events?category=<id>` (feature `001-events-category-filter`, PR #84).
 
 ```mermaid
