@@ -364,6 +364,15 @@ describe("récurrence (recurrence, exdates, surcharges)", () => {
     it("accepte recurrence: null avec recurrenceParentId", () => {
       expect(errorsOf({ ...override, recurrence: null })).toEqual([]);
     });
+
+    // Sémantique de `null` symétrique sur les quatre attributs : c'est ce qui
+    // permet à une occurrence surchargée de redevenir un événement simple.
+    it.each(["recurrenceParentId", "recurrenceId"] as const)(
+      "traite %s: null comme une demande de retrait",
+      (field) => {
+        expect(parseEventPatch({ [field]: null })).toEqual({ ok: true, value: { [field]: null } });
+      },
+    );
   });
 });
 

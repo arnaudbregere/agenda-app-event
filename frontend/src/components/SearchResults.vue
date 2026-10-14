@@ -13,11 +13,11 @@ const eventsStore = useEventsStore();
 
 const results = computed(() => store.searchResults);
 
-function eventWhen(event: EventOccurrence) {
+const eventWhen = (event: EventOccurrence) => {
   const day = format(new Date(event.start), "EEE d MMM yyyy", { locale: fr });
   if (event.allDay) return day;
   return `${day}, ${format(new Date(event.start), "HH:mm")}`;
-}
+};
 </script>
 
 <template>

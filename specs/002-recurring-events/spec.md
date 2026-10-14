@@ -242,7 +242,7 @@ doublons, pas de code mort » posée par l'auteur. Vérifiables en revue.
 
 Anti-objectifs explicites. Toute demande ci-dessous relève d'une issue séparée.
 
-- **Export et import iCal des règles de répétition** (`RRULE`, `EXDATE`, `RECURRENCE-ID`). Issue de suivi à créer. ⚠️ Conséquence assumée jusque-là : l'export d'une série produit **un seul** événement non répété — perte silencieuse, à écrire dans la description de la PR et dans l'issue de suivi.
+- **Export et import iCal des règles de répétition** (`RRULE`, `EXDATE`, `RECURRENCE-ID`). Issue de suivi : **#93**. ⚠️ Conséquence assumée jusque-là : l'export d'une série produit **un seul** événement non répété — perte silencieuse, à écrire dans la description de la PR et dans l'issue de suivi.
 - **Jours de semaine multiples** (« lundi + mercredi + vendredi »).
 - **Récurrence annuelle.**
 - **Règles positionnelles** (« le 3ᵉ mardi du mois »).

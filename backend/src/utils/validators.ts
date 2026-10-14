@@ -23,8 +23,8 @@ type Fields = {
   // `null` = demande explicite de retrait (voir EventBody dans ../types.ts).
   recurrence?: RecurrenceRule | null;
   exdates?: string[] | null;
-  recurrenceParentId?: string;
-  recurrenceId?: string;
+  recurrenceParentId?: string | null;
+  recurrenceId?: string | null;
 };
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
@@ -199,8 +199,12 @@ const readFields = (body: unknown, partial: boolean): { errors: string[]; fields
     }
   }
 
+  // `null` retire l'attribut, comme pour recurrence/exdates : c'est ce qui permet
+  // à une occurrence surchargée de redevenir un événement simple.
   for (const field of ["recurrenceParentId", "recurrenceId"] as const) {
-    if (body[field] !== undefined && body[field] !== null) {
+    if (body[field] === null) {
+      fields[field] = null;
+    } else if (body[field] !== undefined) {
       if (typeof body[field] !== "string" || body[field] === "") {
         errors.push(`Le champ "${field}" doit être une chaîne de caractères non vide.`);
       } else {
@@ -212,7 +216,7 @@ const readFields = (body: unknown, partial: boolean): { errors: string[]; fields
   // Un enregistrement est soit une série, soit une occurrence surchargée, jamais
   // les deux : une surcharge porteuse d'une règle se développerait à son tour et
   // doublerait l'affichage de sa propre date (invariant INV-3).
-  if (fields.recurrence != null && fields.recurrenceParentId !== undefined) {
+  if (fields.recurrence != null && fields.recurrenceParentId != null) {
     errors.push('Les champs "recurrence" et "recurrenceParentId" ne peuvent pas être fournis ensemble.');
   }
 

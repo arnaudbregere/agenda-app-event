@@ -111,6 +111,24 @@ occurrences fantômes.
 - **INV-3** — Un enregistrement ne porte jamais à la fois `recurrence` et
   `recurrenceParentId`.
 - **INV-4** — `until` ≥ `start` de la série.
+
+> ⚠️ **Portée réelle de la vérification de INV-3 et INV-4.** La validation ne
+> voit que le **corps** de la requête, jamais l'enregistrement stocké
+> (`requireEvent` charge l'événement pour renvoyer `404` mais ne l'attache pas à
+> la requête). Trois états violant ces invariants sont donc atteignables par un
+> `PUT` partiel :
+>
+> | Requête | État obtenu |
+> |---|---|
+> | `PUT { start, recurrence }` sur un enregistrement stockant `recurrenceParentId` | une surcharge porteuse d'une règle — doublon d'affichage |
+> | `PUT { recurrenceParentId }` sur une série stockée | même état, par l'autre bout |
+> | `PUT { start }` seul sur une série, avec `start > until` stocké | série à zéro occurrence, sans erreur |
+>
+> Les fermer demanderait d'attacher l'événement chargé dans `requireEvent`, donc
+> de modifier un middleware et le typage du routeur typé. Non fait : aucun de ces
+> trois états n'est atteignable par l'interface une fois la user story 2 livrée
+> (les dates d'une série y passent en lecture seule), et le coût dépasse le
+> risque pour un dépôt mono-utilisateur. À rouvrir si l'API devient publique.
 - **INV-5** — Supprimer une série supprime aussi tous les enregistrements dont
   `recurrenceParentId` vaut son identifiant (FR-022).
 - **INV-6** — Retirer `recurrence` d'une série (FR-023) supprime aussi ses
@@ -155,7 +173,7 @@ dates (NFR-001, R-005).
 | `exdates` contenant une date ne correspondant à aucune occurrence | **accepté** (R-006) |
 | `recurrence` **et** `recurrenceParentId` fournis ensemble | `400` — INV-3 |
 | `recurrenceParentId` ou `recurrenceId` non chaîne, ou chaîne vide | `400` |
-| `recurrence: null` ou `exdates: null` | **accepté** — demande de retrait, voir ci-dessous |
+| `recurrence`, `exdates`, `recurrenceParentId` ou `recurrenceId` à `null` | **accepté** — demande de retrait, voir ci-dessous |
 | nombre d'occurrences résultant de la règle | **non vérifié** — le plafond est une borne d'affichage (R-005) |
 
 Format d'erreur inchangé : `{ errors: [...] }`, comme la validation de corps
@@ -168,7 +186,10 @@ n'applique que les attributs **présents** dans le corps, donc rien ne pouvait
 jamais faire disparaître `recurrence`.
 
 Résolution retenue : `null` sur le fil signifie « retirer cet attribut », absent
-signifie « ne pas y toucher ». `putEvent` traduit `null` en `undefined` dans le
+signifie « ne pas y toucher ». La sémantique est **symétrique sur les quatre
+attributs** — sans `recurrenceParentId: null`, une occurrence surchargée ne
+pourrait jamais redevenir un événement simple, et une faute de frappe du client
+passerait inaperçue. `putEvent` traduit `null` en `undefined` dans le
 correctif ; le spread de `updateEvent` écrase la valeur stockée, et
 `JSON.stringify` omet ensuite la clé. **Le fichier ne contient donc jamais
 `null`.** Un seul appel, atomique, et l'identifiant de l'événement est préservé —

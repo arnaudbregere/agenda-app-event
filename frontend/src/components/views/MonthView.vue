@@ -39,13 +39,9 @@ const eventsByDay = computed(() => {
   return map;
 });
 
-function eventsForDay(day: Date): EventOccurrence[] {
-  return eventsByDay.value.get(day.toISOString()) ?? [];
-}
+const eventsForDay = (day: Date): EventOccurrence[] => eventsByDay.value.get(day.toISOString()) ?? [];
 
-function eventTime(event: EventOccurrence) {
-  return event.allDay ? "" : format(new Date(event.start), "HH:mm");
-}
+const eventTime = (event: EventOccurrence) => (event.allDay ? "" : format(new Date(event.start), "HH:mm"));
 
 function goToDay(day: Date) {
   store.setCurrentDate(day);

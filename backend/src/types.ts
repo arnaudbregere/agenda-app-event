@@ -57,8 +57,8 @@ export type EventBody = {
   // persisté, lui, ne contient jamais `null` : l'attribut est simplement absent.
   recurrence?: RecurrenceRule | null;
   exdates?: string[] | null;
-  recurrenceParentId?: string;
-  recurrenceId?: string;
+  recurrenceParentId?: string | null;
+  recurrenceId?: string | null;
 };
 
 // Corps d'une mise à jour (PUT) une fois validé : tout est optionnel, et `null`

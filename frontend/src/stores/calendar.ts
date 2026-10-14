@@ -35,14 +35,18 @@ const byStart = (a: EventOccurrence, b: EventOccurrence): number =>
 // qui cherche toutes dates confondues. C'est un `reduce` sur des attributs
 // stockés (`end`, `recurrence.until`), pas du calcul de récurrence.
 const spanOf = (events: CalendarEvent[]): { from: Date; to: Date } | null => {
-  if (events.length === 0) return null
   let from = Infinity
   let to = -Infinity
   for (const event of events) {
-    from = Math.min(from, new Date(event.start).getTime())
-    to = Math.max(to, new Date(event.recurrence?.until ?? event.end).getTime())
+    const start = new Date(event.start).getTime()
+    const end = new Date(event.recurrence?.until ?? event.end).getTime()
+    // Une seule date non analysable (events.json édité à la main) suffirait à
+    // mettre la borne à NaN, donc à vider la fenêtre et à rendre la recherche
+    // muette pour TOUS les événements. On ignore ces valeurs.
+    if (Number.isFinite(start)) from = Math.min(from, start)
+    if (Number.isFinite(end)) to = Math.max(to, end)
   }
-  return { from: new Date(from), to: new Date(to) }
+  return Number.isFinite(from) && Number.isFinite(to) ? { from: new Date(from), to: new Date(to) } : null
 }
 
 export const useCalendarStore = defineStore("calendar", {

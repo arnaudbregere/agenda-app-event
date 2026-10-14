@@ -243,6 +243,29 @@ describe("useCalendarStore", () => {
       expect(store.searchResults.map((occurrence) => occurrence.seriesId)).toEqual(["2", "1"]);
     });
 
+    // ⚠️ RÉGRESSION : la fenêtre de recherche est bornée par un max sur les
+    // dates stockées. Une seule date non analysable mettait cette borne à NaN,
+    // donc vidait la fenêtre et rendait la recherche muette pour TOUS les
+    // événements. L'ancien getter ignorait les dates et y était immune.
+    it("reste fonctionnelle malgré un événement à la date non analysable", () => {
+      seed();
+      useEventsStore().events = [
+        ...useEventsStore().events,
+        asEvent({ id: "abime", title: "Réunion abîmée", category: "travail", start: "pas-une-date" }),
+      ];
+
+      const store = useCalendarStore();
+      store.searchQuery = "réunion";
+      expect(store.searchResults.map((o) => o.seriesId)).toEqual(["2", "1"]);
+    });
+
+    it("est vide quand aucun événement ne porte de date exploitable", () => {
+      useEventsStore().events = [asEvent({ id: "x", title: "Réunion", start: "nope", end: "nope" })];
+      const store = useCalendarStore();
+      store.searchQuery = "réunion";
+      expect(store.searchResults).toEqual([]);
+    });
+
     // La fenêtre de recherche va jusqu'au `until` des séries existantes : les
     // occurrences hors du mois affiché doivent être trouvées.
     it("trouve les occurrences d'une série au-delà de son ancre", () => {

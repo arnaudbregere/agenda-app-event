@@ -56,13 +56,9 @@ const byDay = computed(() => {
   return map;
 });
 
-function allDayEvents(day: Date): EventOccurrence[] {
-  return byDay.value.get(day.toISOString())?.allDay ?? [];
-}
+const allDayEvents = (day: Date): EventOccurrence[] => byDay.value.get(day.toISOString())?.allDay ?? [];
 
-function timedEventsForDay(day: Date): TimedBlock[] {
-  return byDay.value.get(day.toISOString())?.timed ?? [];
-}
+const timedEventsForDay = (day: Date): TimedBlock[] => byDay.value.get(day.toISOString())?.timed ?? [];
 
 function blockStyle(event: TimedBlock) {
   return {

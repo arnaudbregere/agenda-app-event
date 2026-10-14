@@ -1,5 +1,5 @@
 import { describe, it, expect, afterAll, beforeAll, vi } from "vitest";
-import { format } from "date-fns";
+import { differenceInCalendarDays, format } from "date-fns";
 import { MAX_OCCURRENCES, expandSeries, occurrenceId } from "./useRecurrence.js";
 import { asEventId } from "../test-support/fixtures.js";
 import type { CalendarEvent, RecurrenceRule } from "../api/types.js";
@@ -229,6 +229,68 @@ describe("expandSeries", () => {
     });
   });
 
+  describe("événements journée entière et multi-jours", () => {
+    it("développe une série journée entière en conservant allDay", () => {
+      const event = makeEvent({
+        allDay: true,
+        start: new Date(2026, 9, 19, 0, 0, 0).toISOString(),
+        end: new Date(2026, 9, 19, 23, 59, 59).toISOString(),
+        recurrence: rule({ until: new Date(2026, 10, 9, 23, 59, 59).toISOString() }),
+      });
+
+      const occurrences = expandSeries(event, WIDE);
+      expect(occurrences).toHaveLength(4);
+      expect(occurrences.every((o) => o.allDay)).toBe(true);
+      expect(startsOf(event)).toEqual([
+        "2026-10-19 00:00",
+        "2026-10-26 00:00",
+        "2026-11-02 00:00",
+        "2026-11-09 00:00",
+      ]);
+    });
+
+    // L'étendue se mesure en heure murale, pas en millisecondes : une série qui
+    // traverse le changement d'heure voit sa durée en ms varier d'une heure,
+    // alors que « vendredi 9h -> dimanche 18h » reste vrai. C'est R-003, et
+    // c'est le comportement voulu.
+    it("développe une série multi-jours en conservant son étendue murale", () => {
+      const event = makeEvent({
+        start: new Date(2026, 9, 16, 9, 0).toISOString(),
+        end: new Date(2026, 9, 18, 18, 0).toISOString(),
+        recurrence: rule({ until: new Date(2026, 10, 6, 23, 59, 59).toISOString() }),
+      });
+
+      const occurrences = expandSeries(event, WIDE);
+      expect(occurrences.length).toBeGreaterThan(2);
+
+      for (const occurrence of occurrences) {
+        const start = new Date(occurrence.start);
+        const end = new Date(occurrence.end);
+        expect(start.getHours()).toBe(9);
+        expect(end.getHours()).toBe(18);
+        expect(differenceInCalendarDays(end, start)).toBe(2);
+      }
+    });
+
+    // Une occurrence commencée AVANT la fenêtre mais qui s'y prolonge doit
+    // apparaître : le saut de rang recule d'une durée d'ancre pour cela.
+    it("renvoie une occurrence multi-jours commencée avant la fenêtre", () => {
+      const event = makeEvent({
+        start: new Date(2026, 9, 16, 9, 0).toISOString(),
+        end: new Date(2026, 9, 18, 18, 0).toISOString(),
+        recurrence: rule({ freq: "daily", until: new Date(2027, 5, 1).toISOString() }),
+      });
+
+      // Fenêtre d'un seul jour, bien après l'ancre.
+      const oneDay = { from: new Date(2027, 2, 10), to: new Date(2027, 2, 10, 23, 59, 59) };
+      const occurrences = expandSeries(event, oneDay);
+
+      // Les occurrences du 8, 9 et 10 mars chevauchent le 10 mars.
+      expect(occurrences.length).toBeGreaterThanOrEqual(3);
+      expect(occurrences.every((o) => new Date(o.start) <= oneDay.to)).toBe(true);
+    });
+  });
+
   describe("plafond d'affichage", () => {
     // R-005 : le plafond est une borne de rendu, pas une validation de donnée.
     // Un events.json édité à la main ne doit rien faire planter.
@@ -243,6 +305,51 @@ describe("expandSeries", () => {
 
     it("expose un plafond de 500", () => {
       expect(MAX_OCCURRENCES).toBe(500);
+    });
+
+    // ⚠️ RÉGRESSION : le plafond borne les occurrences DE LA FENÊTRE, pas les
+    // rangs depuis l'ancre. Compté en rangs, une série quotidienne cessait
+    // d'apparaître passé son 500e jour — dans toutes les vues, sans erreur.
+    // Le test précédent utilise la fenêtre WIDE, où rang et compte émis
+    // coïncident : il ne couvrait pas ce cas et donnait l'illusion du contraire.
+    it("reste visible dans une fenêtre située au-delà du 500e rang", () => {
+      const event = makeEvent({
+        start: new Date(2026, 0, 1, 9, 0).toISOString(),
+        end: new Date(2026, 0, 1, 10, 0).toISOString(),
+        recurrence: rule({ freq: "daily", until: new Date(2028, 0, 1).toISOString() }),
+      });
+
+      // Juillet 2027 : environ le rang 546 depuis l'ancre.
+      const july2027 = { from: new Date(2027, 6, 1), to: new Date(2027, 6, 31, 23, 59, 59) };
+      const occurrences = expandSeries(event, july2027);
+
+      expect(occurrences).toHaveLength(31);
+      expect(startsOf(event, july2027)[0]).toBe("2027-07-01 09:00");
+      expect(startsOf(event, july2027).at(-1)).toBe("2027-07-31 09:00");
+    });
+
+    it("n'émet rien pour une fenêtre postérieure à until", () => {
+      const event = makeEvent({ recurrence: rule() });
+      expect(expandSeries(event, { from: new Date(2027, 0, 1), to: new Date(2027, 0, 31) })).toEqual([]);
+    });
+  });
+
+  // Un events.json édité à la main n'est jamais passé par la validation de l'API.
+  describe("dates non analysables", () => {
+    it.each([
+      ["start", { start: "pas-une-date" }],
+      ["end", { end: "pas-une-date" }],
+    ])("renvoie une liste vide quand %s est invalide", (_label, overrides) => {
+      const event = makeEvent({ ...overrides, recurrence: rule() });
+      expect(() => expandSeries(event, WIDE)).not.toThrow();
+      expect(expandSeries(event, WIDE)).toEqual([]);
+    });
+
+    // Sans garde, `start > NaN` est toujours faux : la boucle perdait sa borne
+    // de fin et émettait 500 occurrences fantômes.
+    it("renvoie une liste vide quand until est invalide, sans occurrence fantôme", () => {
+      const event = makeEvent({ recurrence: rule({ until: "pas-une-date" }) });
+      expect(expandSeries(event, WIDE)).toEqual([]);
     });
   });
 

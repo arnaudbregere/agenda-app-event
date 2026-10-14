@@ -63,9 +63,30 @@ conditions de justesse.
 
 4. **Durée préservée.** `end − start` de l'occurrence est égal à celui de l'ancre.
 
-5. **Borne dure.** La boucle s'arrête à `MAX_OCCURRENCES`, en silence : pas
-   d'exception, pas d'avertissement. Un fichier de données édité à la main avec un
-   `until` lointain ne doit rien faire planter ([R-005](../research.md#r-005--où-borner-les-500-occurrences)).
+5. **Borne dure, relative à la fenêtre.** Le plafond borne les occurrences **de
+   la fenêtre demandée**, pas les rangs depuis l'ancre. Le développement saute
+   donc directement au rang qui atteint la fenêtre, en reculant d'une durée
+   d'ancre (pour ne pas perdre une occurrence multi-jours commencée avant
+   `from`) puis d'un intervalle (marge contre l'arrondi des différences
+   calendaires). La boucle s'arrête aussi dès que le départ dépasse `window.to`.
+   Arrêt silencieux : pas d'exception, pas d'avertissement
+   ([R-005](../research.md#r-005--où-borner-les-500-occurrences)).
+
+   ⚠️ Compté en rangs depuis l'ancre, une série quotidienne de plus de 500 jours
+   cesserait d'apparaître passé son 500ᵉ rang, dans **toutes** les vues et en
+   silence. Un test sur une fenêtre large ne voit pas ce défaut, rang et compte
+   émis y coïncidant : le test doit porter sur une fenêtre située au-delà du
+   500ᵉ rang.
+
+8. **Dates non analysables.** Si `start`, `end` ou `until` n'est pas analysable,
+   le développement renvoie une liste vide. Sans cette garde, `start > NaN` est
+   toujours faux : la boucle perd sa borne de fin et émet des occurrences
+   fantômes. Cas réel sur un `events.json` édité à la main, qui ne passe par
+   aucune validation d'API.
+
+9. **Fenêtre supposée ordonnée** (`from <= to`). Une fenêtre inversée produit un
+   résultat non spécifié ; les quatre appelants en construisent toujours des
+   ordonnées.
 
 6. **Exclusions appliquées après calcul.** Une date présente dans `exdates` est
    retirée du résultat. Une exclusion ne correspondant à aucune occurrence n'a

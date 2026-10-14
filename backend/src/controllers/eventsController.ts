@@ -41,8 +41,8 @@ const toCalendarEvent = (body: EventBody, now: string): CalendarEvent => ({
   category: body.category ?? "autre",
   recurrence: body.recurrence ?? undefined,
   exdates: body.exdates ?? undefined,
-  recurrenceParentId: body.recurrenceParentId,
-  recurrenceId: body.recurrenceId,
+  recurrenceParentId: body.recurrenceParentId ?? undefined,
+  recurrenceId: body.recurrenceId ?? undefined,
   createdAt: now,
   updatedAt: now,
 });
@@ -92,8 +92,8 @@ export async function putEvent(req: Request<IdParams, unknown, EventPatchBody>, 
   // ensuite la clé. C'est le chemin de FR-023 (décocher la récurrence).
   if (body.recurrence !== undefined) patch.recurrence = body.recurrence ?? undefined;
   if (body.exdates !== undefined) patch.exdates = body.exdates ?? undefined;
-  if (body.recurrenceParentId !== undefined) patch.recurrenceParentId = body.recurrenceParentId;
-  if (body.recurrenceId !== undefined) patch.recurrenceId = body.recurrenceId;
+  if (body.recurrenceParentId !== undefined) patch.recurrenceParentId = body.recurrenceParentId ?? undefined;
+  if (body.recurrenceId !== undefined) patch.recurrenceId = body.recurrenceId ?? undefined;
 
   const updated = await store.updateEvent(req.params.id, patch);
   if (!updated) {

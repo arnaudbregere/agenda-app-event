@@ -40,10 +40,10 @@ const groups = computed(() => {
   return byDay.sort((a, b) => a.date.getTime() - b.date.getTime());
 });
 
-function eventTime(event: EventOccurrence) {
+const eventTime = (event: EventOccurrence) => {
   if (event.allDay) return "Toute la journée";
   return `${format(new Date(event.start), "HH:mm")} – ${format(new Date(event.end), "HH:mm")}`;
-}
+};
 </script>
 
 <template>

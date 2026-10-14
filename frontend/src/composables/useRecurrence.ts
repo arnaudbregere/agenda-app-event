@@ -1,4 +1,11 @@
-import { addDays, addMonths, addWeeks } from "date-fns"
+import {
+  addDays,
+  addMonths,
+  addWeeks,
+  differenceInCalendarDays,
+  differenceInCalendarMonths,
+  subDays,
+} from "date-fns"
 import type {
   CalendarEvent,
   EventId,
@@ -50,6 +57,15 @@ const toOccurrence = (event: CalendarEvent, start: Date, end: Date): EventOccurr
   }
 }
 
+// Rang approximatif atteint par une date depuis l'ancre, dans l'unité de la
+// fréquence. Sert à sauter directement au début de la fenêtre ; la marge de
+// sécurité est prise par l'appelant, pas ici.
+const RANK_REACHED: Record<RecurrenceFreq, (later: Date, earlier: Date) => number> = {
+  daily: differenceInCalendarDays,
+  weekly: (later, earlier) => Math.floor(differenceInCalendarDays(later, earlier) / 7),
+  monthly: differenceInCalendarMonths,
+}
+
 const intersects = (start: Date, end: Date, window: OccurrenceWindow): boolean =>
   start.getTime() <= window.to.getTime() && end.getTime() >= window.from.getTime()
 
@@ -69,6 +85,10 @@ const intersects = (start: Date, end: Date, window: OccurrenceWindow): boolean =
 export const expandSeries = (event: CalendarEvent, window: OccurrenceWindow): EventOccurrence[] => {
   const anchorStart = new Date(event.start)
   const anchorEnd = new Date(event.end)
+  // Un events.json édité à la main peut porter des dates non analysables. Sans
+  // cette garde, `start > NaN` est toujours faux : la boucle perd sa borne de
+  // fin et émet des occurrences fantômes.
+  if (isNaN(anchorStart.getTime()) || isNaN(anchorEnd.getTime())) return []
 
   if (!event.recurrence) {
     return intersects(anchorStart, anchorEnd, window) ? [toOccurrence(event, anchorStart, anchorEnd)] : []
@@ -77,18 +97,34 @@ export const expandSeries = (event: CalendarEvent, window: OccurrenceWindow): Ev
   const { freq, interval, until } = event.recurrence
   const shift = SHIFT[freq]
   const untilTime = new Date(until).getTime()
+  if (isNaN(untilTime)) return []
   // Comparaison par instant et non par chaîne : deux écritures ISO du même
   // instant ("…:00.000Z" et "…:00Z") doivent exclure la même occurrence.
   const excluded = new Set((event.exdates ?? []).map((date) => new Date(date).getTime()))
 
+  // Le plafond borne les occurrences **de la fenêtre**, pas les rangs depuis
+  // l'ancre. Compté en rangs, une série quotidienne de plus de 500 jours
+  // cesserait d'apparaître passé son 500e rang, dans toutes les vues et en
+  // silence. On saute donc au rang qui atteint la fenêtre.
+  //
+  // Deux reculs avant ce saut : la durée de l'ancre, pour ne pas perdre une
+  // occurrence multi-jours commencée avant `window.from` ; puis un intervalle,
+  // comme marge contre l'arrondi des différences calendaires (l'écrêtage
+  // mensuel notamment).
+  const spanDays = Math.max(0, differenceInCalendarDays(anchorEnd, anchorStart))
+  const reached = RANK_REACHED[freq](subDays(window.from, spanDays), anchorStart)
+  const firstRank = Math.max(0, Math.floor(reached / interval) - 1)
+
   const occurrences: EventOccurrence[] = []
-  for (let rank = 0; rank < MAX_OCCURRENCES; rank++) {
+  for (let rank = firstRank; rank < firstRank + MAX_OCCURRENCES; rank++) {
     // Toujours depuis l'ancre, JAMAIS depuis l'occurrence précédente. L'écrêtage
     // mensuel est absorbant en cascade : une série ancrée au 31 donnerait
     // 31 | 28 | 28 | 28 au lieu de 31 | 28 | 31 | 30, et le défaut n'apparaîtrait
     // qu'à la troisième occurrence (R-002).
     const start = shift(anchorStart, rank * interval)
     if (start.getTime() > untilTime) break
+    // Les rangs croissent : passé la fenêtre, plus rien ne peut l'intersecter.
+    if (start.getTime() > window.to.getTime()) break
     if (excluded.has(start.getTime())) continue
 
     // Même décalage appliqué à la fin qu'au début : la durée est préservée, et
