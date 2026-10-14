@@ -45,6 +45,26 @@ describe("eventOccursOnDay", () => {
     const event = { start: "2026-08-29T09:00:00.000Z", end: "2026-08-29T10:00:00.000Z" };
     expect(eventOccursOnDay(event, day)).toBe(false);
   });
+
+  // Défaut du formulaire de création : 23:00 → 00:00. Sans cette borne stricte
+  // l'événement le plus banal de l'app s'affiche sur deux jours dans les 4 vues.
+  it("faux le lendemain quand l'événement se termine exactement à minuit", () => {
+    const event = {
+      start: new Date(2026, 7, 28, 23, 0).toISOString(),
+      end: new Date(2026, 7, 29, 0, 0).toISOString(),
+    };
+    expect(eventOccursOnDay(event, new Date(2026, 7, 29))).toBe(false);
+    expect(eventOccursOnDay(event, new Date(2026, 7, 28))).toBe(true);
+  });
+
+  // `end === start` est accepté par le backend (validators.ts : « postérieur ou
+  // égal »). À minuit pile, la borne stricte seule le rendrait invisible partout.
+  it("vrai pour un événement de durée nulle à minuit, le jour qui le contient", () => {
+    const midnight = new Date(2026, 7, 29, 0, 0).toISOString();
+    const event = { start: midnight, end: midnight };
+    expect(eventOccursOnDay(event, new Date(2026, 7, 29))).toBe(true);
+    expect(eventOccursOnDay(event, new Date(2026, 7, 28))).toBe(false);
+  });
 });
 
 describe("isToday", () => {

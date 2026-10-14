@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { computed } from "vue";
-import { startOfMonth, endOfMonth, isWithinInterval, format, isSameDay } from "date-fns";
+import { startOfMonth, endOfMonth, eachDayOfInterval, startOfDay, endOfDay, max, min, format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { useCalendarStore } from "../../stores/calendar.js";
 import { useEventsStore } from "../../stores/events.js";
-import { isToday } from "../../composables/useCalendarGrid.js";
+import { eventOccursOnDay, isToday } from "../../composables/useCalendarGrid.js";
 import type { EventOccurrence } from "../../api/types.js";
 
 interface DayGroup {
@@ -19,30 +19,30 @@ const groups = computed(() => {
   const monthStart = startOfMonth(store.currentDate);
   const monthEnd = endOfMonth(store.currentDate);
 
-  // Un seul appel pour tout le mois affiché (research.md, R-004). Le filtre
-  // isWithinInterval reste nécessaire : occurrencesIn renvoie aussi les
-  // occurrences qui débordent sur le mois sans y commencer.
-  const inMonth = store
-    .occurrencesIn(monthStart, monthEnd)
-    .filter((e) => isWithinInterval(new Date(e.start), { start: monthStart, end: monthEnd }))
-    .sort((a, b) => Number(b.allDay) - Number(a.allDay) || new Date(a.start).getTime() - new Date(b.start).getTime());
+  // Un seul appel pour tout le mois affiché (research.md, R-004).
+  const occurrences = store.occurrencesIn(monthStart, monthEnd);
 
-  const byDay: DayGroup[] = [];
-  for (const event of inMonth) {
-    const eventDate = new Date(event.start);
-    let group = byDay.find((g) => isSameDay(g.date, eventDate));
-    if (!group) {
-      group = { date: eventDate, events: [] };
-      byDay.push(group);
-    }
-    group.events.push(event);
-  }
-  return byDay.sort((a, b) => a.date.getTime() - b.date.getTime());
+  // Même prédicat de chevauchement que la vue Mois : un événement qui couvre
+  // plusieurs jours apparaît sur chacun d'eux, pas seulement sur celui où il
+  // commence. Grouper sur `start` seul faisait diverger Liste et Mois.
+  const byDay: DayGroup[] = eachDayOfInterval({ start: monthStart, end: monthEnd }).map((date) => ({
+    date,
+    events: occurrences
+      .filter((e) => eventOccursOnDay(e, date))
+      .sort((a, b) => Number(b.allDay) - Number(a.allDay) || new Date(a.start).getTime() - new Date(b.start).getTime()),
+  }));
+  return byDay.filter((group) => group.events.length > 0);
 });
 
-const eventTime = (event: EventOccurrence) => {
+// Les heures sont bornées au jour du groupe. Un événement qui couvre plusieurs
+// jours apparaît sur chacun d'eux : afficher ses start/end absolus y
+// annoncerait un horaire faux (« 09:00 – 17:00 » un jour qu'il occupe en
+// entier). Chaque ligne montre donc la portion réellement occupée ce jour-là.
+const eventTime = (event: EventOccurrence, day: Date) => {
   if (event.allDay) return "Toute la journée";
-  return `${format(new Date(event.start), "HH:mm")} – ${format(new Date(event.end), "HH:mm")}`;
+  const from = max([new Date(event.start), startOfDay(day)]);
+  const to = min([new Date(event.end), endOfDay(day)]);
+  return `${format(from, "HH:mm")} – ${format(to, "HH:mm")}`;
 };
 </script>
 
@@ -62,7 +62,7 @@ const eventTime = (event: EventOccurrence) => {
           class="c-agenda-item"
           @click="store.openEditModal(event)"
         >
-          <span class="c-agenda-item__time">{{ eventTime(event) }}</span>
+          <span class="c-agenda-item__time">{{ eventTime(event, group.date) }}</span>
           <span
             class="c-dot"
             :style="{ '--dot-color': eventsStore.categoryColor(event.category) }"

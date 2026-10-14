@@ -6,6 +6,8 @@ import {
   eachDayOfInterval,
   addDays,
   isSameDay,
+  startOfDay,
+  endOfDay,
 } from "date-fns"
 import type { CalendarEvent } from "../api/types.js"
 
@@ -33,15 +35,23 @@ export function getWeekDays(date: Date): Date[] {
   return Array.from({ length: 7 }, (_, i) => addDays(start, i))
 }
 
-/** Un événement (start/end en ISO) touche-t-il ce jour ? */
+/**
+ * Un événement (start/end en ISO) touche-t-il ce jour ?
+ *
+ * Un événement qui se termine exactement à minuit ne touche PAS le jour
+ * suivant : il n'y occupe aucune durée. Le cas n'est pas théorique, c'est le
+ * défaut du formulaire de création (23:00 → 00:00), qui apparaîtrait sinon sur
+ * deux jours dans toutes les vues.
+ *
+ * `start >= dayStart` garde les événements de durée nulle (`end === start`,
+ * accepté par le backend) visibles le jour qui les contient, minuit compris.
+ */
 export function eventOccursOnDay(event: Pick<CalendarEvent, "start" | "end">, day: Date): boolean {
   const start = new Date(event.start)
   const end = new Date(event.end)
-  const dayStart = new Date(day)
-  dayStart.setHours(0, 0, 0, 0)
-  const dayEnd = new Date(day)
-  dayEnd.setHours(23, 59, 59, 999)
-  return start <= dayEnd && end >= dayStart
+  const dayStart = startOfDay(day)
+  const dayEnd = endOfDay(day)
+  return start <= dayEnd && (end > dayStart || start >= dayStart)
 }
 
 export function isToday(day: Date): boolean {
