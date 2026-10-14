@@ -1,19 +1,19 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref } from "vue";
-import { format } from "date-fns";
+import { endOfDay, format, startOfDay } from "date-fns";
 import { fr } from "date-fns/locale";
 import { useCalendarStore } from "../../stores/calendar.js";
 import { useEventsStore } from "../../stores/events.js";
 import { HOURS, eventOccursOnDay, isToday } from "../../composables/useCalendarGrid.js";
 import { layoutTimedEvents, toDayMinutes, type DayMinutes, type LayoutBox } from "../../composables/useEventLayout.js";
-import type { CalendarEvent } from "../../api/types.js";
+import type { EventOccurrence } from "../../api/types.js";
 
-type TimedBlock = CalendarEvent & DayMinutes & LayoutBox
+type TimedBlock = EventOccurrence & DayMinutes & LayoutBox
 
 // Doit rester synchronisé avec --hour-row-height dans settings/_spacing.css
 const HOUR_ROW_HEIGHT = 48;
 
-defineProps<{ days: Date[] }>();
+const props = defineProps<{ days: Date[] }>();
 
 const store = useCalendarStore();
 const eventsStore = useEventsStore();
@@ -29,16 +29,36 @@ onUnmounted(() => {
   if (timer) clearInterval(timer);
 });
 
-function allDayEvents(day: Date) {
-  return store.filteredEvents.filter((e) => e.allDay && eventOccursOnDay(e, day));
-}
+// Un seul appel à occurrencesIn pour toute la grille, partitionné ensuite par
+// jour. Le template interroge deux listes par jour (bandeau journée entière et
+// blocs horaires) : sans cette fusion, une semaine développerait toutes les
+// séries 14 fois par rendu, un getter Pinia paramétré n'étant pas mémoïsé
+// (research.md, R-004).
+const byDay = computed(() => {
+  const map = new Map<string, { allDay: EventOccurrence[]; timed: TimedBlock[] }>();
+  if (!props.days.length) return map;
 
-function timedEventsForDay(day: Date): TimedBlock[] {
-  const raw = store.filteredEvents
-    .filter((e) => !e.allDay && eventOccursOnDay(e, day))
-    .map((e) => ({ ...e, ...toDayMinutes(e, day) }));
-  return layoutTimedEvents(raw);
-}
+  const occurrences = store.occurrencesIn(
+    startOfDay(props.days[0]),
+    endOfDay(props.days[props.days.length - 1]),
+  );
+
+  for (const day of props.days) {
+    map.set(day.toISOString(), {
+      allDay: occurrences.filter((e) => e.allDay && eventOccursOnDay(e, day)),
+      timed: layoutTimedEvents(
+        occurrences
+          .filter((e) => !e.allDay && eventOccursOnDay(e, day))
+          .map((e) => ({ ...e, ...toDayMinutes(e, day) })),
+      ),
+    });
+  }
+  return map;
+});
+
+const allDayEvents = (day: Date): EventOccurrence[] => byDay.value.get(day.toISOString())?.allDay ?? [];
+
+const timedEventsForDay = (day: Date): TimedBlock[] => byDay.value.get(day.toISOString())?.timed ?? [];
 
 function blockStyle(event: TimedBlock) {
   return {

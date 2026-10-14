@@ -1,12 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { setActivePinia, createPinia } from "pinia";
-import type { CalendarEvent, Category, CategoryId } from "../api/types.js";
-
+import type { CategoryId } from "../api/types.js";
 // Fixtures volontairement partielles : ces tests exercent la mécanique du
 // store (stockage / lecture tel quel), pas la conformité au schéma complet.
-const asEvent = (value: object) => value as CalendarEvent;
-const asEvents = (value: object[]) => value as CalendarEvent[];
-const asCategories = (value: object[]) => value as Category[];
+import { asCategories, asEvent, asEventId, asEvents } from "../test-support/fixtures.js";
 
 vi.mock("../api/events.js", () => ({
   eventsApi: {
@@ -87,7 +84,7 @@ describe("useEventsStore", () => {
       const updated = asEvent({ id: "1", title: "Nouveau" });
       vi.mocked(eventsApi.update).mockResolvedValue(updated);
 
-      await store.updateEvent("1", { title: "Nouveau" });
+      await store.updateEvent(asEventId("1"), { title: "Nouveau" });
 
       expect(store.events).toEqual([updated]);
     });
@@ -97,7 +94,7 @@ describe("useEventsStore", () => {
       store.events = asEvents([{ id: "1", title: "Ancien" }]);
       vi.mocked(eventsApi.update).mockResolvedValue(asEvent({ id: "autre", title: "X" }));
 
-      await store.updateEvent("autre", { title: "X" });
+      await store.updateEvent(asEventId("autre"), { title: "X" });
 
       expect(store.events).toEqual(asEvents([{ id: "1", title: "Ancien" }]));
     });
@@ -109,7 +106,7 @@ describe("useEventsStore", () => {
       store.events = asEvents([{ id: "1" }, { id: "2" }]);
       vi.mocked(eventsApi.remove).mockResolvedValue(undefined);
 
-      await store.deleteEvent("1");
+      await store.deleteEvent(asEventId("1"));
 
       expect(store.events).toEqual(asEvents([{ id: "2" }]));
     });

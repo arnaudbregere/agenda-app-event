@@ -1,7 +1,7 @@
 import type { Request, Response } from "express";
 import { v4 as uuidv4 } from "uuid";
 import * as store from "../services/eventsStore.js";
-import type { CalendarEvent, EventBody, EventPatch } from "../types.js";
+import type { CalendarEvent, EventBody, EventPatch, EventPatchBody } from "../types.js";
 import type { IcsEvent } from "../utils/ical.js";
 import type { CategoryQuery } from "../utils/validators.js";
 import { eventsToIcs } from "../utils/ical.js";
@@ -27,6 +27,9 @@ export async function getEventById(req: Request<IdParams, unknown, unknown>, res
 }
 
 // Corps validé -> événement persisté (id et horodatage générés ici).
+// `null` (demande de retrait) et `undefined` (attribut absent) donnent le même
+// résultat ici : l'attribut n'est pas écrit. JSON.stringify omet les clés à
+// `undefined`, donc le fichier reste exempt de `null`.
 const toCalendarEvent = (body: EventBody, now: string): CalendarEvent => ({
   id: uuidv4(),
   title: body.title.trim(),
@@ -36,6 +39,10 @@ const toCalendarEvent = (body: EventBody, now: string): CalendarEvent => ({
   end: body.end,
   allDay: body.allDay ?? false,
   category: body.category ?? "autre",
+  recurrence: body.recurrence ?? undefined,
+  exdates: body.exdates ?? undefined,
+  recurrenceParentId: body.recurrenceParentId ?? undefined,
+  recurrenceId: body.recurrenceId ?? undefined,
   createdAt: now,
   updatedAt: now,
 });
@@ -68,7 +75,7 @@ export async function importEvents(req: Request<{}, unknown, IcsEvent[]>, res: R
 }
 
 // Précédé par requireEvent (404) puis withBody (validation) dans routes/events.ts.
-export async function putEvent(req: Request<IdParams, unknown, EventPatch>, res: Response<unknown>): Promise<void> {
+export async function putEvent(req: Request<IdParams, unknown, EventPatchBody>, res: Response<unknown>): Promise<void> {
   // Seuls les champs présents dans le corps sont mis à jour : une clé à
   // `undefined` écraserait la valeur existante dans updateEvent (spread).
   const body = req.body;
@@ -80,6 +87,13 @@ export async function putEvent(req: Request<IdParams, unknown, EventPatch>, res:
   if (body.end !== undefined) patch.end = body.end.trim();
   if (body.allDay !== undefined) patch.allDay = body.allDay;
   if (body.category !== undefined) patch.category = body.category;
+  // `null` demande le retrait : le poser à `undefined` dans le correctif suffit,
+  // le spread de updateEvent écrase la valeur stockée et JSON.stringify omet
+  // ensuite la clé. C'est le chemin de FR-023 (décocher la récurrence).
+  if (body.recurrence !== undefined) patch.recurrence = body.recurrence ?? undefined;
+  if (body.exdates !== undefined) patch.exdates = body.exdates ?? undefined;
+  if (body.recurrenceParentId !== undefined) patch.recurrenceParentId = body.recurrenceParentId ?? undefined;
+  if (body.recurrenceId !== undefined) patch.recurrenceId = body.recurrenceId ?? undefined;
 
   const updated = await store.updateEvent(req.params.id, patch);
   if (!updated) {

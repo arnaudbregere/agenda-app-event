@@ -322,3 +322,139 @@ describe("export / import iCal (routes events)", () => {
     });
   });
 });
+
+describe("récurrence (cycle HTTP complet)", () => {
+  const series = {
+    title: "Réunion équipe",
+    start: "2026-10-19T07:00:00.000Z",
+    end: "2026-10-19T08:00:00.000Z",
+    allDay: false,
+    category: "travail",
+    recurrence: { freq: "weekly", interval: 1, until: "2026-11-30T22:59:59.000Z" },
+  };
+
+  const stored = (): unknown[] => JSON.parse(fsState.content ?? "[]");
+
+  it("crée une série et la relit avec sa règle", async () => {
+    const created = await request(app).post("/api/events").send(series);
+    expect(created.status).toBe(201);
+    expect(created.body.recurrence).toEqual(series.recurrence);
+
+    const read = await request(app).get(`/api/events/${created.body.id}`);
+    expect(read.status).toBe(200);
+    expect(read.body.recurrence).toEqual(series.recurrence);
+  });
+
+  // FR-006 : les occurrences ne sont jamais matérialisées. Une série de 7
+  // occurrences doit rester UNE seule entrée dans le fichier.
+  it("ne persiste qu'une seule entrée pour toute la série", async () => {
+    await request(app).post("/api/events").send(series);
+    expect(stored()).toHaveLength(1);
+  });
+
+  it("n'écrit aucune clé de récurrence pour un événement simple", async () => {
+    const res = await request(app).post("/api/events").send({
+      title: "Dentiste",
+      start: series.start,
+      end: series.end,
+    });
+    expect(res.status).toBe(201);
+    const raw = fsState.content ?? "";
+    expect(raw).not.toContain("recurrence");
+    expect(raw).not.toContain("exdates");
+  });
+
+  it("ajoute des exdates par PUT, sans route dédiée", async () => {
+    const created = await request(app).post("/api/events").send(series);
+    const res = await request(app)
+      .put(`/api/events/${created.body.id}`)
+      .send({ start: series.start, exdates: ["2026-11-02T08:00:00.000Z"] });
+
+    expect(res.status).toBe(200);
+    expect(res.body.exdates).toEqual(["2026-11-02T08:00:00.000Z"]);
+    expect(res.body.recurrence).toEqual(series.recurrence);
+    expect(stored()).toHaveLength(1);
+  });
+
+  it("remplace les exdates au lieu de les fusionner", async () => {
+    const created = await request(app).post("/api/events").send(series);
+    await request(app)
+      .put(`/api/events/${created.body.id}`)
+      .send({ start: series.start, exdates: ["2026-11-02T08:00:00.000Z"] });
+    const res = await request(app)
+      .put(`/api/events/${created.body.id}`)
+      .send({ start: series.start, exdates: ["2026-11-09T08:00:00.000Z"] });
+
+    expect(res.body.exdates).toEqual(["2026-11-09T08:00:00.000Z"]);
+  });
+
+  // FR-023 : décocher « Événement récurrent ». Le fichier ne doit pas garder
+  // de clé à null, l'attribut disparaît.
+  it("retire la récurrence quand recurrence vaut null", async () => {
+    const created = await request(app).post("/api/events").send(series);
+    const res = await request(app)
+      .put(`/api/events/${created.body.id}`)
+      .send({ recurrence: null, exdates: null });
+
+    expect(res.status).toBe(200);
+    expect(res.body.recurrence).toBeUndefined();
+    expect(fsState.content ?? "").not.toContain("recurrence");
+    expect(res.body.title).toBe(series.title);
+    expect(res.body.start).toBe(series.start);
+  });
+
+  it("conserve la règle lors d'une mise à jour qui ne la mentionne pas", async () => {
+    const created = await request(app).post("/api/events").send(series);
+    const res = await request(app).put(`/api/events/${created.body.id}`).send({ title: "Nouveau titre" });
+
+    expect(res.body.title).toBe("Nouveau titre");
+    expect(res.body.recurrence).toEqual(series.recurrence);
+  });
+
+  it("crée une occurrence surchargée rattachée à sa série", async () => {
+    const parent = await request(app).post("/api/events").send(series);
+    const res = await request(app).post("/api/events").send({
+      title: series.title,
+      start: "2026-11-09T13:00:00.000Z",
+      end: "2026-11-09T14:00:00.000Z",
+      recurrenceParentId: parent.body.id,
+      recurrenceId: "2026-11-09T08:00:00.000Z",
+    });
+
+    expect(res.status).toBe(201);
+    expect(res.body.recurrenceParentId).toBe(parent.body.id);
+    expect(res.body.recurrence).toBeUndefined();
+    expect(stored()).toHaveLength(2);
+  });
+
+  it("filtre par catégorie en traitant la série comme un seul événement", async () => {
+    await request(app).post("/api/events").send(series);
+    const res = await request(app).get("/api/events?category=travail");
+    expect(res.body).toHaveLength(1);
+    expect(res.body[0].recurrence).toEqual(series.recurrence);
+  });
+
+  it.each([
+    ["une fréquence inconnue", { ...series, recurrence: { ...series.recurrence, freq: "yearly" } }],
+    ["un interval de 0", { ...series, recurrence: { ...series.recurrence, interval: 0 } }],
+    ["un interval de 100", { ...series, recurrence: { ...series.recurrence, interval: 100 } }],
+    ["un until absent", { ...series, recurrence: { freq: "weekly", interval: 1 } }],
+    ["un until antérieur à start", { ...series, recurrence: { ...series.recurrence, until: "2026-01-01T00:00:00.000Z" } }],
+    ["des exdates non ISO", { ...series, exdates: ["pas-une-date"] }],
+  ])("refuse %s avec 400 et errors[]", async (_label, body) => {
+    const res = await request(app).post("/api/events").send(body);
+    expect(res.status).toBe(400);
+    expect(Array.isArray(res.body.errors)).toBe(true);
+    expect(stored()).toHaveLength(0);
+  });
+
+  it("refuse un PUT portant recurrence sans start", async () => {
+    const created = await request(app).post("/api/events").send(series);
+    const res = await request(app)
+      .put(`/api/events/${created.body.id}`)
+      .send({ recurrence: { freq: "daily", interval: 1, until: "2026-12-31T22:59:59.000Z" } });
+
+    expect(res.status).toBe(400);
+    expect(res.body.errors).toContainEqual(expect.stringContaining("start"));
+  });
+});

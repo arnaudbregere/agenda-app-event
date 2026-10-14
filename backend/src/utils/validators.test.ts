@@ -181,6 +181,201 @@ describe("validateEvent", () => {
   });
 });
 
+describe("récurrence (recurrence, exdates, surcharges)", () => {
+  const weekly = { freq: "weekly", interval: 1, until: "2026-11-30T22:59:59.000Z" };
+
+  describe("recurrence", () => {
+    it("accepte un payload sans recurrence : événement simple", () => {
+      expect(errorsOf(validPayload)).toEqual([]);
+      expect(parseEventBody(validPayload)).toEqual({ ok: true, value: validPayload });
+    });
+
+    it("accepte une règle valide et la renvoie typée", () => {
+      const result = parseEventBody({ ...validPayload, recurrence: weekly });
+      expect(result.ok).toBe(true);
+      expect(result.ok ? result.value.recurrence : null).toEqual(weekly);
+    });
+
+    it.each([
+      ["une chaîne", "weekly"],
+      ["un tableau", [weekly]],
+      ["un nombre", 1],
+    ])("refuse une recurrence qui est %s", (_label, value) => {
+      expect(errorsOf({ ...validPayload, recurrence: value })).toContainEqual(
+        'Le champ "recurrence" doit être un objet.'
+      );
+    });
+
+    it.each(["daily", "weekly", "monthly"] as const)("accepte la fréquence %s", (freq) => {
+      expect(errorsOf({ ...validPayload, recurrence: { ...weekly, freq } })).toEqual([]);
+    });
+
+    it.each([
+      ["une valeur inconnue", "yearly"],
+      ["une casse différente", "Weekly"],
+      ["une chaîne vide", ""],
+      ["une valeur absente", undefined],
+    ])("refuse une fréquence qui est %s, avec un message listant les valeurs admises", (_label, freq) => {
+      const errors = errorsOf({ ...validPayload, recurrence: { ...weekly, freq } });
+      expect(errors).toContainEqual(expect.stringContaining("daily, weekly, monthly"));
+    });
+
+    it.each([1, 2, 7, 99])("accepte un interval de %i", (interval) => {
+      expect(errorsOf({ ...validPayload, recurrence: { ...weekly, interval } })).toEqual([]);
+    });
+
+    it.each([
+      ["0", 0],
+      ["négatif", -1],
+      ["au-delà du maximum", 100],
+    ])("refuse un interval %s", (_label, interval) => {
+      expect(errorsOf({ ...validPayload, recurrence: { ...weekly, interval } })).toContainEqual(
+        'Le champ "recurrence.interval" doit être compris entre 1 et 99.'
+      );
+    });
+
+    it.each([
+      ["non entier", 1.5],
+      ["une chaîne", "1"],
+      ["absent", undefined],
+    ])("refuse un interval %s", (_label, interval) => {
+      expect(errorsOf({ ...validPayload, recurrence: { ...weekly, interval } })).toContainEqual(
+        'Le champ "recurrence.interval" doit être un entier.'
+      );
+    });
+
+    it.each([
+      ["absent", undefined],
+      ["null", null],
+      ["une chaîne vide", ""],
+    ])("refuse un until %s : pas de série sans fin", (_label, until) => {
+      expect(errorsOf({ ...validPayload, recurrence: { ...weekly, until } })).toContainEqual(
+        'Le champ "recurrence.until" est requis.'
+      );
+    });
+
+    it("refuse un until qui n'est pas une date ISO", () => {
+      expect(errorsOf({ ...validPayload, recurrence: { ...weekly, until: "pas-une-date" } })).toContainEqual(
+        'Le champ "recurrence.until" doit être une date ISO valide.'
+      );
+    });
+
+    it("refuse un until antérieur à start", () => {
+      expect(
+        errorsOf({ ...validPayload, recurrence: { ...weekly, until: "2026-08-01T00:00:00.000Z" } })
+      ).toContainEqual('Le champ "recurrence.until" doit être postérieur ou égal à "start".');
+    });
+
+    it("accepte un until égal à start : série d'une seule occurrence", () => {
+      expect(errorsOf({ ...validPayload, recurrence: { ...weekly, until: validPayload.start } })).toEqual([]);
+    });
+
+    // requireEvent ne met pas l'événement chargé à disposition de la validation :
+    // sans start dans le même corps, until >= start serait invérifiable.
+    it("refuse une mise à jour portant recurrence sans start", () => {
+      expect(errorsOf({ recurrence: weekly }, { partial: true })).toContainEqual(
+        'Le champ "start" est requis lorsque "recurrence" est fourni.'
+      );
+    });
+
+    it("accepte une mise à jour portant recurrence avec start", () => {
+      expect(errorsOf({ start: validPayload.start, recurrence: weekly }, { partial: true })).toEqual([]);
+    });
+
+    it("traite recurrence: null comme une demande de retrait, sans erreur", () => {
+      expect(parseEventPatch({ recurrence: null })).toEqual({ ok: true, value: { recurrence: null } });
+    });
+  });
+
+  describe("exdates", () => {
+    it("accepte un tableau de dates ISO", () => {
+      const exdates = ["2026-11-02T08:00:00.000Z", "2026-11-09T08:00:00.000Z"];
+      const result = parseEventBody({ ...validPayload, exdates });
+      expect(result.ok ? result.value.exdates : null).toEqual(exdates);
+    });
+
+    it("accepte un tableau vide", () => {
+      expect(errorsOf({ ...validPayload, exdates: [] })).toEqual([]);
+    });
+
+    // Vérifier la correspondance exigerait de développer la série ici, donc de
+    // dupliquer le calcul de dates du frontend (research.md, R-006).
+    it("accepte une exdate qui ne correspond à aucune occurrence réelle", () => {
+      expect(errorsOf({ ...validPayload, exdates: ["2030-01-01T00:00:00.000Z"] })).toEqual([]);
+    });
+
+    it.each([
+      ["une chaîne", "2026-11-02T08:00:00.000Z"],
+      ["un objet", { date: "2026-11-02T08:00:00.000Z" }],
+    ])("refuse des exdates qui sont %s", (_label, value) => {
+      expect(errorsOf({ ...validPayload, exdates: value })).toContainEqual(
+        'Le champ "exdates" doit être un tableau de dates ISO.'
+      );
+    });
+
+    it.each([
+      ["une date invalide", ["pas-une-date"]],
+      ["un nombre", [1234567890]],
+      ["null", [null]],
+    ])("refuse un tableau contenant %s", (_label, value) => {
+      expect(errorsOf({ ...validPayload, exdates: value })).toContainEqual(
+        'Le champ "exdates" ne doit contenir que des dates ISO valides.'
+      );
+    });
+
+    it("traite exdates: null comme une demande de retrait, sans erreur", () => {
+      expect(parseEventPatch({ exdates: null })).toEqual({ ok: true, value: { exdates: null } });
+    });
+  });
+
+  describe("occurrence surchargée", () => {
+    const override = {
+      ...validPayload,
+      recurrenceParentId: "a1",
+      recurrenceId: "2026-11-09T08:00:00.000Z",
+    };
+
+    it("accepte un rattachement valide", () => {
+      const result = parseEventBody(override);
+      expect(result.ok).toBe(true);
+      expect(result.ok ? result.value.recurrenceParentId : null).toBe("a1");
+    });
+
+    it.each(["recurrenceParentId", "recurrenceId"] as const)("refuse un %s vide", (field) => {
+      expect(errorsOf({ ...override, [field]: "" })).toContainEqual(
+        `Le champ "${field}" doit être une chaîne de caractères non vide.`
+      );
+    });
+
+    it.each(["recurrenceParentId", "recurrenceId"] as const)("refuse un %s qui n'est pas une chaîne", (field) => {
+      expect(errorsOf({ ...override, [field]: 42 })).toContainEqual(
+        `Le champ "${field}" doit être une chaîne de caractères non vide.`
+      );
+    });
+
+    // INV-3 : une surcharge porteuse d'une règle se développerait à son tour et
+    // doublerait l'affichage de sa propre date.
+    it("refuse recurrence et recurrenceParentId fournis ensemble", () => {
+      expect(errorsOf({ ...override, recurrence: weekly })).toContainEqual(
+        'Les champs "recurrence" et "recurrenceParentId" ne peuvent pas être fournis ensemble.'
+      );
+    });
+
+    it("accepte recurrence: null avec recurrenceParentId", () => {
+      expect(errorsOf({ ...override, recurrence: null })).toEqual([]);
+    });
+
+    // Sémantique de `null` symétrique sur les quatre attributs : c'est ce qui
+    // permet à une occurrence surchargée de redevenir un événement simple.
+    it.each(["recurrenceParentId", "recurrenceId"] as const)(
+      "traite %s: null comme une demande de retrait",
+      (field) => {
+        expect(parseEventPatch({ [field]: null })).toEqual({ ok: true, value: { [field]: null } });
+      },
+    );
+  });
+});
+
 describe("parseCategoryQuery (filtre GET /api/events)", () => {
   it("renvoie {} sans paramètre category", () => {
     expect(parseCategoryQuery({})).toEqual({ ok: true, value: {} });

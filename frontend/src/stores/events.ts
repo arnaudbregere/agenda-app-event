@@ -1,6 +1,6 @@
 import { defineStore } from "pinia"
 import { eventsApi, categoriesApi } from "../api/events.js"
-import type { CalendarEvent, Category, CategoryId, EventInput, EventPatch } from "../api/types.js"
+import type { CalendarEvent, Category, CategoryId, EventId, EventInput, EventPatch } from "../api/types.js"
 
 export const useEventsStore = defineStore("events", {
   state: () => ({
@@ -36,7 +36,9 @@ export const useEventsStore = defineStore("events", {
       return created
     },
 
-    async updateEvent(id: string, patch: EventPatch) {
+    // `id` est l'identifiant d'un événement STOCKÉ : pour une occurrence, c'est
+    // celui de sa série (occurrence.seriesId), jamais occurrence.id (NFR-009).
+    async updateEvent(id: EventId, patch: EventPatch) {
       const updated = await eventsApi.update(id, patch)
       const index = this.events.findIndex((e) => e.id === id)
       if (index !== -1) this.events[index] = updated
@@ -50,7 +52,7 @@ export const useEventsStore = defineStore("events", {
       return result
     },
 
-    async deleteEvent(id: string) {
+    async deleteEvent(id: EventId) {
       await eventsApi.remove(id)
       this.events = this.events.filter((e) => e.id !== id)
     },

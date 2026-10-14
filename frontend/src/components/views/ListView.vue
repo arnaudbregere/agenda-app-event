@@ -5,11 +5,11 @@ import { fr } from "date-fns/locale";
 import { useCalendarStore } from "../../stores/calendar.js";
 import { useEventsStore } from "../../stores/events.js";
 import { isToday } from "../../composables/useCalendarGrid.js";
-import type { CalendarEvent } from "../../api/types.js";
+import type { EventOccurrence } from "../../api/types.js";
 
 interface DayGroup {
   date: Date
-  events: CalendarEvent[]
+  events: EventOccurrence[]
 }
 
 const store = useCalendarStore();
@@ -19,7 +19,11 @@ const groups = computed(() => {
   const monthStart = startOfMonth(store.currentDate);
   const monthEnd = endOfMonth(store.currentDate);
 
-  const inMonth = store.filteredEvents
+  // Un seul appel pour tout le mois affiché (research.md, R-004). Le filtre
+  // isWithinInterval reste nécessaire : occurrencesIn renvoie aussi les
+  // occurrences qui débordent sur le mois sans y commencer.
+  const inMonth = store
+    .occurrencesIn(monthStart, monthEnd)
     .filter((e) => isWithinInterval(new Date(e.start), { start: monthStart, end: monthEnd }))
     .sort((a, b) => Number(b.allDay) - Number(a.allDay) || new Date(a.start).getTime() - new Date(b.start).getTime());
 
@@ -36,10 +40,10 @@ const groups = computed(() => {
   return byDay.sort((a, b) => a.date.getTime() - b.date.getTime());
 });
 
-function eventTime(event: CalendarEvent) {
+const eventTime = (event: EventOccurrence) => {
   if (event.allDay) return "Toute la journée";
   return `${format(new Date(event.start), "HH:mm")} – ${format(new Date(event.end), "HH:mm")}`;
-}
+};
 </script>
 
 <template>

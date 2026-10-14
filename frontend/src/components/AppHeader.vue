@@ -12,7 +12,7 @@ import {
 import { fr } from "date-fns/locale";
 import { useCalendarStore, VIEWS, type CalendarView } from "../stores/calendar.js";
 import { getWeekDays } from "../composables/useCalendarGrid.js";
-import type { CalendarEvent } from "../api/types.js";
+import type { EventOccurrence } from "../api/types.js";
 import Icon from "./ui/Icon.vue";
 import SearchResults from "./SearchResults.vue";
 
@@ -76,7 +76,7 @@ const onSearchKeydown = (e: KeyboardEvent) => {
   setTimeout(() => searchToggleRef.value?.focus(), 0);
 };
 
-const selectResult = (event: CalendarEvent) => {
+const selectResult = (event: EventOccurrence) => {
   searchOpen.value = false;
   mobileSearchOpen.value = false;
   store.openEditModal(event);

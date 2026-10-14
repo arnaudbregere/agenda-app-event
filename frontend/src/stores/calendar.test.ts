@@ -3,12 +3,11 @@ import { setActivePinia, createPinia } from "pinia";
 import { useCalendarStore } from "./calendar.js";
 import type { ModalDefaults } from "./calendar.js";
 import { useEventsStore } from "./events.js";
-import type { CalendarEvent } from "../api/types.js";
-
 // Fixtures volontairement partielles : ces tests exercent la mécanique du
 // store (stockage / lecture tel quel), pas la conformité au schéma complet.
+import { asEvent, asOccurrence } from "../test-support/fixtures.js";
+
 const asModalDefaults = (value: object) => value as ModalDefaults;
-const asEvent = (value: object) => value as CalendarEvent;
 
 beforeEach(() => {
   setActivePinia(createPinia());
@@ -97,18 +96,18 @@ describe("useCalendarStore", () => {
       expect(store.modalDefaults).toEqual(defaults);
     });
 
-    it("openEditModal ouvre en mode édition avec l'événement", () => {
+    it("openEditModal ouvre en mode édition avec l'occurrence", () => {
       const store = useCalendarStore();
-      const event = { id: "1", title: "Existant" };
-      store.openEditModal(asEvent(event));
+      const occurrence = asOccurrence({ id: "1", title: "Existant" });
+      store.openEditModal(occurrence);
       expect(store.modalOpen).toBe(true);
-      expect(store.editingEvent).toEqual(event);
+      expect(store.editingEvent).toEqual(occurrence);
       expect(store.modalDefaults).toBeNull();
     });
 
     it("closeModal réinitialise tout", () => {
       const store = useCalendarStore();
-      store.openEditModal(asEvent({ id: "1" }));
+      store.openEditModal(asOccurrence({ id: "1" }));
       store.closeModal();
       expect(store.modalOpen).toBe(false);
       expect(store.editingEvent).toBeNull();
@@ -116,34 +115,50 @@ describe("useCalendarStore", () => {
     });
   });
 
-  describe("filteredEvents", () => {
+  // Remplace l'ancien getter `filteredEvents` : point d'accès unique aux
+  // événements affichables, qui développe les séries sur une fenêtre puis
+  // applique le filtrage (NFR-004, NFR-005).
+  describe("occurrencesIn", () => {
+    const OCTOBER = { from: new Date(2026, 9, 1), to: new Date(2026, 9, 31, 23, 59, 59) };
+
+    const event = (id: string, day: number, rest: object = {}) => ({
+      id,
+      category: "travail",
+      description: "",
+      location: "",
+      start: new Date(2026, 9, day, 9, 0).toISOString(),
+      end: new Date(2026, 9, day, 10, 0).toISOString(),
+      ...rest,
+    });
+
     function seedEvents() {
-      const eventsStore = useEventsStore();
-      eventsStore.events = [
-        { id: "1", title: "Réunion projet", description: "", location: "", category: "travail" },
-        { id: "2", title: "Anniversaire", description: "", location: "Chez Paul", category: "famille" },
-        { id: "3", title: "Sport", description: "Footing", location: "", category: "loisirs" },
+      useEventsStore().events = [
+        event("1", 5, { title: "Réunion projet" }),
+        event("2", 12, { title: "Anniversaire", location: "Chez Paul", category: "famille" }),
+        event("3", 19, { title: "Sport", description: "Footing", category: "loisirs" }),
       ].map(asEvent);
     }
 
-    it("retourne tous les événements sans filtre actif", () => {
+    const seriesIdsIn = (window: { from: Date; to: Date }) =>
+      useCalendarStore()
+        .occurrencesIn(window.from, window.to)
+        .map((occurrence) => occurrence.seriesId);
+
+    it("retourne tous les événements de la fenêtre sans filtre actif", () => {
       seedEvents();
-      const store = useCalendarStore();
-      expect(store.filteredEvents).toHaveLength(3);
+      expect(useCalendarStore().occurrencesIn(OCTOBER.from, OCTOBER.to)).toHaveLength(3);
     });
 
     it("exclut les événements des catégories désactivées", () => {
       seedEvents();
-      const store = useCalendarStore();
-      store.toggleCategory("famille");
-      expect(store.filteredEvents.map((event) => event.id)).toEqual(["1", "3"]);
+      useCalendarStore().toggleCategory("famille");
+      expect(seriesIdsIn(OCTOBER)).toEqual(["1", "3"]);
     });
 
     it("filtre par recherche texte sur title/description/location (insensible à la casse)", () => {
       seedEvents();
-      const store = useCalendarStore();
-      store.searchQuery = "PAUL";
-      expect(store.filteredEvents.map((event) => event.id)).toEqual(["2"]);
+      useCalendarStore().searchQuery = "PAUL";
+      expect(seriesIdsIn(OCTOBER)).toEqual(["2"]);
     });
 
     it("combine filtre catégorie et recherche texte", () => {
@@ -151,16 +166,62 @@ describe("useCalendarStore", () => {
       const store = useCalendarStore();
       store.searchQuery = "footing";
       store.toggleCategory("loisirs");
-      expect(store.filteredEvents).toEqual([]);
+      expect(store.occurrencesIn(OCTOBER.from, OCTOBER.to)).toEqual([]);
+    });
+
+    it("exclut les événements hors de la fenêtre demandée", () => {
+      seedEvents();
+      expect(seriesIdsIn({ from: new Date(2026, 9, 10), to: new Date(2026, 9, 15, 23, 59, 59) })).toEqual(["2"]);
+    });
+
+    // NFR-002 : un événement non récurrent emprunte le même chemin et ressort
+    // en une occurrence unique de lui-même.
+    it("renvoie un événement non récurrent en une seule occurrence", () => {
+      seedEvents();
+      const occurrences = useCalendarStore().occurrencesIn(OCTOBER.from, OCTOBER.to);
+      expect(occurrences[0].seriesId).toBe("1");
+      expect(occurrences[0].occurrenceStart).toBe(occurrences[0].start);
+    });
+
+    it("développe une série en plusieurs occurrences dans la fenêtre", () => {
+      useEventsStore().events = [
+        asEvent(
+          event("s1", 5, {
+            title: "Réunion équipe",
+            recurrence: { freq: "weekly", interval: 1, until: new Date(2026, 9, 31).toISOString() },
+          }),
+        ),
+      ];
+
+      const occurrences = useCalendarStore().occurrencesIn(OCTOBER.from, OCTOBER.to);
+      expect(occurrences).toHaveLength(4);
+      expect(occurrences.every((o) => o.seriesId === "s1")).toBe(true);
+      expect(new Set(occurrences.map((o) => o.id)).size).toBe(4);
+    });
+
+    it("retourne les occurrences triées par date croissante", () => {
+      seedEvents();
+      const starts = useCalendarStore()
+        .occurrencesIn(OCTOBER.from, OCTOBER.to)
+        .map((o) => new Date(o.start).getTime());
+      expect(starts).toEqual([...starts].sort((a, b) => a - b));
     });
   });
 
   describe("searchResults", () => {
+    const at = (id: string, month: number, day: number, title: string, category: string) => ({
+      id,
+      title,
+      category,
+      start: new Date(2026, month, day, 9, 0).toISOString(),
+      end: new Date(2026, month, day, 10, 0).toISOString(),
+    });
+
     function seed() {
       useEventsStore().events = [
-        { id: "1", title: "Réunion B", start: "2026-10-05T09:00:00", category: "travail" },
-        { id: "2", title: "Réunion A", start: "2026-03-01T09:00:00", category: "travail" },
-        { id: "3", title: "Sport", start: "2026-04-01T09:00:00", category: "loisirs" },
+        at("1", 9, 5, "Réunion B", "travail"),
+        at("2", 2, 1, "Réunion A", "travail"),
+        at("3", 3, 1, "Sport", "loisirs"),
       ].map(asEvent);
     }
 
@@ -169,11 +230,55 @@ describe("useCalendarStore", () => {
       expect(useCalendarStore().searchResults).toEqual([]);
     });
 
+    it("est vide sans aucun événement", () => {
+      const store = useCalendarStore();
+      store.searchQuery = "réunion";
+      expect(store.searchResults).toEqual([]);
+    });
+
     it("retourne les correspondances toutes dates confondues, triées par date", () => {
       seed();
       const store = useCalendarStore();
       store.searchQuery = "réunion";
-      expect(store.searchResults.map((event) => event.id)).toEqual(["2", "1"]);
+      expect(store.searchResults.map((occurrence) => occurrence.seriesId)).toEqual(["2", "1"]);
+    });
+
+    // ⚠️ RÉGRESSION : la fenêtre de recherche est bornée par un max sur les
+    // dates stockées. Une seule date non analysable mettait cette borne à NaN,
+    // donc vidait la fenêtre et rendait la recherche muette pour TOUS les
+    // événements. L'ancien getter ignorait les dates et y était immune.
+    it("reste fonctionnelle malgré un événement à la date non analysable", () => {
+      seed();
+      useEventsStore().events = [
+        ...useEventsStore().events,
+        asEvent({ id: "abime", title: "Réunion abîmée", category: "travail", start: "pas-une-date" }),
+      ];
+
+      const store = useCalendarStore();
+      store.searchQuery = "réunion";
+      expect(store.searchResults.map((o) => o.seriesId)).toEqual(["2", "1"]);
+    });
+
+    it("est vide quand aucun événement ne porte de date exploitable", () => {
+      useEventsStore().events = [asEvent({ id: "x", title: "Réunion", start: "nope", end: "nope" })];
+      const store = useCalendarStore();
+      store.searchQuery = "réunion";
+      expect(store.searchResults).toEqual([]);
+    });
+
+    // La fenêtre de recherche va jusqu'au `until` des séries existantes : les
+    // occurrences hors du mois affiché doivent être trouvées.
+    it("trouve les occurrences d'une série au-delà de son ancre", () => {
+      useEventsStore().events = [
+        asEvent({
+          ...at("s1", 9, 5, "Réunion équipe", "travail"),
+          recurrence: { freq: "monthly", interval: 1, until: new Date(2027, 2, 31).toISOString() },
+        }),
+      ];
+
+      const store = useCalendarStore();
+      store.searchQuery = "équipe";
+      expect(store.searchResults.length).toBeGreaterThan(1);
     });
   });
 });

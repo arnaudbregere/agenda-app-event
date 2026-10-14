@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { computed } from "vue";
-import { isSameMonth, isSaturday, isSunday, format } from "date-fns";
+import { isSameMonth, isSaturday, isSunday, format, endOfDay } from "date-fns";
 import { fr } from "date-fns/locale";
 import { useCalendarStore } from "../../stores/calendar.js";
 import { useEventsStore } from "../../stores/events.js";
 import { getMonthWeeks, eventOccursOnDay, isToday } from "../../composables/useCalendarGrid.js";
-import type { CalendarEvent } from "../../api/types.js";
+import type { EventOccurrence } from "../../api/types.js";
 
 const MAX_VISIBLE = 3;
 
@@ -16,29 +16,32 @@ const weeks = computed(() => getMonthWeeks(store.currentDate));
 
 // Groupé une seule fois par rendu (le template appelle eventsForDay deux
 // fois par cellule : liste visible + condition du lien "+N") plutôt que de
-// refiltrer/retrier store.filteredEvents à chaque appel.
+// refiltrer/retrier à chaque appel.
+//
+// `occurrencesIn` est appelé UNE seule fois pour toute la grille, avant les
+// boucles : un getter Pinia paramétré n'est pas mémoïsé, l'appeler par cellule
+// développerait toutes les séries 42 fois par rendu (research.md, R-004).
 const eventsByDay = computed(() => {
-  const map = new Map();
-  for (const week of weeks.value) {
-    for (const day of week) {
-      map.set(
-        day.toISOString(),
-        store.filteredEvents
-          .filter((e) => eventOccursOnDay(e, day))
-          .sort((a, b) => Number(b.allDay) - Number(a.allDay) || new Date(a.start).getTime() - new Date(b.start).getTime()),
-      );
-    }
+  const map = new Map<string, EventOccurrence[]>();
+  const days = weeks.value.flat();
+  if (!days.length) return map;
+
+  const occurrences = store.occurrencesIn(days[0], endOfDay(days[days.length - 1]));
+
+  for (const day of days) {
+    map.set(
+      day.toISOString(),
+      occurrences
+        .filter((e) => eventOccursOnDay(e, day))
+        .sort((a, b) => Number(b.allDay) - Number(a.allDay) || new Date(a.start).getTime() - new Date(b.start).getTime()),
+    );
   }
   return map;
 });
 
-function eventsForDay(day: Date) {
-  return eventsByDay.value.get(day.toISOString()) ?? [];
-}
+const eventsForDay = (day: Date): EventOccurrence[] => eventsByDay.value.get(day.toISOString()) ?? [];
 
-function eventTime(event: CalendarEvent) {
-  return event.allDay ? "" : format(new Date(event.start), "HH:mm");
-}
+const eventTime = (event: EventOccurrence) => (event.allDay ? "" : format(new Date(event.start), "HH:mm"));
 
 function goToDay(day: Date) {
   store.setCurrentDate(day);
