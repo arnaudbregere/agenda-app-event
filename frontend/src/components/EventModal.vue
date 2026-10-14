@@ -139,7 +139,10 @@ async function handleSubmit() {
   try {
     const editing = store.editingEvent;
     if (editing) {
-      await eventsStore.updateEvent(editing.id, payload);
+      // `seriesId` et non `editing.id` : l'identifiant d'une occurrence est
+      // virtuel, l'envoyer à PUT /api/events/:id produirait un 404. Le type
+      // marqué OccurrenceId fait échouer la compilation si on l'oublie.
+      await eventsStore.updateEvent(editing.seriesId, payload);
     } else {
       await eventsStore.createEvent(payload);
     }
@@ -164,7 +167,7 @@ const confirmDelete = async () => {
   if (!editing) return;
   submitting.value = true;
   try {
-    await eventsStore.deleteEvent(editing.id);
+    await eventsStore.deleteEvent(editing.seriesId);
     store.closeModal();
   } catch (err) {
     serverError.value = err instanceof Error ? err.message : String(err);

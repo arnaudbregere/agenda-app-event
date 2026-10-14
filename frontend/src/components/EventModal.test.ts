@@ -6,7 +6,7 @@ import { format } from "date-fns";
 import EventModal from "./EventModal.vue";
 import { useCalendarStore } from "../stores/calendar.js";
 import { useEventsStore } from "../stores/events.js";
-import { asCategories, asEvent } from "../test-support/fixtures.js";
+import { asCategories, asEvent, asOccurrence } from "../test-support/fixtures.js";
 
 const CATEGORIES = asCategories([
   { id: "travail", label: "Travail", color: "#0b8043" },
@@ -72,7 +72,7 @@ describe("EventModal", () => {
     it("préremplit le formulaire avec l'événement et affiche 'Modifier l'événement'", async () => {
       const calendarStore = useCalendarStore();
       mountModal();
-      calendarStore.openEditModal(asEvent(event));
+      calendarStore.openEditModal(asOccurrence(event));
       await nextTick();
 
       expect(body().find("#event-modal-title").text()).toBe("Modifier l'événement");
@@ -183,7 +183,7 @@ describe("EventModal", () => {
       };
       const updateSpy = vi.spyOn(eventsStore, "updateEvent").mockResolvedValue(asEvent({ ...event, title: "Nouveau titre" }));
       mountModal();
-      calendarStore.openEditModal(asEvent(event));
+      calendarStore.openEditModal(asOccurrence(event));
       await nextTick();
 
       await body().find("#event-title").setValue("Nouveau titre");
@@ -233,7 +233,7 @@ describe("EventModal", () => {
       const eventsStore = useEventsStore();
       const deleteSpy = vi.spyOn(eventsStore, "deleteEvent");
       mountModal();
-      calendarStore.openEditModal(asEvent(event));
+      calendarStore.openEditModal(asOccurrence(event));
       await nextTick();
 
       await body().find(".c-btn--danger").trigger("click");
@@ -249,7 +249,7 @@ describe("EventModal", () => {
       const eventsStore = useEventsStore();
       const deleteSpy = vi.spyOn(eventsStore, "deleteEvent");
       mountModal();
-      calendarStore.openEditModal(asEvent(event));
+      calendarStore.openEditModal(asOccurrence(event));
       await nextTick();
       await body().find(".c-btn--danger").trigger("click");
 
@@ -265,7 +265,7 @@ describe("EventModal", () => {
       const eventsStore = useEventsStore();
       const deleteSpy = vi.spyOn(eventsStore, "deleteEvent").mockResolvedValue(undefined);
       mountModal();
-      calendarStore.openEditModal(asEvent(event));
+      calendarStore.openEditModal(asOccurrence(event));
       await nextTick();
       await body().find(".c-btn--danger").trigger("click");
 
@@ -282,7 +282,7 @@ describe("EventModal", () => {
       const eventsStore = useEventsStore();
       const deleteSpy = vi.spyOn(eventsStore, "deleteEvent");
       mountModal();
-      calendarStore.openEditModal(asEvent(event));
+      calendarStore.openEditModal(asOccurrence(event));
       await nextTick();
       await body().find(".c-btn--danger").trigger("click");
 
@@ -298,7 +298,7 @@ describe("EventModal", () => {
     it("régression : la modale d'édition redevient utilisable après Échap dans la confirmation", async () => {
       const calendarStore = useCalendarStore();
       mountModal();
-      calendarStore.openEditModal(asEvent(event));
+      calendarStore.openEditModal(asOccurrence(event));
       await nextTick();
       await body().find(".c-btn--danger").trigger("click");
 

@@ -4,16 +4,16 @@ import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { useCalendarStore } from "../stores/calendar.js";
 import { useEventsStore } from "../stores/events.js";
-import type { CalendarEvent } from "../api/types.js";
+import type { EventOccurrence } from "../api/types.js";
 
-const emit = defineEmits<{ select: [event: CalendarEvent] }>();
+const emit = defineEmits<{ select: [event: EventOccurrence] }>();
 
 const store = useCalendarStore();
 const eventsStore = useEventsStore();
 
 const results = computed(() => store.searchResults);
 
-function eventWhen(event: CalendarEvent) {
+function eventWhen(event: EventOccurrence) {
   const day = format(new Date(event.start), "EEE d MMM yyyy", { locale: fr });
   if (event.allDay) return day;
   return `${day}, ${format(new Date(event.start), "HH:mm")}`;

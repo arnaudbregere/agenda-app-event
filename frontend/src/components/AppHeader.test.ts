@@ -151,7 +151,7 @@ describe("AppHeader", () => {
       await wrapper.find(".c-search-results__item").trigger("click");
 
       expect(store.modalOpen).toBe(true);
-      expect(store.editingEvent?.id).toBe("1");
+      expect(store.editingEvent?.seriesId).toBe("1");
       expect(wrapper.find(".c-search-results").exists()).toBe(false);
     });
 

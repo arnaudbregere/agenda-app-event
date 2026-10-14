@@ -99,6 +99,6 @@ describe("TimeGrid", () => {
     await wrapper.find(".c-event-block").trigger("click");
 
     expect(store.modalOpen).toBe(true);
-    expect(store.editingEvent?.id).toBe("1");
+    expect(store.editingEvent?.seriesId).toBe("1");
   });
 });
