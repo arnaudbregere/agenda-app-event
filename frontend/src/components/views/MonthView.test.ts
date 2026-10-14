@@ -87,6 +87,31 @@ describe("MonthView", () => {
     expect(store.editingEvent?.seriesId).toBe("1");
   });
 
+  // Borne stricte de eventOccursOnDay : un événement qui se termine à minuit
+  // n'occupe rien le lendemain. Sans elle le défaut du formulaire
+  // (23:00 → 00:00) produisait une seconde pilule sur le jour suivant.
+  it("n'affiche qu'une pilule pour un événement qui se termine à minuit", () => {
+    const store = useCalendarStore();
+    const eventsStore = useEventsStore();
+    store.setCurrentDate(new Date(2026, 7, 15));
+    eventsStore.categories = asCategories([{ id: "travail", label: "Travail", color: "#0b8043" }]);
+    eventsStore.events = asEvents([
+      {
+        id: "1",
+        title: "Veille",
+        description: "",
+        location: "",
+        category: "travail",
+        allDay: false,
+        start: new Date(2026, 7, 20, 23, 0).toISOString(),
+        end: new Date(2026, 7, 21, 0, 0).toISOString(),
+      },
+    ]);
+    const wrapper = mount(MonthView);
+
+    expect(wrapper.findAll(".c-event-pill")).toHaveLength(1);
+  });
+
   // Verrouille le endOfDay() de la fenêtre passée à occurrencesIn : sans lui,
   // `to` tombe à minuit et tout événement du dernier jour affiché disparaît.
   it("affiche un événement situé le dernier jour de la grille", () => {

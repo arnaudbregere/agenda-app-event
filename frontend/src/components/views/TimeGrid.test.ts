@@ -45,6 +45,31 @@ describe("TimeGrid", () => {
     expect(block.attributes("style")).toContain("height: 48px"); // 1h * 48px
   });
 
+  // Borne stricte de eventOccursOnDay. Sans elle, le défaut du formulaire
+  // (23:00 → 00:00) produisait un bloc fantôme à 00:00 le lendemain : la durée
+  // nulle y était remontée au plancher de 20 minutes par toDayMinutes.
+  it("n'affiche aucun bloc le lendemain d'un événement qui se termine à minuit", () => {
+    const eventsStore = useEventsStore();
+    eventsStore.categories = asCategories([{ id: "travail", label: "Travail", color: "#0b8043" }]);
+    eventsStore.events = asEvents([
+      {
+        id: "1",
+        title: "Veille",
+        description: "",
+        location: "",
+        category: "travail",
+        allDay: false,
+        start: new Date(2026, 7, 28, 23, 0).toISOString(),
+        end: new Date(2026, 7, 29, 0, 0).toISOString(),
+      },
+    ]);
+
+    expect(mount(TimeGrid, { props: { days: [DAY] } }).findAll(".c-event-block")).toHaveLength(1);
+    expect(
+      mount(TimeGrid, { props: { days: [new Date(2026, 7, 29)] } }).findAll(".c-event-block"),
+    ).toHaveLength(0);
+  });
+
   it("affiche les événements 'toute la journée' dans le bandeau dédié, pas dans la grille horaire", () => {
     const eventsStore = useEventsStore();
     eventsStore.categories = asCategories([{ id: "travail", label: "Travail", color: "#0b8043" }]);
